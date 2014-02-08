@@ -7,7 +7,7 @@ class DB
   private $_db;
   
   public function __construct($db=NULL){
-    require($_SERVER['DOCUMENT_ROOT']."/includes/constants.php");
+    require("/includes/constants.php");
 
     if(is_object($db)){
       $this->_db = $db;
@@ -25,7 +25,7 @@ class DB
 
 
   private function setup(){
-    require($_SERVER['DOCUMENT_ROOT']."/includes/constants.php");
+    require("/includes/constants.php");
     try {
       $this->_db = new PDO("mysql:host=$DB_HOST", $DB_USER, $DB_PASS);
     } catch (PDOException $e) {
