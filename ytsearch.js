@@ -8,6 +8,8 @@ function searchVideo(){
     xmlhttp.onreadystatechange=function(){
       if (xmlhttp.readyState==4 && xmlhttp.status==200){
         document.getElementById("list").innerHTML=xmlhttp.responseText;
+      }else{
+        document.getElementById("list").innerHTML="Loading...";
       }
     }
     xmlhttp.open("GET","ytsearch.php?search="+search_term,true);
