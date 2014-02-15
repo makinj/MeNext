@@ -38,7 +38,7 @@ class DB
       exit;
     }
     $this->_db = new PDO("mysql:host=$DB_HOST;dbname=$DB_NAME", $DB_USER, $DB_PASS); 
-    $this->createTable('USERS', 'uid int NOT NULL AUTO_INCREMENT, user VARCHAR(16), pass VARCHAR(32), admin BIT(1), INDEX(user(6)), PRIMARY KEY(uid)');
+    $this->createTable('USERS', 'uid int NOT NULL AUTO_INCREMENT, user VARCHAR(16), pass VARCHAR(128), admin BIT(1), INDEX(user(6)), PRIMARY KEY(uid)');
     $this->createTable('SUBMISSIONS', 'sid int NOT NULL AUTO_INCREMENT, uid int, ytid VARCHAR(11), played BIT(1), INDEX(uid,sid), PRIMARY KEY(sid)');
     $this->createAccount($ADMIN_NAME, $ADMIN_PASS, 1);
   }
@@ -70,7 +70,7 @@ class DB
     require_once("includes/functions.php");
     require("includes/constants.php");
     $username = sanitizeString($username);
-    $password = md5($pre_salt.sanitizeString($password).$post_salt);
+    $password = hash('sha512',$pre_salt.sanitizeString($password).$post_salt);
     if($this->isUser($username)){
       echo "player $username already exists";
     } else {
@@ -85,8 +85,7 @@ class DB
     require_once("includes/functions.php");
     require("includes/constants.php");
     $username = sanitizeString($username);
-    $password = md5($pre_salt.sanitizeString($password).$post_salt);
-
+    $password = hash('sha512',$pre_salt.sanitizeString($password).$post_salt);
     $stmt = $this->_db->prepare("SELECT * FROM USERS WHERE user=:username and pass=:password;");
     $stmt->bindValue(':username', $username);
     $stmt->bindValue(':password', $password);
