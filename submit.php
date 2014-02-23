@@ -1,4 +1,5 @@
 <?php
+  $restricted=true;
   require_once('header.php');
 ?>
 <script type="text/javascript" src="ytsearch.js"></script>

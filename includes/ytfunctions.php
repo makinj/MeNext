@@ -19,6 +19,7 @@
     foreach ($videoFeed as $videoEntry) {
       $videoThumbnails = $videoEntry->getVideoThumbnails();
       echo"<li>".$count.". <img src='".$videoThumbnails[1]['url']."'/> ". $videoEntry->getVideoTitle()."</li>";
+      
       $count++;
     }
   }  

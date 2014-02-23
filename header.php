@@ -5,6 +5,10 @@
     echo" | You are logged in as ".$_SESSION['username']." | <a href='/submit.php'>submit</a> | <a href='/logout.php'>log out</a>";
   }else{
     echo " | <a href='/login.php'>login/register</a>";
+    if(isset($restricted)&&$restricted==true){
+      header("location: /");
+      exit;
+    }
   }
   echo "<br>";
 ?>

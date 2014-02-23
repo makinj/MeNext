@@ -93,7 +93,9 @@ class DB
     $result = $stmt->fetch();
     if($stmt->rowCount()==1){
       echo "welcome $username!!!";
-      session_start();
+      if(session_id() == '') {
+        session_start();
+      }
       $_SESSION['username']=$username;
       $_SESSION['uid']=$result[0];
       $_SESSION['admin']=$result[3];
@@ -105,9 +107,16 @@ class DB
     }
     
   }
-  public function makevote($sid){
-    
-  }
+  public function addSong($uid, $ytid){
+    require_once("includes/functions.php");
+    require("includes/constants.php");
+    $uid = sanitizeString($uid);
+    $ytid = sanitizeString($ytid);
+    $stmt = $this->_db->prepare("insert into SUBMISSIONS (uid, ytid) VALUES(:uid, :ytid);");
+    $stmt->bindValue(':uid', $uid);
+    $stmt->bindValue(':ytid', $ytid);
+    $stmt->execute();
+}
 }
 
 ?>
