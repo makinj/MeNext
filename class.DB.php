@@ -44,7 +44,6 @@ class DB
   }
 
 
-
   private function createTable($name, $query){
     try{
 
@@ -54,7 +53,6 @@ class DB
       exit;
     }
   }
-
   public function isUser($name){
     require_once("includes/functions.php");
     require("includes/constants.php");
@@ -116,7 +114,11 @@ class DB
     $stmt->bindValue(':uid', $uid);
     $stmt->bindValue(':ytid', $ytid);
     $stmt->execute();
-}
+  }
+
+  public function listSongs(){
+    echo "list of songs goes here";
+  }
 }
 
 ?>

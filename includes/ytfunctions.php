@@ -1,8 +1,11 @@
 <?php
   require_once 'Zend/Loader.php'; // the Zend dir must be in your include_path
   Zend_Loader::loadClass('Zend_Gdata_YouTube');
-  $yt = new Zend_Gdata_YouTube();
-
+  if (isset($_GET['action'])){
+    if($_GET['action']=="search"){
+      searchAndPrint($_GET['search']);
+    }
+  }
   function searchAndPrint($searchTerms)
   {
     $yt = new Zend_Gdata_YouTube();
@@ -19,7 +22,6 @@
     foreach ($videoFeed as $videoEntry) {
       $videoThumbnails = $videoEntry->getVideoThumbnails();
       echo"<li>".$count.". <img src='".$videoThumbnails[1]['url']."'/> ". $videoEntry->getVideoTitle()."</li>";
-      
       $count++;
     }
   }  

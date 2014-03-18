@@ -1,4 +1,8 @@
 function searchVideo(){
+  /*
+  Joshua Makinen
+  Calls AJAX to retreive search result
+  */
   var search_term=document.getElementById("search").value;
   if (search_term.length==0){
     document.getElementById("list").innerHTML="<h5>Enter video to search</h5>";
@@ -12,12 +16,8 @@ function searchVideo(){
         document.getElementById("list").innerHTML="Loading...";
       }
     }
-    xmlhttp.open("GET","ytsearch.php?search="+search_term,true);
+    xmlhttp.open("GET","includes/ytfunctions.php?action=search&search="+search_term,true);
     xmlhttp.send();
   }
-
-
-
-
   return false;
 }
