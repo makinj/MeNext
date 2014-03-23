@@ -11,7 +11,22 @@ function searchVideo(){
     var xmlhttp=new XMLHttpRequest();
     xmlhttp.onreadystatechange=function(){
       if (xmlhttp.readyState==4 && xmlhttp.status==200){
-        document.getElementById("list").innerHTML=xmlhttp.responseText;
+        document.getElementById("list").innerHTML="";
+        var videos= JSON.parse(xmlhttp.responseText)
+        for (var i=0;i<videos.length;i++){
+          //var txt = document.createTextNode("<a href='https://www.youtube.com/watch?v="+videos[i][1]+"'><li>"+i+"<img src='"+videos[i][2]+"'/>"+videos[i][0]+"</li></a>");
+          
+          var link=document.createElement("LI");
+          //var position=i+1;
+          link.innerHTML=i+"<a href='https://www.youtube.com/watch?v="+videos[i][1]+"'>"+"<img src='"+videos[i][2]+"'/>"+videos[i][0]+"</a>";
+//document.body.appendChild(link);
+
+
+          //document.getElementById("list").innerHTML="good";
+          document.getElementById('list').appendChild(link); 
+          //document.write(videos[i] + "<br>");
+        }
+        //document.getElementById("list").innerHTML=xmlhttp.responseText;
       }else{
         document.getElementById("list").innerHTML="Loading...";
       }

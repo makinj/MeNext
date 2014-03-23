@@ -1,7 +1,9 @@
 <?php
   require_once("class.DB.php");
   include("header.php");
-  session_start();
+  if(session_id() == '') {
+    session_start();
+  }
   if(isset($_SESSION['logged'])){
     echo "<h1>already signed in as ".$_SESSION['username']."</h1>
         <a href='/logout.php'>Log out</a>";
