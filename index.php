@@ -6,5 +6,4 @@
   echo "<h1>home</h1>";
   echo "<a href='reset.php'>reset</a>";//deletes database and replaces it with new one
   require_once('footer.php');//bar at the top of the page
-
 ?>

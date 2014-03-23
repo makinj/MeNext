@@ -1,6 +1,7 @@
 <?php
   require_once("class.DB.php");
-  include("header.php");
+  $title="login";
+  include("header.php");//open html bar
   if(session_id() == '') {
     session_start();
   }

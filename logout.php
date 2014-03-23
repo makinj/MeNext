@@ -6,7 +6,7 @@
   if(session_id() == '') {
     session_start();
   }
-  session_destroy();
-  header("Location: login.php");
+  session_destroy();//leave no trace
+  header("Location: login.php");//login again
   exit;
 ?>

@@ -1,10 +1,10 @@
 <?php
-  $DB_HOST='localhost';
-  $DB_USER = 'root';
-  $DB_PASS =  '';
-  $DB_NAME = 'menext';
-  $ADMIN_NAME = 'admin';
-  $ADMIN_PASS = 'password';
-  $pre_salt = "5W4GG#d0pe&&*";
-  $post_salt = "UILU#do114b111zzz@#)";
+  $DB_HOST='localhost';//hostname
+  $DB_USER = 'root';//DB username
+  $DB_PASS =  '';//DB password
+  $DB_NAME = 'menext';//name of DB in MYSQL
+  $ADMIN_NAME = 'admin';//admin account name
+  $ADMIN_PASS = 'password';//admin password name
+  $pre_salt = "5W4GG#d0pe&&*";//for security(be random)
+  $post_salt = "UILU#do114b111zzz@#)";//see above
 ?>

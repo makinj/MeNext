@@ -1,7 +1,7 @@
 <?php
-  $restricted=true;
-  $title="submissions";
-  require_once('header.php');
+  $restricted=true;//only show if logged in
+  $title="submit";
+  require_once('header.php');//echo top of html
 ?>
 
 <form action="" name="contact" onsubmit="return searchVideo();">
@@ -11,5 +11,5 @@
 <script type="text/javascript" src="/js/ytsearch.js"></script>
 <ul id="list"></ul>
 <?php
-  require_once('footer.php');
+  require_once('footer.php');//close up html
 ?>

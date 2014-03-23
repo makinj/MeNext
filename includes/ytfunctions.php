@@ -10,21 +10,18 @@
     $yt = new Zend_Gdata_YouTube();
     $yt->setMajorProtocolVersion(2);
     $query = $yt->newVideoQuery();
-    $query->setOrderBy('viewCount');
-    $query->setSafeSearch('none');
+    $query->setOrderBy('relevance');
+    $query->setSafeSearch('moderate');
     $query->setVideoQuery($searchTerms);
 
     // Note that we need to pass the version number to the query URL function
     // to ensure backward compatibility with version 1 of the API.
     $videoFeed = $yt->getVideoFeed($query->getQueryUrl(2));
-    //$count = 1;
     $result = array();
-    foreach ($videoFeed as $videoEntry) {
+    foreach ($videoFeed as $videoEntry) {//fill up array to return to JS
       $videoThumbnails = $videoEntry->getVideoThumbnails();
       $videotmp=array($videoEntry->getVideoTitle(), $videoEntry->getVideoId(), $videoThumbnails[1]['url']);
       array_push($result, $videotmp);
-      //echo"<li>".$count.". <img src='".$videoThumbnails[1]['url']."'/> ". $videoEntry->getVideoTitle()."</li>";
-      //$count++;
     }
     echo json_encode($result);
   }  
