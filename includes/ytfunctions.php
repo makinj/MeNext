@@ -18,6 +18,14 @@
     // to ensure backward compatibility with version 1 of the API.
     $videoFeed = $yt->getVideoFeed($query->getQueryUrl(2));
     $result = array();
+    /*
+    result is an array of arrays with the values:
+    1. Video Title
+    2. Video ID ie.https://www.youtube.com/watch?v=WSMNbbg0X7Q
+                                                   ^^^^^^^^^^^
+                                                  this is the ID
+    3. Top Video Thumbnail URL
+    */
     foreach ($videoFeed as $videoEntry) {//fill up array to return to JS
       $videoThumbnails = $videoEntry->getVideoThumbnails();
       $videotmp=array($videoEntry->getVideoTitle(), $videoEntry->getVideoId(), $videoThumbnails[1]['url']);
