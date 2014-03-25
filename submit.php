@@ -8,6 +8,7 @@
     <input type="text" name="search" id="search"/>
     <input type="submit" name="submit" value="go!"/>
 </form>
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 <script type="text/javascript">
   var API_KEY =
   <?php 
@@ -16,7 +17,7 @@
   ?>;
 </script>
 <script type="text/javascript" src="/js/ytsearch.js"></script>
-<ul id="list"></ul>
+<ul id="searchResults"></ul>
 <?php
   require_once('footer.php');//close up html
 ?>
