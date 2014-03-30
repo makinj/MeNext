@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link type="text/css" rel="stylesheet" href="stylesheet.css"/><!--I still have to make fill this sheet-->
+		<Title>MeNext</Title>
+	</head>
+	<body style="background: black; text-align: center; color: white; font-family: arial;"><!--More to come this just inline style-->
+		<!--I'm not sure if the table method is ideal-->
+		<table>
+			<tbody>
+				<tr>
+					<td><img width="100" height="100" src="http://i.imgur.com/Pys4eC8.jpg?1"></td>
+					<td>MeNext</td>
+					<td>*Next?*</td><!--This is supposed to become the search bar-->
+					<td>Login/Sign Up</td>
+				</tr>
+				<tr>
+					<td>VIDEO PLAYING</td>
+					<td>
+						<table>
+							<tbody>
+								<tr><th>UpNext</th></tr>
+								<tr><td>VIDEO 1</td></tr>
+								<tr><td>VIDEO 2</td></tr>
+								<tr><td>VIDEO 3</td></tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td><p>Song Title</p></td>
+					<td><button onclick="alert('GOOD SONG')" type="button">UP</button></td>
+					<td><button onclick="alert('BUMP DAT')" type="button">PLAY</button></td>
+					<td><button onclick="alert('BAD SONG')" type="button">DOWN</button></td>
+					<td><p>Volume</p></td>
+				</tr>
+			</tbody>
+		</table>
+	<body/>
+</html>
