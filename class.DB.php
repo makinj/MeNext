@@ -44,39 +44,48 @@ class DB
      date_joined TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
      INDEX(username),
      PRIMARY KEY(userId)');
+    // Other ideas for attributes include length, and url
+    // May remove videoId in the future, as youtubeId is unique to the video already
+    // If so, would make Index(youtubeId) instead of videoId
     $this->createTable('Video', 
     'videoId int NOT NULL AUTO_INCREMENT, 
-     submitterId int REFERENCES User(userId),
-     ytid VARCHAR(11), 
+     youtubeId VARCHAR(11) UNIQUE, 
      title VARCHAR(255), 
-     length INT, 
-     url VARCHAR(255), 
      played BIT(1) DEFAULT 0, 
      PRIMARY KEY(videoId), 
-     INDEX(submitterId, title)');
+     INDEX(videoId)');
     $this->createTable('VideoParty',
     'vpid int NOT NULL AUTO_INCREMENT,
      title VARCHAR(255),
      creatorId int REFERENCES User(uid),
      PRIMARY KEY(vpid)');
 
-    // This table links videos to video parties. This way, we don't need
-    // to store the same video's information more than once if it's played
-    // several times across several video parties.
-    // NOTE: duplicate (videoId, vpId) tuples will be allowed to
-    //   exist so the same song can be submitted to a single video
-    //   video party twice.
     // Index is on videoPartyId, then rating. This will facilitate searching
     // a certain video party for the highest rated song.
-    $this->createTable('Video_VideoParty',
-    'videoId int REFERENCES Video(videoId),
+    $this->createTable('Submission',
+    'submissionId int NOT NULL AUTO_INCREMENT,
+     videoId int REFERENCES Video(videoId),
      videoPartyId int REFERENCES VideoParty(vpid),
-     upvotes int,
-     downvotes int,
-     rating int,
+     submitterId int REFERENCES User(userId),
+     upvotes int DEFAULT 0,
+     downvotes int DEFAULT 0,
+     rating int DEFAULT 0,
      wasPlayed BIT(1) DEFAULT 0,
-     INDEX(videoPartyId, wasPlayed, rating) ');
+     INDEX(submissionId, wasPlayed, rating),
+     PRIMARY KEY(submissionId)');
     $this->createAccount($ADMIN_NAME, $ADMIN_PASS, 1);
+    // Create videoparty for testing:
+    //   (vpid=1, userId=1)
+    $this->executeSQL('INSERT INTO VideoParty(title, creatorId) VALUES (1,1)');
+  }
+
+  private function executeSQL($query){
+    try{
+      $this->_db->exec("$query");
+    }catch(PDOException $e){
+      echo 'Connection failed: ' . $e->getMessage()."<br>";
+      exit;
+    }
   }
 
   private function createTable($name, $query){
@@ -140,21 +149,62 @@ class DB
     
   }
 
-  // Fields for song include:
-  //  Title, Length, url (ytid??), submitterId (uid??)
-  public function addSong($uid, $ytid){
+  public function addSong($submitterId, $youtubeId, $title){
     require_once("includes/functions.php");
     require("includes/constants.php");
-    $uid = sanitizeString($uid);
-    $ytid = sanitizeString($ytid);
-    $stmt = $this->_db->prepare("INSERT INTO Video (uid, ytid) VALUES(:uid, :ytid);");
-    $stmt->bindValue(':uid', $uid);
-    $stmt->bindValue(':ytid', $ytid);
+    $submitterId = sanitizeString($submitterId);
+    $youtubeId = sanitizeString($youtubeId);
+    $title = sanitizeString($title);
+
+    // Want to try to insert, but not change the videoId, and 
+    //   change LAST_INSERT_ID() to be the videoId of the inserted video
+    $stmt = $this->_db->prepare("
+      INSERT INTO Video (youtubeId, title) 
+      VALUES (:youtubeId, :title) 
+      ON DUPLICATE KEY UPDATE videoId = LAST_INSERT_ID(videoId);");
+    $stmt->bindValue(':youtubeId', $youtubeId);
+    $stmt->bindValue(':title', $title);
+    $stmt->execute();
+    // It would be nice to implement error checking here, check a SQLCODE value or something to make sure the statement executed without a syntax error or something
+
+    // Insert into Submissions.
+    // LAST_INSERT_ID() returns id of last insertion's (or replace) auto-increment field
+    //     First we'll get this working with just 1 video party, vpid=1
+    $vpid = 1;
+    $stmt = $this->_db->prepare("INSERT INTO Submission (videoId, videoPartyId, submitterId) VALUES(LAST_INSERT_ID(), :vpid, :submitterId );");
+    $stmt->bindValue(':submitterId', $submitterId);
+    $stmt->bindValue(':vpid', $vpid);
     $stmt->execute();
   }
 
-  public function listSongs(){
+  public function listSongs($vpid){
     echo "list of songs goes here";
+    // Formatting taken from http://www.php.net/manual/en/ref.pdo-mysql.php, comment by dibakar
+    // For testing:
+    $vpid = 1;
+    try {
+        // $dbh = new PDO('mysql:host=xxx;port=xxx;dbname=xxx', 'xxx', 'xxx', array( PDO::ATTR_PERSISTENT => false));
+
+        // Find all videos associated with $vpid (set to 1 for testing)
+        $stmt = $this->_db->prepare("
+               SELECT *
+               FROM Submission s, Video v
+               WHERE s.videoId = v.videoId AND
+                     s.videoPartyId = :vpid;");
+        $vpid = sanitizeString($vpid);
+        $stmt->bindValue(':vpid', $vpid); // For now, only consider one videoParty
+        $stmt->execute();
+
+        echo "<B>outputting...</B><BR>";
+        while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
+            echo "output: ".$row->title."<BR>";
+        }
+        echo "<BR><B>".date("r")."</B>";
+    
+    } catch (PDOException $e) {
+        print "Error!: " . $e->getMessage() . "<br/>";
+        die();
+    }
   }
 }
 
