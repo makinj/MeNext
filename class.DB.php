@@ -110,7 +110,7 @@ class DB
       require_once("includes/functions.php");
       require("includes/constants.php");
       $username = sanitizeString($username);
-      $password = hash('sha512',$pre_salt.sanitizeString($password).$post_salt);
+      $password = hash('sha512',$PRE_SALT.sanitizeString($password).$POST_SALT);
       if($this->isUser($username)){
         return "alreadyExists";
       } else {
@@ -130,7 +130,7 @@ class DB
       require_once("includes/functions.php");
       require("includes/constants.php");
       $username = sanitizeString($username);
-      $password = hash('sha512',$pre_salt.sanitizeString($password).$post_salt);
+      $password = hash('sha512',$PRE_SALT.sanitizeString($password).$POST_SALT);
       $stmt = $this->_db->prepare("SELECT * FROM User WHERE username=:username and password=:password;");
       $stmt->bindValue(':username', $username);
       $stmt->bindValue(':password', $password);
@@ -141,7 +141,7 @@ class DB
           session_start();
         }
         $_SESSION['username']=$username;
-        $_SESSION['uid']=$result[0];
+        $_SESSION['userId']=$result[0];
         $_SESSION['admin']=$result[3];
         $_SESSION['logged']=1;
         return $username;

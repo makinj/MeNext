@@ -6,7 +6,7 @@ $(document).ready(function(){
         if(result['token']!=0){
           window.location.href = "/";
         }else{
-          if(result['reg']=="alreadyExists"){
+          if(result['registerStat']=="alreadyExists"){
             $("#problem").html("username already in use");
           }else{
             $("#problem").html("unable to register user");

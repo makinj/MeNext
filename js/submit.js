@@ -26,9 +26,9 @@ $(document).ready(function(){
             document.getElementById("searchResults").innerHTML="Failed :(";
           }
           $('button.add').click(function(){
-            $.post("handler.php", {'action':'addSong', 'ytid':$(this).val()},
+            $.post("handler.php", {'action':'addSong', 'youtubeId':$(this).val()},
               function(data){
-                alert(data);
+                
               }
             );
           });
