@@ -73,7 +73,7 @@ class DB
      wasPlayed BIT(1) DEFAULT 0,
      INDEX(submissionId, wasPlayed, rating),
      PRIMARY KEY(submissionId)');
-    $this->createAccount($ADMIN_NAME, $ADMIN_PASS, 1);
+    $this->createAccount(array('username'=>$ADMIN_NAME, 'password'=>$ADMIN_PASS),1);
     // Create videoparty for testing:
     //   (vpid=1, userId=1)
     $this->executeSQL('INSERT INTO VideoParty(title, creatorId) VALUES (1,1)');
@@ -106,47 +106,53 @@ class DB
     return ($result->rowCount()>0);
   }
 
-  public function createAccount($username, $password, $admin=0){
-
-    require_once("includes/functions.php");
-    require("includes/constants.php");
-    $username = sanitizeString($username);
-    $password = hash('sha512',$pre_salt.sanitizeString($password).$post_salt);
-    if($this->isUser($username)){
-      echo "player $username already exists";
-    } else {
-      $stmt = $this->_db->prepare("insert into User (username, password, admin) VALUES(:username, :password, :admin);");
-      $stmt->bindValue(':username', $username);
-      $stmt->bindValue(':password', $password);
-      $stmt->bindValue(':admin', $admin, PDO::PARAM_BOOL);
-      $stmt->execute();
+  public function createAccount($args, $admin=0){
+    if(is_array($args)&&array_key_exists("username", $args)&&array_key_exists("password", $args)){
+      $username=$args['username'];
+      $password=$args['password'];   
+      require_once("includes/functions.php");
+      require("includes/constants.php");
+      $username = sanitizeString($username);
+      $password = hash('sha512',$pre_salt.sanitizeString($password).$post_salt);
+      if($this->isUser($username)){
+        echo "player $username already exists";
+      } else {
+        $stmt = $this->_db->prepare("insert into User (username, password, admin) VALUES(:username, :password, :admin);");
+        $stmt->bindValue(':username', $username);
+        $stmt->bindValue(':password', $password);
+        $stmt->bindValue(':admin', $admin, PDO::PARAM_BOOL);
+        $stmt->execute();
+      }
     }
   }
-  public function signIn($username, $password){
-    require_once("includes/functions.php");
-    require("includes/constants.php");
-    $username = sanitizeString($username);
-    $password = hash('sha512',$pre_salt.sanitizeString($password).$post_salt);
-    $stmt = $this->_db->prepare("SELECT * FROM User WHERE username=:username and password=:password;");
-    $stmt->bindValue(':username', $username);
-    $stmt->bindValue(':password', $password);
-    $stmt->execute();
-    $result = $stmt->fetch();
-    if($stmt->rowCount()==1){
-      echo "welcome $username!!!";
-      if(session_id() == '') {
-        session_start();
+  public function signIn($args){
+    if(is_array($args)&&array_key_exists("username", $args)&&array_key_exists("password", $args)){
+      $username=$args['username'];
+      $password=$args['password'];
+      require_once("includes/functions.php");
+      require("includes/constants.php");
+      $username = sanitizeString($username);
+      $password = hash('sha512',$pre_salt.sanitizeString($password).$post_salt);
+      $stmt = $this->_db->prepare("SELECT * FROM User WHERE username=:username and password=:password;");
+      $stmt->bindValue(':username', $username);
+      $stmt->bindValue(':password', $password);
+      $stmt->execute();
+      $result = $stmt->fetch();
+      if($stmt->rowCount()==1){
+        echo "welcome $username!!!";
+        if(session_id() == '') {
+          session_start();
+        }
+        $_SESSION['username']=$username;
+        $_SESSION['uid']=$result[0];
+        $_SESSION['admin']=$result[3];
+        $_SESSION['logged']=1;
+        return 1;
       }
-      $_SESSION['username']=$username;
-      $_SESSION['uid']=$result[0];
-      $_SESSION['admin']=$result[3];
-      $_SESSION['logged']=1;
-      return 1;
+      else{
+        return 0;
+      }
     }
-    else{
-      return 0;
-    }
-    
   }
 
   public function addSong($submitterId, $youtubeId, $title){

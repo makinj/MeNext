@@ -2,6 +2,7 @@
   require_once("class.DB.php");
   $title="login";
   include("header.php");//open html bar
+  /*
   if(session_id() == '') {
     session_start();
   }
@@ -23,29 +24,26 @@
       }
     }
   }
-    echo <<<END
+  */
+?>
+
 <h1>login</h1>
-<form action="login.php" method="post" enctype="multipart/form-data">
+<form id="login">
   Username: <input type="text" name="username" id="name"><br>
   Password: <input type="password" name="password" id="password">
   <input type="submit" name="submit" value="Submit">
   <input type="hidden" name="action" value='login'>
 </form>
+
 <h2>register</h2>
-<form action="login.php" method="post" enctype="multipart/form-data">
+<form id="register">
   Username: <input type="text" name="username" id="name"><br>
   Password: <input type="password" name="password" id="password">
   <input type="submit" name="submit" value="Submit">
   <input type="hidden" name="action" value='register'>
 </form>
-<script type="text/javascript">
-  var register= document.getElementById("register");
-  function expand_register(){
-    console.log("register");
-    register.innerHTML='';
-  }
-</script>
-</body>
-</html>
-END;
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="js/login.js"></script>
+<?php
+  require_once("footer.php");
 ?>
