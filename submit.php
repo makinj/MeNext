@@ -14,7 +14,7 @@
     echo"'".$API_CLIENT_KEY."'";
   ?>;
 </script>
-<script type="text/javascript" src="/js/ytsearch.js"></script>
+<script type="text/javascript" src="/js/submit.js"></script>
 <ul id="searchResults"></ul>
 <?php
   require_once('footer.php');//close up html
