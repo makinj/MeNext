@@ -36,34 +36,34 @@ class DB
     }
     $this->_db = new PDO("mysql:host=$DB_HOST;dbname=$DB_NAME", $DB_USER, $DB_PASS); 
     // Temporarily not enforcing foreign key constraints, only noting with "References"
-    $this->createTable('User',
-    'userId int NOT NULL AUTO_INCREMENT,
+    $this->executeSQL('CREATE TABLE User(
+     userId int NOT NULL AUTO_INCREMENT,
      username VARCHAR(16) UNIQUE,
      password VARCHAR(128),
      admin BIT(1) DEFAULT 0,
      date_joined TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
      INDEX(username),
-     PRIMARY KEY(userId)');
+     PRIMARY KEY(userId));');
     // Other ideas for attributes include length, and url
     // May remove videoId in the future, as youtubeId is unique to the video already
     // If so, would make Index(youtubeId) instead of videoId
-    $this->createTable('Video', 
-    'videoId int NOT NULL AUTO_INCREMENT, 
+    $this->executeSQL('CREATE TABLE Video( 
+     videoId int NOT NULL AUTO_INCREMENT, 
      youtubeId VARCHAR(11) UNIQUE, 
      title VARCHAR(255), 
      played BIT(1) DEFAULT 0, 
      PRIMARY KEY(videoId), 
-     INDEX(videoId)');
-    $this->createTable('VideoParty',
-    'vpid int NOT NULL AUTO_INCREMENT,
+     INDEX(videoId));');
+    $this->executeSQL('CREATE TABLE VideoParty(
+     vpid int NOT NULL AUTO_INCREMENT,
      title VARCHAR(255),
      creatorId int REFERENCES User(uid),
-     PRIMARY KEY(vpid)');
+     PRIMARY KEY(vpid));');
 
     // Index is on videoPartyId, then rating. This will facilitate searching
     // a certain video party for the highest rated song.
-    $this->createTable('Submission',
-    'submissionId int NOT NULL AUTO_INCREMENT,
+    $this->executeSQL('CREATE TABLE Submission(
+     submissionId int NOT NULL AUTO_INCREMENT,
      videoId int REFERENCES Video(videoId),
      videoPartyId int REFERENCES VideoParty(vpid),
      submitterId int REFERENCES User(userId),
@@ -72,12 +72,12 @@ class DB
      rating int DEFAULT 0,
      wasPlayed BIT(1) DEFAULT 0,
      INDEX(submissionId, wasPlayed, rating),
-     PRIMARY KEY(submissionId)');
-    $this->createTable('Vote', 
-    'voterId int REFERENCES User(userId),
+     PRIMARY KEY(submissionId));');
+    $this->executeSQL('CREATE TABLE Vote(
+     voterId int REFERENCES User(userId),
     submissionId int REFERENCES Submission(submissionId),
     voteValue int,
-    PRIMARY KEY(voterId, submissionId)');
+    PRIMARY KEY(voterId, submissionId));');
     $this->createAccount(array('username'=>$ADMIN_NAME, 'password'=>$ADMIN_PASS),1);
     // Create videoparty for testing:
     //   (vpid=1, userId=1)
@@ -93,14 +93,6 @@ class DB
     }
   }
 
-  private function createTable($name, $query){
-    try{
-      $this->_db->exec("create table $name($query);");
-    }catch(PDOException $e){
-      echo 'Connection failed: ' . $e->getMessage()."<br>";
-      exit;
-    }
-  }
   public function isUser($name){
     require_once("includes/functions.php");
     require("includes/constants.php");
