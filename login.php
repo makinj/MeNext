@@ -1,6 +1,6 @@
 <?php
-  require_once("class.DB.php");
-  $title="login";
+  require_once("class.DB.php");//database funcitonality 
+  $title="login";//to be displayed in tab
   include("header.php");//open html bar
 ?>
 
@@ -23,5 +23,5 @@
 <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 <script src="js/login.js"></script>
 <?php
-  require_once("footer.php");
+  require_once("footer.php");//closes html
 ?>

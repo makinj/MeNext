@@ -2,7 +2,7 @@
 
 class DB
 {
-  private $_db;
+  private $_db;//PDO for class
   
   public function __construct($db=NULL){
     require("includes/constants.php");
