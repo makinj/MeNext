@@ -73,6 +73,11 @@ class DB
      wasPlayed BIT(1) DEFAULT 0,
      INDEX(submissionId, wasPlayed, rating),
      PRIMARY KEY(submissionId)');
+    $this->createTable('Vote', 
+    'voterId int REFERENCES User(userId),
+    submissionId int REFERENCES Submission(submissionId),
+    voteValue int,
+    PRIMARY KEY(voterId, submissionId)');
     $this->createAccount(array('username'=>$ADMIN_NAME, 'password'=>$ADMIN_PASS),1);
     // Create videoparty for testing:
     //   (vpid=1, userId=1)
@@ -184,13 +189,10 @@ class DB
   }
 
   public function listSongs($vpid){
-    echo "list of songs goes here";
+    echo "Songs in Submission table for vpid=" . $vpid . "<BR>";
     // Formatting taken from http://www.php.net/manual/en/ref.pdo-mysql.php, comment by dibakar
-    // For testing:
-    $vpid = 1;
+    require_once("includes/functions.php");
     try {
-        // $dbh = new PDO('mysql:host=xxx;port=xxx;dbname=xxx', 'xxx', 'xxx', array( PDO::ATTR_PERSISTENT => false));
-
         // Find all videos associated with $vpid (set to 1 for testing)
         $stmt = $this->_db->prepare("
                SELECT *
@@ -198,7 +200,7 @@ class DB
                WHERE s.videoId = v.videoId AND
                      s.videoPartyId = :vpid;");
         $vpid = sanitizeString($vpid);
-        $stmt->bindValue(':vpid', $vpid); // For now, only consider one videoParty
+        $stmt->bindValue(':vpid', $vpid);
         $stmt->execute();
 
         echo "<B>outputting...</B><BR>";
