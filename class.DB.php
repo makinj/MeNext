@@ -115,13 +115,14 @@ class DB
       $username = sanitizeString($username);
       $password = hash('sha512',$pre_salt.sanitizeString($password).$post_salt);
       if($this->isUser($username)){
-        echo "player $username already exists";
+        return "alreadyExists";
       } else {
         $stmt = $this->_db->prepare("insert into User (username, password, admin) VALUES(:username, :password, :admin);");
         $stmt->bindValue(':username', $username);
         $stmt->bindValue(':password', $password);
         $stmt->bindValue(':admin', $admin, PDO::PARAM_BOOL);
         $stmt->execute();
+        return "success";
       }
     }
   }
@@ -139,7 +140,6 @@ class DB
       $stmt->execute();
       $result = $stmt->fetch();
       if($stmt->rowCount()==1){
-        echo "welcome $username!!!";
         if(session_id() == '') {
           session_start();
         }
@@ -147,7 +147,7 @@ class DB
         $_SESSION['uid']=$result[0];
         $_SESSION['admin']=$result[3];
         $_SESSION['logged']=1;
-        return 1;
+        return $username;
       }
       else{
         return 0;
