@@ -73,6 +73,11 @@ class DB
      wasPlayed BIT(1) DEFAULT 0,
      INDEX(submissionId, wasPlayed, rating),
      PRIMARY KEY(submissionId)');
+    $this->createTable('Vote', 
+    'voterId int REFERENCES User(userId),
+    submissionId int REFERENCES Submission(submissionId),
+    voteValue int,
+    PRIMARY KEY(voterId, submissionId)');
     $this->createAccount(array('username'=>$ADMIN_NAME, 'password'=>$ADMIN_PASS),1);
     // Create videoparty for testing:
     //   (vpid=1, userId=1)
