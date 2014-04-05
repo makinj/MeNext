@@ -152,12 +152,14 @@ class DB
     }
   }
 
-  public function addSong($submitterId, $youtubeId, $title){
+  public function addSong($args){
     require_once("includes/functions.php");
     require("includes/constants.php");
-    $submitterId = sanitizeString($submitterId);
-    $youtubeId = sanitizeString($youtubeId);
-    $title = sanitizeString($title);
+
+    $submitterId = sanitizeString($args['userId']);
+    $youtubeId = sanitizeString($args['youtubeId']);
+    $title = sanitizeString($args['title']);
+    print "Add Song()<BR>";
 
     // Want to try to insert, but not change the videoId, and 
     //   change LAST_INSERT_ID() to be the videoId of the inserted video
@@ -167,8 +169,8 @@ class DB
       ON DUPLICATE KEY UPDATE videoId = LAST_INSERT_ID(videoId);");
     $stmt->bindValue(':youtubeId', $youtubeId);
     $stmt->bindValue(':title', $title);
+    // TODO: Add error checking for SQL execution:
     $stmt->execute();
-    // It would be nice to implement error checking here, check a SQLCODE value or something to make sure the statement executed without a syntax error or something
 
     // Insert into Submissions.
     // LAST_INSERT_ID() returns id of last insertion's (or replace) auto-increment field
