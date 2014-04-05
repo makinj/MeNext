@@ -2,32 +2,10 @@
   require_once("class.DB.php");
   $title="login";
   include("header.php");//open html bar
-  /*
-  if(session_id() == '') {
-    session_start();
-  }
-  if(isset($_SESSION['logged'])){
-    echo "<h1>already signed in as ".$_SESSION['username']."</h1>
-        <a href='/logout.php'>Log out</a>";
-  }elseif(isset($_POST['username'])&&isset($_POST['password'])&&isset($_POST['action'])){
-    $db = new DB();
-    if ($_POST['action']=='register') {
-      $db->createAccount($_POST['username'],$_POST['password']);
-      $db->signIn($_POST['username'],$_POST['password']);
-    }
-    if($_POST['action']=="login"||$_POST['action']=='register'){
-      if($db->signIn($_POST['username'],$_POST['password'])){
-        header("Location: /");
-        exit();
-      }else{
-        echo "Failed to sign in";
-      }
-    }
-  }
-  */
 ?>
 
 <h1>login</h1>
+<div id="problem"></div>
 <form id="login">
   Username: <input type="text" name="username" id="name"><br>
   Password: <input type="password" name="password" id="password">

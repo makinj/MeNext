@@ -1,7 +1,7 @@
 <?php
   $DB_HOST='localhost';//hostname
   $DB_USER = 'root';//DB username
-  $DB_PASS =  '3Brother';//DB password
+  $DB_PASS =  '';//DB password
   $DB_NAME = 'menext';//name of DB in MYSQL
   $ADMIN_NAME = 'admin';//admin account name
   $ADMIN_PASS = 'password';//admin password name

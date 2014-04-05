@@ -5,6 +5,12 @@ $(document).ready(function(){
         var result= JSON.parse(data);
         if(result['token']!=0){
           window.location.href = "/";
+        }else{
+          if(result['reg']=="alreadyExists"){
+            $("#problem").html("username already in use");
+          }else{
+            $("#problem").html("unable to register user");
+          }
         }
       }
     );
@@ -17,6 +23,8 @@ $(document).ready(function(){
         var result= JSON.parse(data);
         if(result['token']!=0){
           window.location.href = "/";
+        }else{
+          $("#problem").html("unable to sign in");
         }
       }
     );
