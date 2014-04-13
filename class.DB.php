@@ -159,7 +159,7 @@ class DB
     $submitterId = sanitizeString($args['userId']);
     $youtubeId = sanitizeString($args['youtubeId']);
     $title = sanitizeString($args['title']);
-    print "Add Song()<BR>";
+    //print "Add Song()<BR>";
 
     // Want to try to insert, but not change the videoId, and 
     //   change LAST_INSERT_ID() to be the videoId of the inserted video
@@ -183,31 +183,44 @@ class DB
   }
 
   public function listSongs($vpid){
-    echo "Songs in Submission table for vpid=" . $vpid . "<BR>";
     // Formatting taken from http://www.php.net/manual/en/ref.pdo-mysql.php, comment by dibakar
     require_once("includes/functions.php");
     try {
-        // Find all videos associated with $vpid (set to 1 for testing)
-        $stmt = $this->_db->prepare("
-               SELECT *
-               FROM Submission s, Video v
-               WHERE s.videoId = v.videoId AND
-                     s.videoPartyId = :vpid;");
-        $vpid = sanitizeString($vpid);
-        $stmt->bindValue(':vpid', $vpid);
-        $stmt->execute();
-
-        echo "<B>outputting...</B><BR>";
-        while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
-            echo "output: ".$row->title."<BR>";
-        }
-        echo "<BR><B>".date("r")."</B>";
-    
+      // Find all videos associated with $vpid (set to 1 for testing)
+      $stmt = $this->_db->prepare("
+        SELECT v.youtubeId, v.title, s.submissionId
+        FROM Submission s, Video v
+        WHERE s.videoId = v.videoId AND
+        s.videoPartyId = :vpid AND
+        s.wasPlayed=0;");
+      $vpid = sanitizeString($vpid);
+      $stmt->bindValue(':vpid', $vpid);
+      $stmt->execute();
+      $result=array();
+      while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
+        array_push($result, $row);
+      }
+      return $result;
     } catch (PDOException $e) {
-        print "Error!: " . $e->getMessage() . "<br/>";
-        die();
+      print "Error!: " . $e->getMessage() . "<br/>";
+      exit();
     }
   }
+  public function markSongWatched($arr){
+    require_once("includes/functions.php");
+    try {
+      $stmt = $this->_db->prepare("
+        UPDATE Submission
+        SET s.wasPlayed = 1
+        WHERE s.submissionId = :submissionId;");
+      $vpid = sanitizeString($vpid);
+      $stmt->bindValue(':vpid', $vpid);
+      $stmt->execute();
+    } catch (PDOException $e) {
+      exit();
+    }
+  }
+
 }
 
 ?> 

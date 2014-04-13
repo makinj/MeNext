@@ -15,16 +15,9 @@
   $db = new DB();//connect to mysql
   
   if(isset($_GET['action'])){//GETs info ie. list of songs or list of users
-    /* only a template for how it will be implemented
-        so far there are no get functions
-    if($_GET['action']=="listStd"){
-      if($_SESSION['admin']==1){
-        $db->listStd();
-      }else{
-        echo "cannot load if not admin";
-      }
+    if($_GET['action']=="listSongs"){
+      $result=$db->listSongs(1);
     }
-    */
   }else if(isset($_POST['action'])){//handles POST requests ie. login or addsong
     if($_POST['action']=="register"){//registers new user
       $result['registerStat']=$db->createAccount($_POST);//creates an account

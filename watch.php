@@ -1,16 +1,13 @@
 <?php
   $restricted=true;//only show if logged in
-  $title="watch";
+  $title="submit";
   require_once('header.php');//echo top of html
-  require_once("class.DB.php");
 ?>
-<h3>List of Submitted Videos: </h3>
+<h3>list of submitted videos: </h3>
 
-<?php
-  $db = new DB();
-  $db->listSongs(1);
-?>
-
+<ul id="videoList"></ul>
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="/js/watch.js"></script>
 <?php
   require_once('footer.php');//close up html
 ?>
