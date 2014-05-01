@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>MeNext</title>
+</head>
+<body>
+    <!--Navigation Bar-->
+    <nav>
+        <ul>
+            <li><a href="Index.html"><img width="150" height="150" src="http://i.imgur.com/Pys4eC8.jpg?1"></a></li>
+            <li>MeNext</li>
+            <li><a href="#Login/Sign-Up">Login/Sign-Up</a></li>
+        </ul>
+    </nav>
+
+    <!--Video Player-->
+    <div class="Video">
+        <h1>VIDEO PLAYING HERE</h1>
+
+        <!--SWFObject to Verify Flash Version-->
+        <script type="text/javascript" src="swfobject.js"></script>
+        <div id="ytapiplayer">
+            You need Flash player 8+ and JavaScript enabled to view this video.
+        </div>
+
+        <!--Enable Player API-->
+        <script src="Practice.js">onYouTubePlayerReady('ytapiplayer')</script>
+    </div>
+
+    <!--Video Queue-->
+    <div class="Queue">
+        <!--Could this be better served as a table?-->
+        <ul>
+            <li>Video 1</li>
+            <li>Video 2</li>
+            <li>Video 3</li>
+        </ul>
+    </div>
+
+    <!--Video Controls-->
+    <input type="button" value="Up" onclick="upVideo" />
+    <input type="button" value="Play/Pause" onclick="playpause()" />
+    <input type="button" value="Down" onclick="downVideo" />
+
+
+    <!--MeNext Credits-->
+    <footer>
+        <p>Created by Josh, Phil, Andy, Rob, Vijay, Jim, Theo, and Emmett</p>
+    </footer>
+</body>
+</html>
