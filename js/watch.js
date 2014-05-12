@@ -1,26 +1,25 @@
-function listSongs(){
+function listvideos(){
   $(document).ready(function(){
-    $.get("handler.php?action=listSongs",        
+    $.get("handler.php?action=listVideos",        
       function(data,status){
         if (status=="success"){
-          alert(data);
-          /*
-          var songs= JSON.parse(data);
+          
+          var videos= JSON.parse(data);
           //var users=data;         
-          document.getElementById("songList").innerHTML="";
-          for (var i=0;i<users.length;i++){
-            var song=document.createElement("LI");
-            song.innerHTML=(i+1).toString()+" "+songss[i].title;
-            document.getElementById('songList').appendChild(song); 
+          document.getElementById("videoList").innerHTML="";
+          for (var i=0;i<videos.length;i++){
+            var video=document.createElement("LI");
+            video.innerHTML=(i+1).toString()+" "+videos[i].title;
+            document.getElementById('videoList').appendChild(video); 
           }
-          */
+          
         }else{
-          document.getElementById("songList").innerHTML="Failed :(";
+          document.getElementById("videoList").innerHTML="Failed :(";
         }
       }
     );
   });
 }
 $(document).ready(function(){
-  listSongs();
+  listvideos();
 });

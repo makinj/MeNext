@@ -19,14 +19,14 @@ $(document).ready(function(){
             var videos= data.items;
             for (var i=0;i<videos.length;i++){
               var link=document.createElement("LI");
-              link.innerHTML=(i+1).toString()+"<button class='addSong' value='"+videos[i].id.videoId+"'>Add</button><a href='https://www.youtube.com/watch?v="+videos[i].id.videoId+"' target='_blank'>"+"<img src='"+videos[i].snippet.thumbnails.default.url+"'/>"+videos[i].snippet.title+"</a>";
+              link.innerHTML=(i+1).toString()+"<button class='addVideo' value='"+videos[i].id.videoId+"'>Add</button><a href='https://www.youtube.com/watch?v="+videos[i].id.videoId+"' target='_blank'>"+"<img src='"+videos[i].snippet.thumbnails.default.url+"'/>"+videos[i].snippet.title+"</a>";
               document.getElementById('searchResults').appendChild(link); 
             }
           }else{
             document.getElementById("searchResults").innerHTML="Failed :(";
           }
-          $('button.addSong').click(function(){
-            $.post("handler.php", {'action':'addSong', 'youtubeId':$(this).val()},
+          $('button.addVideo').click(function(){
+            $.post("handler.php", {'action':'addVideo', 'youtubeId':$(this).val()},
               function(data){
                 
               }

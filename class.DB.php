@@ -61,7 +61,7 @@ class DB
      PRIMARY KEY(vpid));');
 
     // Index is on videoPartyId, then rating. This will facilitate searching
-    // a certain video party for the highest rated song.
+    // a certain video party for the highest rated video.
     $this->executeSQL('CREATE TABLE Submission(
      submissionId int NOT NULL AUTO_INCREMENT,
      videoId int REFERENCES Video(videoId),
@@ -152,14 +152,13 @@ class DB
     }
   }
 
-  public function addSong($args){
+  public function addVideo($args){
     require_once("includes/functions.php");
     require("includes/constants.php");
 
     $submitterId = sanitizeString($args['userId']);
     $youtubeId = sanitizeString($args['youtubeId']);
     $title = sanitizeString($args['title']);
-    //print "Add Song()<BR>";
 
     // Want to try to insert, but not change the videoId, and 
     //   change LAST_INSERT_ID() to be the videoId of the inserted video
@@ -182,7 +181,7 @@ class DB
     $stmt->execute();
   }
 
-  public function listSongs($vpid){
+  public function listVideos($vpid){
     // Formatting taken from http://www.php.net/manual/en/ref.pdo-mysql.php, comment by dibakar
     require_once("includes/functions.php");
     try {
@@ -206,7 +205,7 @@ class DB
       exit();
     }
   }
-  public function markSongWatched($arr){
+  public function markVideoWatched($arr){
     require_once("includes/functions.php");
     try {
       $stmt = $this->_db->prepare("
