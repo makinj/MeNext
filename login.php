@@ -20,8 +20,7 @@
   <input type="submit" name="submit" value="Submit">
   <input type="hidden" name="action" value='register'>
 </form>
-<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-<script src="js/login.js"></script>
+<script src="js/common.js"></script>
 <?php
   require_once("footer.php");//closes html
 ?>

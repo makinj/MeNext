@@ -1,3 +1,14 @@
+<?php 
+  if(session_id() == '') {
+    session_start();
+  }
+  header('Access-Control-Allow-Origin: https://www.googleapis.com');
+  if((!isset($_SESSION['logged']))&&isset($restricted)&&$restricted==true){
+    header("location: /");
+    exit;
+  }
+?>
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -10,6 +21,9 @@
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/ui-lightness/jquery-ui.css" type="text/css" rel="stylesheet"/>
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js" type="text/javascript"></script>
+
 
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -20,19 +34,58 @@
     <![endif]-->
   </head>
   <body>
-    <?php
-      if(session_id() == '') {
-        session_start();
-      }
-      echo "<a href='/'>home</a>";
-      if(isset($_SESSION['logged'])){
-        echo" | You are logged in as ".$_SESSION['username']." | <a href='/watch.php'>watch</a> | <a href='/submit.php'>submit</a> | <a href='/logout.php'>log out</a>";
-      }else{
-        echo " | <a href='/login.php'>login/register</a>";
-        if(isset($restricted)&&$restricted==true){
-          header("location: /");
-          exit;
-        }
-      }
-      echo "<br>";
-    ?>
+    
+    <nav class="navbar navbar-default" role="navigation">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">MeNext</a>
+        </div>
+        <?php
+          if(isset($_SESSION['logged'])){
+        ?>
+          <!-- Collect the nav links, forms, and other content for toggling -->
+          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+              <li<?php if($title=="index"){echo ' class="active"';}?>><a href="/">Home</a></li>
+              <li<?php if($title=="submit"){echo ' class="active"';}?>><a href="submit.php">Submit</a></li>
+            </ul>
+
+            <form id="searchForm" class="navbar-form navbar-left" role="search" action="submit.php" method="get">
+              <div class="form-group">
+                <input type="text" id="searchText" name="q" class="form-control" placeholder="Search">
+              </div>
+              <button type="submit" class="btn btn-default">Search</button>
+            </form>
+            <ul class="nav navbar-nav navbar-right">
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown"> <?php echo $_SESSION['username'];?><b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li class="divider"></li>
+                  <li><a href="logout.php">Log Out</a></li>
+                </ul>
+              </li>
+            </ul>
+          </div><!-- /.navbar-collapse -->
+        <?php
+          }else{
+        ?>
+          <!-- Collect the nav links, forms, and other content for toggling -->
+          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+              <li><a href="login.php">Login/Register</a></li>
+            </ul>
+          </div><!-- /.navbar-collapse -->
+        <?php
+          }
+        ?>
+
+      </div><!-- /.container-fluid -->
+    </nav>
+    <script src="/js/common.js" type="text/javascript"></script>

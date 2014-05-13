@@ -24,6 +24,7 @@
       $result['token']=$db->signIn($_POST);//signs into created account
     }else if($_POST['action']=="login"){//logs into an account
       $result['token']=$db->signIn($_POST);//send POST data to sign in
+
     }else if($_POST['action']=="addVideo"){//adds new video to playlist
       require('includes/constants.php');//some basic constants
       $url= 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id='.$_POST['youtubeId'].'&key='.$API_SERVER_KEY;//url to verify data from youtube
