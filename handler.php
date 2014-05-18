@@ -21,9 +21,9 @@
   }else if(isset($_POST['action'])){//handles POST requests ie. login or addVideo
     if($_POST['action']=="register"){//registers new user
       $result['registerStat']=$db->createAccount($_POST);//creates an account
-      $result['token']=$db->signIn($_POST);//signs into created account
+      $result['token']=$db->logIn($_POST);//logs into created account
     }else if($_POST['action']=="login"){//logs into an account
-      $result['token']=$db->signIn($_POST);//send POST data to sign in
+      $result['token']=$db->logIn($_POST);//send POST data to log in
 
     }else if($_POST['action']=="addVideo"){//adds new video to playlist
       require('includes/constants.php');//some basic constants
