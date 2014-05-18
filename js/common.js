@@ -44,27 +44,35 @@ function searchYouTube(){//searches youtube to get a list of
         if (status=="success"){
           listSearchResults(data);
         }else{
-          document.getElementById("searchResults").innerHTML="Failed :(";
+          $("#searchResults").html("Failed :(");
         }
         $('button.addVideo').click(function(){
           submitVideo($(this).val());
         });
     });
   }else{
-    document.getElementById("searchResults").innerHTML="Enter Search term";
+    $("#searchResults").html("Enter Search term");
+
   }
   //event.preventDefault();
   return 0;
 }
 
 function listSearchResults(data){
-  document.getElementById("searchResults").innerHTML="";
+  $("#searchResults").html("");
+
   var videos= data.items;
   for (var i=0;i<videos.length;i++){
-    var link=document.createElement("LI");
-    link.innerHTML=(i+1).toString()+"<button class='addVideo' value='"+videos[i].id.videoId+"'>Add</button><a href='https://www.youtube.com/watch?v="+videos[i].id.videoId+"' target='_blank'>"+"<img src='"+videos[i].snippet.thumbnails.default.url+"'/>"+videos[i].snippet.title+"</a>";
-    document.getElementById('searchResults').appendChild(link); 
-  }
+    $('#searchResults').append("<tr>"+
+      "<td>"+(i+1).toString()+"</td>"+
+      "<td><button class='addVideo' value='"+videos[i].id.videoId+"'>Add</button></td>"+
+      "<td><img src='"+videos[i].snippet.thumbnails.default.url+"'/></td>"+
+      "<td>"+videos[i].snippet.title+"</td>"+
+      "</tr>");
+
+    //<a href='https://www.youtube.com/watch?v="+videos[i].id.videoId+"' target='_blank'>
+    //<img src='"+videos[i].snippet.thumbnails.default.url+"'/>"+videos[i].snippet.title 
+  } 
 }
 
 function listQueue(){
@@ -75,20 +83,19 @@ function listQueue(){
           
           var videos= JSON.parse(data);
           //var users=data;         
-          document.getElementById("videoList").innerHTML="";
+          $("#queueList").html("");
           for (var i=0;i<videos.length;i++){
-            var video=document.createElement("LI");
-            video.innerHTML=(i+1).toString()+" "+videos[i].title;
-            document.getElementById('videoList').appendChild(video); 
+            $('#queueList').append("<tr><td>"+(i+1).toString()+"</td><td>"+videos[i].title+"</td></tr>");
           }
           
         }else{
-          document.getElementById("videoList").innerHTML="Failed :(";
+          $("#queueList").html("Failed :(");
         }
       }
     );
   });
 }
+      
 
 
 function submitVideo(youtubeId){
@@ -142,4 +149,5 @@ $(document).ready(function(){
   $('#login').submit(login);
   //$("#searchForm").submit(searchYouTube);
   listQueue();
+  window.setInterval(listQueue, 5000);
 });

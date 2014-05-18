@@ -21,8 +21,7 @@
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/ui-lightness/jquery-ui.css" type="text/css" rel="stylesheet"/>
-    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js" type="text/javascript"></script>
+
 
 
 
@@ -88,4 +87,5 @@
 
       </div><!-- /.container-fluid -->
     </nav>
-    <script src="/js/common.js" type="text/javascript"></script>
+    <div class="container">
+    
