@@ -14,6 +14,7 @@
         <th>Add</th>
         <th>Thumbnail</th>
         <th>Title</th>
+        <th>Description</th>
       </tr>
     </thead>
     <tbody id="searchResults">

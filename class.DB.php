@@ -194,7 +194,8 @@ class DB
         FROM Submission s, Video v
         WHERE s.videoId = v.videoId AND
         s.videoPartyId = :vpid AND
-        s.wasPlayed=0;");
+        s.wasPlayed=0
+        ORDER BY s.submissionId ASC;");
       $vpid = sanitizeString($vpid);
       $stmt->bindValue(':vpid', $vpid);
       $stmt->execute();

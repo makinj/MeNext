@@ -11,7 +11,7 @@ swfobject.embedSWF("http://www.youtube.com/apiplayer/?enablejsapi=1&version=3&pl
 function onYouTubePlayerReady(playerId)
 {
     player = document.getElementById("myytplayer");
-    player.loadVideoById('FT7MWDoW_rc', 0);
+    player.loadVideoById('FT7MWDoW_rc', 15);
 }
 
 //Voting Variables

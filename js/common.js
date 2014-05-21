@@ -68,10 +68,8 @@ function listSearchResults(data){
       "<td><button class='addVideo' value='"+videos[i].id.videoId+"'>Add</button></td>"+
       "<td><img src='"+videos[i].snippet.thumbnails.default.url+"'/></td>"+
       "<td>"+videos[i].snippet.title+"</td>"+
-      "</tr>");
-
-    //<a href='https://www.youtube.com/watch?v="+videos[i].id.videoId+"' target='_blank'>
-    //<img src='"+videos[i].snippet.thumbnails.default.url+"'/>"+videos[i].snippet.title 
+      "<td>"+videos[i].snippet.description+"</td>"+
+      "</tr>"); 
   } 
 }
 
@@ -143,6 +141,11 @@ $.fn.googleSuggest = function(opts){
   });
 }
 
+function onYouTubePlayerReady(playerId){
+    player = document.getElementById("youtubePlayer");
+    player.loadVideoById('FT7MWDoW_rc', 15);
+}
+
 $("#searchText").googleSuggest({ service: "youtube" });
 $(document).ready(function(){
   $('#register').submit(register);
@@ -150,4 +153,12 @@ $(document).ready(function(){
   //$("#searchForm").submit(searchYouTube);
   listQueue();
   window.setInterval(listQueue, 5000);
+  if ($("#youtubePlayer").length > 0){
+    var params = { allowScriptAccess: "always" };
+    var atts = { id: "youtubePlayer" };
+
+    //"Chromeless" Player
+    swfobject.embedSWF("http://www.youtube.com/apiplayer/?enablejsapi=1&version=3&playerapiid=youtubePlayer",
+    "youtubePlayer", "560", "315", "8", null, null, params, atts);
+  }
 });
