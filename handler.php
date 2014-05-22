@@ -14,9 +14,7 @@
   if (isset($_POST['token'])){
     session_id($_POST['token']);
   }
-  if(session_id() == '') {//starts a session if it haven't already
-    session_start();
-  }
+  session_start();
   require_once("class.DB.php");//basic database operations
   $db = new DB();//connect to mysql
   
@@ -45,6 +43,8 @@
       $result['status']="success";//was successful
     }else if($_POST['action']=="markVideoWatched"){//adds new video to playlist
       $result=$db->markVideoWatched($_POST);
+    }else if($_POST['action']=="removeVideo"){//adds new video to playlist
+      $result=$db->removeVideo($_POST);
     }
   }
   echo json_encode($result);//return info to client

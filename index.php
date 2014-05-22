@@ -9,6 +9,9 @@
 
     <!--SWFObject to Verify Flash Version-->
     <script type='text/javascript' src='js/swfobject.js'></script>
+    <script type="text/javascript">
+      var isAdmin=1;
+    </script>
     <div id='youtubePlayer'>
       You need Flash player 8+ and JavaScript enabled to view this video.
     </div>
@@ -32,6 +35,11 @@
           <th>#</th>
           <th>Title</th>
           <th>Submitted by:</th>
+          <?php
+            if(isset($_SESSION['admin'])&&$_SESSION['admin']==True){
+              echo"<th>Remove</th>";
+            }
+          ?>
         </tr>
       </thead>
       <tbody id="queueList">
@@ -40,7 +48,6 @@
     </table>
   </div>
 
-  <a href='reset.php'>reset</a>
 <?php
   require_once('footer.php');//bar at the top of the page
 ?>

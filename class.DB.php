@@ -71,6 +71,7 @@ class DB
      downvotes int DEFAULT 0,
      rating int DEFAULT 0,
      wasPlayed BIT(1) DEFAULT 0,
+     removed BIT(1) DEFAULT 0,
      INDEX(submissionId, wasPlayed, rating),
      PRIMARY KEY(submissionId));');//individual actual submission
     $this->executeSQL('CREATE TABLE Vote(
@@ -195,6 +196,7 @@ class DB
         WHERE s.videoId = v.videoId AND
         s.videoPartyId = :vpid AND
         s.wasPlayed=0 AND
+        s.removed=0 AND
         s.submitterId = u.userId
         ORDER BY s.submissionId ASC;");
       $vpid = sanitizeString($vpid);
@@ -220,12 +222,16 @@ class DB
         WHERE s.videoId = v.videoId AND
         s.videoPartyId = :vpid AND
         s.wasPlayed=0 AND
+        s.removed=0 AND
         s.submitterId = u.userId
         ORDER BY s.submissionId ASC
         LIMIT 1;");
       $vpid = sanitizeString($vpid);
       $stmt->bindValue(':vpid', $vpid);
       $stmt->execute();
+      if($stmt->rowCount()==0){
+        return -1;
+      }
       return $stmt->fetch(PDO::FETCH_OBJ);
     } catch (PDOException $e) {//something went wrong...
       error_log("Error: " . $e->getMessage());
@@ -244,7 +250,6 @@ class DB
         WHERE s.submissionId = :submissionId AND 
         s.videoPartyId=vp.vpid AND 
         vp.creatorId=u.userId AND 
-        vp.vpid=1 AND
         u.userId=:userId;");
       $submissionId = sanitizeString($arr['submissionId']);
       $stmt->bindValue(':submissionId', $submissionId);
@@ -257,6 +262,32 @@ class DB
       exit();
     }
   }
+
+  public function removeVideo($arr){//takes an array of or argument with the submission id of what to mark as watched
+    require_once("includes/functions.php");
+    try {
+      if(session_id() == '') {
+        session_start();
+      }
+      $stmt = $this->_db->prepare("
+        UPDATE Submission s, User u, VideoParty vp 
+        SET s.removed = 1 
+        WHERE s.submissionId = :submissionId AND 
+        s.videoPartyId=vp.vpid AND 
+        vp.creatorId=u.userId AND 
+        u.userId=:userId;");
+      $submissionId = sanitizeString($arr['submissionId']);
+      $stmt->bindValue(':submissionId', $submissionId);
+      $stmt->bindValue(':userId', $_SESSION['userId']);
+      $stmt->execute();
+      return "success";
+    } catch (PDOException $e) {
+      //something went wrong...
+      error_log("Error: " . $e->getMessage());
+      exit();
+    }
+  }
+
 
 }
 

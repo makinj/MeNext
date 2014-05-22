@@ -47,7 +47,10 @@ function searchYouTube(){//searches youtube to get a list of
           $("#searchResults").html("Failed :(");
         }
         $('button.addVideo').click(function(){
+          $(this).attr('disabled',1);
           submitVideo($(this).val());
+          $(this).attr('class',"btn btn-success");
+          $(this).html("<span class='glyphicon glyphicon-ok'/>");
         });
     });
   }else{
@@ -65,7 +68,7 @@ function listSearchResults(data){
   for (var i=0;i<videos.length;i++){
     $('#searchResults').append("<tr>"+
       "<td>"+(i+1).toString()+"</td>"+
-      "<td><button class='addVideo' value='"+videos[i].id.videoId+"'>Add</button></td>"+
+      "<td><button class='addVideo btn btn-default' value='"+videos[i].id.videoId+"'><span class='glyphicon glyphicon-plus'/></button></td>"+
       "<td><img src='"+videos[i].snippet.thumbnails.default.url+"'/></td>"+
       "<td>"+videos[i].snippet.title+"</td>"+
       "<td>"+videos[i].snippet.description+"</td>"+
@@ -83,8 +86,30 @@ function listQueue(){
           //var users=data;         
           $("#queueList").html("");
           for (var i=0;i<videos.length;i++){
-            $('#queueList').append("<tr><td>"+(i+1).toString()+"</td><td>"+videos[i].title+"</td><td>"+videos[i].username+"</td></tr>");
+            var queueRow="<tr><td>"+(i+1).toString()+"</td><td>"+videos[i].title+"</td><td>"+videos[i].username+"</td>";
+            if(typeof isAdmin != 'undefined' &&isAdmin==1){
+              queueRow=queueRow+"<td>"+
+                "<button "+
+                  "class='removeVideo btn btn-default' "+
+                  "value='"+videos[i].submissionId+"'>"+
+                    "<span class='glyphicon glyphicon-remove'/>"+
+                "</button>"+
+              "</td>";
+              
+            }
+            queueRow=queueRow+"</tr>"
+            $('#queueList').append(queueRow);
           }
+          $('button.removeVideo').click(function(){
+            $(this).attr('disabled',1);
+            removeVideo($(this).val());
+            listQueue();
+            if($(this).val()==currentSubmissionId){
+              player.stopVideo();
+              player.clearVideo();
+              loadCurrentVideo();
+            }
+          });
           
         }else{
           $("#queueList").html("Failed :(");
@@ -95,13 +120,20 @@ function listQueue(){
 }
 
 function loadCurrentVideo(){
+  if(typeof loadVideoTimer != 'undefined'){
+    clearInterval(loadVideoTimer);
+  }
   $(document).ready(function(){
     $.get("handler.php?action=getCurrentVideo",        
       function(data,status){
         if (status=="success"){
           var video= JSON.parse(data);
-          submissionId=video.submissionId;
-          player.loadVideoById(video.youtubeId, 0);
+          if(video!=-1){
+            currentSubmissionId=video.submissionId;
+            player.loadVideoById(video.youtubeId, 0);
+          }else{
+            loadVideoTimer=setInterval(loadCurrentVideo, 5000);
+          }
         }
       }
     );
@@ -109,9 +141,12 @@ function loadCurrentVideo(){
 }
 
 function markVideoWatched(){ 
-  $.post("handler.php", {'action':'markVideoWatched', 'submissionId':submissionId}, function(data){});
+  $.post("handler.php", {'action':'markVideoWatched', 'submissionId':currentSubmissionId}, function(data){});
 }
 
+function removeVideo(submissionId){ 
+  $.post("handler.php", {'action':'removeVideo', 'submissionId':submissionId}, function(data){});
+}
 
 function submitVideo(youtubeId){
   $.post("handler.php", {'action':'addVideo', 'youtubeId':youtubeId}, function(data){});
@@ -170,14 +205,14 @@ function playPause() {
     if (player.getPlayerState() == 1){//Playing
       player.pauseVideo();
     }else if (player.getPlayerState() == 0||player.getPlayerState() == 2){//Paused
-      $(this).html("<span class='glyphicon glyphicon-play'></span>");
       player.playVideo();
+      player.mozRequestFullScreen()
     }
   }
 }
 
 function playerStateHandler(state){
-  //alert(state);
+  alert(state);
   if (state==-1) {//unstarted
     loadCurrentVideo();
   }else if (state==0){//ended
@@ -189,9 +224,13 @@ function playerStateHandler(state){
     $("#playPause").html("<span class='glyphicon glyphicon-play'></span>");
   }else if(state==3){//buffering
   }else if(state==5){//video cued
+    player.clearVideo();
   }
 }
 
+function setupYouTube(){
+
+}
 
 $(document).ready(function(){
   $("#searchText").googleSuggest({ service: "youtube" });
@@ -199,11 +238,12 @@ $(document).ready(function(){
   $('#login').submit(login);
   //$("#searchForm").submit(searchYouTube);
   listQueue();
-  window.setInterval(listQueue, 5000);
+  var listQueueTimer=window.setInterval(listQueue, 5000);
+  var params = { allowScriptAccess: "always" };
+  var atts = { id: "youtubePlayer" };
+  var currentSubmissionId;
+  var loadVideoTimer;
   if ($("#youtubePlayer").length > 0){
-    var params = { allowScriptAccess: "always" };
-    var atts = { id: "youtubePlayer" };
-    var submissionId;
 
     //"Chromeless" Player
     swfobject.embedSWF("http://www.youtube.com/apiplayer/?enablejsapi=1&version=3&playerapiid=youtubePlayer",
