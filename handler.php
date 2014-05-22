@@ -23,6 +23,8 @@
   if(isset($_GET['action'])){//GETs info ie. list of Videos or list of users
     if($_GET['action']=="listVideos"){
       $result=$db->listVideos(1);
+    }else if($_GET['action']=="getCurrentVideo"){
+      $result=$db->getCurrentVideo(1);
     }
   }else if(isset($_POST['action'])){//handles POST requests ie. login or addVideo
     if($_POST['action']=="register"){//registers new user
@@ -41,6 +43,8 @@
         $db->addVideo(array('youtubeId'=>$_POST['youtubeId'], 'userId'=>$_SESSION['userId'], 'title'=>$verify->items[0]->snippet->title));//calls database function to add the video
       }
       $result['status']="success";//was successful
+    }else if($_POST['action']=="markVideoWatched"){//adds new video to playlist
+      $result=$db->markVideoWatched($_POST);
     }
   }
   echo json_encode($result);//return info to client

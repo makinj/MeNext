@@ -210,16 +210,47 @@ class DB
       exit();
     }
   }
-  public function markVideoWatched($arr){//takes an array of or argument with the submission id of what to delete
+  public function getCurrentVideo($vpid){
     require_once("includes/functions.php");
     try {
+      // Find all videos associated with $vpid (set to 1 for testing)
       $stmt = $this->_db->prepare("
-        UPDATE Submission
-        SET s.wasPlayed = 1
-        WHERE s.submissionId = :submissionId;");
+        SELECT v.youtubeId, v.title, s.submissionId, u.username
+        FROM Submission s, Video v, User u
+        WHERE s.videoId = v.videoId AND
+        s.videoPartyId = :vpid AND
+        s.wasPlayed=0 AND
+        s.submitterId = u.userId
+        ORDER BY s.submissionId ASC
+        LIMIT 1;");
+      $vpid = sanitizeString($vpid);
+      $stmt->bindValue(':vpid', $vpid);
+      $stmt->execute();
+      return $stmt->fetch(PDO::FETCH_OBJ);
+    } catch (PDOException $e) {//something went wrong...
+      error_log("Error: " . $e->getMessage());
+      exit();
+    }
+  }
+  public function markVideoWatched($arr){//takes an array of or argument with the submission id of what to mark as watched
+    require_once("includes/functions.php");
+    try {
+      if(session_id() == '') {
+        session_start();
+      }
+      $stmt = $this->_db->prepare("
+        UPDATE Submission s, User u, VideoParty vp 
+        SET s.wasPlayed = 1 
+        WHERE s.submissionId = :submissionId AND 
+        s.videoPartyId=vp.vpid AND 
+        vp.creatorId=u.userId AND 
+        vp.vpid=1 AND
+        u.userId=:userId;");
       $submissionId = sanitizeString($arr['submissionId']);
       $stmt->bindValue(':submissionId', $submissionId);
+      $stmt->bindValue(':userId', $_SESSION['userId']);
       $stmt->execute();
+      return "success";
     } catch (PDOException $e) {
       //something went wrong...
       error_log("Error: " . $e->getMessage());
