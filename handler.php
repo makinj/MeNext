@@ -8,6 +8,12 @@
   or have sensitive info like passwords
 */
   $result=array();//array to be returned to client
+  if (isset($_GET['token'])){
+    session_id($_GET['token']);
+  }
+  if (isset($_POST['token'])){
+    session_id($_POST['token']);
+  }
   if(session_id() == '') {//starts a session if it haven't already
     session_start();
   }

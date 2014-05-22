@@ -34,7 +34,7 @@
   </head>
   <body>
     
-    <nav class="navbar navbar-default" role="navigation">
+    <nav class="navbar navbar-inverse" role="navigation">
       <div class="container-fluid">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
@@ -60,7 +60,7 @@
               <div class="form-group">
                 <input type="text" id="searchText" name="q" class="form-control" placeholder="Search">
               </div>
-              <button type="submit" class="btn btn-default">Search</button>
+              <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
             </form>
             <ul class="nav navbar-nav navbar-right">
               <li class="dropdown">

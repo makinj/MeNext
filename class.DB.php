@@ -140,7 +140,7 @@ class DB
         $_SESSION['userId']=$result[0];
         $_SESSION['admin']=$result[3];
         $_SESSION['logged']=1;
-        return "success";
+        return session_id();
         /*
           eventually, I would like to see a token unique to the user returned that 
           is updated at each log in so that we may check for a token instead of
@@ -149,7 +149,7 @@ class DB
         */
       }
       else{//unsuccessful login attempt
-        return "username and password do not match";
+        return -1;
       }
     }
   }
@@ -190,11 +190,12 @@ class DB
     try {
       // Find all videos associated with $vpid (set to 1 for testing)
       $stmt = $this->_db->prepare("
-        SELECT v.youtubeId, v.title, s.submissionId
-        FROM Submission s, Video v
+        SELECT v.youtubeId, v.title, s.submissionId, u.username
+        FROM Submission s, Video v, User u
         WHERE s.videoId = v.videoId AND
         s.videoPartyId = :vpid AND
-        s.wasPlayed=0
+        s.wasPlayed=0 AND
+        s.submitterId = u.userId
         ORDER BY s.submissionId ASC;");
       $vpid = sanitizeString($vpid);
       $stmt->bindValue(':vpid', $vpid);
@@ -205,7 +206,7 @@ class DB
       }
       return $result;
     } catch (PDOException $e) {//something went wrong...
-      error_log("Error!: " . $e->getMessage());
+      error_log("Error: " . $e->getMessage());
       exit();
     }
   }
@@ -221,7 +222,7 @@ class DB
       $stmt->execute();
     } catch (PDOException $e) {
       //something went wrong...
-      error_log("Error!: " . $e->getMessage());
+      error_log("Error: " . $e->getMessage());
       exit();
     }
   }

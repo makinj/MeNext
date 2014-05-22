@@ -24,7 +24,6 @@
 </div>
 
 
-<script type="text/javascript" src="/js/common.js"></script>
 <?php
   require_once('footer.php');//close up html
 ?>
