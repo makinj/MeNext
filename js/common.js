@@ -129,13 +129,12 @@ function loadCurrentVideo(){
         if (status=="success"){
           var video= JSON.parse(data);
           if(video!=-1){
-            $("#youtubePlayer").show();
-            player = document.getElementById("youtubePlayer");
+            $("#youtubePlayerParent").show();
             currentSubmissionId=video.submissionId;
             player.loadVideoById(video.youtubeId, 0);
           }else{
-            $("#youtubePlayer").hide();
-            //swfobject.removeSWF("youtubePlayer");
+            $("#youtubePlayerParent").hide();
+            //swfobject.removeSWF("youtubePlayerParent");
 
             loadVideoTimer=setTimeout(loadCurrentVideo, 5000);
           }
@@ -201,7 +200,7 @@ $.fn.googleSuggest = function(opts){
 function onYouTubePlayerReady(playerId){
   player = document.getElementById("youtubePlayer");
   player.addEventListener("onStateChange", "playerStateHandler");
-  //$("#youtubePlayer").hide();
+  //$("#youtubePlayerParent").hide();
 }
 
 function playPause() {
@@ -234,12 +233,12 @@ function playerStateHandler(state){
 
 function setupYouTube(){
   //"Chromeless" Player
-  //swfobject.embedSWF("http://www.youtube.com/apiplayer/?enablejsapi=1&version=3&playerapiid=youtubePlayer",
+  //swfobject.embedSWF("http://www.youtube.com/apiplayer/?enablejsapi=1&version=3&playerapiid=youtubePlayerParent",
 
   var params = { allowScriptAccess: "always" , allowFullscreen: "true"};
   var atts = { id: "youtubePlayer" };
   swfobject.embedSWF("http://www.youtube.com/v/00000000000?version=3&enablejsapi=1",
-  "youtubePlayer", "560", "315", "8", null, null, params, atts);
+  "youtubePlayerParent", "560", "315", "8", null, null, params, atts);
 
 }
 
@@ -254,7 +253,7 @@ $(document).ready(function(){
   var listQueueTimer=window.setInterval(listQueue, 5000);
   var currentSubmissionId;
   var loadVideoTimer;
-  if ($("#youtubePlayer").length > 0){
+  if ($("#youtubePlayerParent").length > 0){
     setupYouTube();
     $("#playPause").click(playPause);
   }

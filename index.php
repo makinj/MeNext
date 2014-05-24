@@ -12,7 +12,7 @@
     <script type="text/javascript">
       var isAdmin=1;
     </script>
-    <div id='youtubePlayer'>
+    <div id='youtubePlayerParent'>
       You need Flash player 8+ and JavaScript enabled to view this video.
     </div>
 
