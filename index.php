@@ -16,7 +16,7 @@
       You need Flash player 8+ and JavaScript enabled to view this video.
     </div>
 
-  </br>
+  <br/>
     <div class="btn-group">
       <button type="button" id="thumbDown" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-thumbs-down"></span></button>
       <button type="button" id="playPause" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-play"></span></button>
