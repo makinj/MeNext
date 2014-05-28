@@ -35,6 +35,7 @@
       require('includes/constants.php');//some basic constants
       $url= 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id='.$_POST['youtubeId'].'&key='.$API_SERVER_KEY;//url to verify data from youtube
       $verify = curl_init($url);//configures cURL with url
+      curl_setopt($verify, CURLOPT_SSL_VERIFYPEER, false);
       curl_setopt($verify, CURLOPT_RETURNTRANSFER, 1);//don't echo returned info
       $verify = json_decode(curl_exec($verify));//returned data from youtube
       if($verify->pageInfo->totalResults==1){//verified to be a real video
