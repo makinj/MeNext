@@ -232,16 +232,28 @@ function playerStateHandler(state){
 }
 
 function setupYouTube(){
+  var params = { allowScriptAccess: "always" , allowFullscreen: "true"};
+  var atts = { id: "youtubePlayer" };
   //"Chromeless" Player
   //swfobject.embedSWF("http://www.youtube.com/apiplayer/?enablejsapi=1&version=3&playerapiid=youtubePlayerParent",
 
-  var params = { allowScriptAccess: "always" , allowFullscreen: "true"};
-  var atts = { id: "youtubePlayer" };
   swfobject.embedSWF("http://www.youtube.com/v/00000000000?version=3&enablejsapi=1",
   "youtubePlayerParent", "560", "315", "8", null, null, params, atts);
 
 }
 
+function fullScreen() {
+  var elem = document.getElementById("youtubePlayer");
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.msRequestFullscreen) {
+    elem.msRequestFullscreen();
+  } else if (elem.mozRequestFullScreen) {
+    elem.mozRequestFullScreen();
+  } else if (elem.webkitRequestFullscreen) {
+    elem.webkitRequestFullscreen();
+  }
+}
 
 
 $(document).ready(function(){
@@ -256,5 +268,7 @@ $(document).ready(function(){
   if ($("#youtubePlayerParent").length > 0){
     setupYouTube();
     $("#playPause").click(playPause);
+    $("#fullScreen").click(fullScreen);
+
   }
 });

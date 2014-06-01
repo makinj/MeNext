@@ -49,6 +49,4 @@
     }
   }
   echo json_encode($result);//return info to client
-  
-
 ?>

@@ -109,7 +109,7 @@ class DB
       require_once("includes/functions.php");
       require("includes/constants.php");//get system-specific variables
       $username = sanitizeString($args['username']);
-      $password = hash('sha512',$PRE_SALT.sanitizeString($args['username']).$POST_SALT);
+      $password = hash('sha512',$PRE_SALT.sanitizeString($args['password']).$POST_SALT);
       if($this->isUser($username)){//user already exists
         return "alreadyExists";
       } else {
@@ -127,7 +127,7 @@ class DB
       require_once("includes/functions.php");
       require("includes/constants.php");//get system-specific variables
       $username = sanitizeString($args['username']);
-      $password = hash('sha512',$PRE_SALT.sanitizeString($args['username']).$POST_SALT);
+      $password = hash('sha512',$PRE_SALT.sanitizeString($args['password']).$POST_SALT);
       $stmt = $this->_db->prepare("SELECT * FROM User WHERE username=:username and password=:password;");//checks for matching row
       $stmt->bindValue(':username', $username);
       $stmt->bindValue(':password', $password);

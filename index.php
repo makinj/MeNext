@@ -21,6 +21,7 @@
       <button type="button" id="thumbDown" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-thumbs-down"></span></button>
       <button type="button" id="playPause" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-play"></span></button>
       <button type="button" id="thumbUp" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-thumbs-up"></span></button>
+      <button type="button" id="fullScreen" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-fullscreen"></span></button>
     </div>
 
 <?php
