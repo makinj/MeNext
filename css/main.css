@@ -1,1 +1,56 @@
-﻿
+﻿/* CSS changes from framework */
+
+body{
+  background-color: #eee;
+}
+
+  .navbar {
+    background-color: #2A0D45;
+    border: 5px solid transparent;
+    border-radius: 0px;
+  }
+
+  .login-table {
+    width: 100%;
+  }
+
+    .reglog-item{
+      width: 50%;
+      color: #999;
+      background-color: #2A0D45;
+      padding: 40px;
+      padding-top: 25px;
+    }
+
+    .login-title{
+      padding-bottom: 20px;
+    }
+
+    .login-text{
+      color: #eee;
+    }
+
+  form{
+    color: #000;
+  }
+
+    .form-item{
+      margin-bottom: 10px;
+      margin-left: 50px;
+    }
+  
+    input#name{
+      float: right;
+    }
+    
+    input#password{
+      float: right;
+    }
+
+    .submit{
+      float: right;
+    }
+
+  .navbar-nav>.active>a{
+    background-color: #3f2557 !important;
+  }
