@@ -1,7 +1,6 @@
 <?php
 
-class DB
-{
+class DB{
   private $_db;//PDO for class
   
   public function __construct($db=NULL){
@@ -142,12 +141,6 @@ class DB
         $_SESSION['admin']=$result[3];
         $_SESSION['logged']=1;
         return session_id();
-        /*
-          eventually, I would like to see a token unique to the user returned that 
-          is updated at each log in so that we may check for a token instead of
-          handling cookies and everything on mobile.
-          -Josh
-        */
       }
       else{//unsuccessful login attempt
         return -1;
