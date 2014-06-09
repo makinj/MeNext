@@ -10,11 +10,11 @@ body{
     border-radius: 0px;
   }
 
-  .login-table {
+  .loginTable {
     width: 100%;
   }
 
-    .reglog-item{
+    .registerLoginContainer{
       width: 50%;
       color: #999;
       background-color: #2A0D45;
@@ -22,11 +22,11 @@ body{
       padding-top: 25px;
     }
 
-    .login-title{
+    .loginTitle{
       padding-bottom: 20px;
     }
 
-    .login-text{
+    .loginText{
       color: #eee;
     }
 
@@ -34,9 +34,10 @@ body{
     color: #000;
   }
 
-    .form-item{
+    .formItem{
+      border-right: 19px transparent solid;
       margin-bottom: 10px;
-      margin-left: 50px;
+      margin-left: 30px;
     }
   
     input#name{
@@ -49,6 +50,18 @@ body{
 
     .submit{
       float: right;
+    }
+
+    #register{
+      padding-top: 20px;
+      padding-bottom: 40px;
+      background-color: #3f2557;
+    }
+
+    #login{
+      padding-top: 20px;
+      padding-bottom: 40px;
+      background-color: #3f2557;
     }
 
   .navbar-nav>.active>a{
