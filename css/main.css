@@ -1,0 +1,77 @@
+﻿/* CSS changes from framework */
+
+body{
+  background-color: #eee;
+}
+
+  .navbar {
+    background-color: #2A0D45;
+    border: 5px solid transparent;
+    border-radius: 0px;
+  }
+
+  .loginTable {
+    width: 100%;
+  }
+
+    @media screen and (max-width: 780px) {
+      .registerLoginContainer {
+        table-layout: fixed;
+        display: block;
+        width: 95% !important;
+      }
+    }
+
+    .registerLoginContainer{
+      width: 50%;
+      color: #999;
+      background-color: #2A0D45;
+      padding: 40px;
+      padding-top: 25px;
+    }
+
+    .loginTitle{
+      padding-bottom: 20px;
+    }
+
+    .loginText{
+      color: #eee;
+    }
+
+  form{
+    color: #000;
+  }
+
+    .formItem{
+      border-right: 19px transparent solid;
+      margin-bottom: 10px;
+      margin-left: 30px;
+    }
+  
+    input#name{
+      float: right;
+    }
+    
+    input#password{
+      float: right;
+    }
+
+    .submit{
+      float: right;
+    }
+
+    #register{
+      padding-top: 20px;
+      padding-bottom: 40px;
+      background-color: #3f2557;
+    }
+
+    #login{
+      padding-top: 20px;
+      padding-bottom: 40px;
+      background-color: #3f2557;
+    }
+
+  .navbar-nav>.active>a{
+    background-color: #3f2557 !important;
+  }
