@@ -14,6 +14,14 @@ body{
     width: 100%;
   }
 
+    @media screen and (max-width: 780px) {
+      .registerLoginContainer {
+        table-layout: fixed;
+        display: block;
+        width: 95% !important;
+      }
+    }
+
     .registerLoginContainer{
       width: 50%;
       color: #999;
