@@ -14,6 +14,7 @@ body{
     width: 100%;
   }
 
+    /* for mobile devices and browsers with very narrow width */
     @media screen and (max-width: 780px) {
       .registerLoginContainer {
         table-layout: fixed;
@@ -30,6 +31,11 @@ body{
       padding-top: 25px;
     }
 
+      .formContainer {
+        padding: 20px;
+        background-color: #3f2557;
+      }
+
     .loginTitle{
       padding-bottom: 20px;
     }
@@ -45,7 +51,7 @@ body{
     .formItem{
       border-right: 19px transparent solid;
       margin-bottom: 10px;
-      margin-left: 30px;
+      margin-left: 10px;
     }
   
     input#name{
@@ -57,20 +63,46 @@ body{
     }
 
     .submit{
+      border: none;
+      padding: 20px;
+      margin-top: 40px;
       float: right;
+      color: #eee;
+      box-shadow: none;
+      background-color: #933;
+      /* future-proofing */
+      -o-transition: background 0.2s ease-in;
+      -ms-transition: background 0.2s ease-in;
+      -moz-transition: background 0.2s ease-in;
+      -webkit-transition: background 0.2s ease-in;
+      /* overridden with proper element */
+      transition: background 0.2s ease-in;
     }
 
-    #register{
-      padding-top: 20px;
-      padding-bottom: 40px;
-      background-color: #3f2557;
-    }
+      .submit:hover{
+        background-color: #822;
+        border-bottom: 2px solid #400;
+        margin-top: 38px;
+        /* future-proofing */
+        -o-transition: background .2s;
+        -ms-transition: background .2s;
+        -moz-transition: background .2s;
+        -webkit-transition: background .2s;
+        /* overridden with proper element */
+        transition: background .2s;
+      }
 
-    #login{
-      padding-top: 20px;
-      padding-bottom: 40px;
-      background-color: #3f2557;
-    }
+      .submit:active{
+        background-color: #282;
+        border-bottom: 2px solid #282;
+        /* future-proofing */
+        -o-transition: background 0s;
+        -ms-transition: background 0s;
+        -moz-transition: background 0s;
+        -webkit-transition: background 0s;
+        /* overridden with proper element */
+        transition: background 0s;
+      }
 
   .navbar-nav>.active>a{
     background-color: #3f2557 !important;
