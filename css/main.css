@@ -10,12 +10,60 @@ body{
     border-radius: 0px;
   }
 
+    .navbar-toggle:hover{
+      background-color: #3f2557 !important;
+    }
+
+    .navbar-toggle:focus{
+      background-color: #3f2557 !important;
+    }
+
+    .navbar-nav>.open>a{
+      background-color: #3f2557 !important;
+    }
+    
+    .navbar-nav>.active>a{
+      background-color: #3f2557 !important;
+    }
+
+  .panel{
+    border-radius: 0px;
+    background-color: #3f2557;
+    color: #eee;
+  }
+  
+    .panel-heading{
+      border-top-left-radius: 0px;
+      border-top-right-radius: 0px;
+    }
+
+    .panel > table > tbody > tr:nth-child(odd){
+      background-color: #2A0D45;
+    }
+
+  .table > tbody > tr > td{
+    border: none;
+    border-radius: 0px !important;
+  }
+
+    .table > tbody > tr > td:hover{
+      border-radius: 0px !important;
+    }
+
+    .table > tbody > tr:hover,
+    .panel > table > tbody > tr:nth-child(odd):hover{
+      background-color: #ffd700;
+      color: #3f2557;
+      border: none;
+      border-radius: 0px;
+    }
+
   .loginTable {
     width: 100%;
   }
 
     /* for mobile devices and browsers with very narrow width */
-    @media screen and (max-width: 780px) {
+    @media screen and (max-width: 992px) {
       .registerLoginContainer {
         table-layout: fixed;
         display: block;
@@ -95,6 +143,7 @@ body{
       .submit:active{
         background-color: #282;
         border-bottom: 2px solid #282;
+        margin-top: 38px;
         /* future-proofing */
         -o-transition: background 0s;
         -ms-transition: background 0s;
@@ -103,7 +152,3 @@ body{
         /* overridden with proper element */
         transition: background 0s;
       }
-
-  .navbar-nav>.active>a{
-    background-color: #3f2557 !important;
-  }
