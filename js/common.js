@@ -253,41 +253,68 @@ function setupYouTube(){
 function fullScreenChangeHandler() {
   var elem = document.getElementById("youtubePlayer");
   if (elem && // if there is a youtube player and the page is in fullscreen mode
-      (document.webkitIsFullScreen != null && !document.webkitIsFullScreen) ||
-      (document.mozFullScreen != null && !document.mozFullScreen) ||
-      (document.fullScreen != null && !document.fullScreen)
+      (document.fullScreen == false) ||
+      (document.msFullscreenEnabled == true) ||
+      (document.mozFullScreen == false) ||
+      (document.webkitIsFullScreen == false)
   ) {
-    // goes back to original style
-    elem.style.width = "100%";
-    elem.style.height = "645px";
+    // IE 11 checks
+    if (document.msFullscreenElement != null) {
+      elem.style.width = screen.width + "px";
+      elem.style.height = screen.height + "px";
+    }
+    else {
+      elem.style.width = "100%";
+      elem.style.height = "645px";
+    }
 
     // removes listeners
     document.removeEventListener("fullscreenchange", fullScreenChangeHandler, false);
-    document.removeEventListener("webkitfullscreenchange", fullScreenChangeHandler, false);
+    //document.removeEventListener("MSFullscreenChange", fullScreenChangeHandler, false);
     document.removeEventListener("mozfullscreenchange", fullScreenChangeHandler, false);
+    document.removeEventListener("webkitfullscreenchange", fullScreenChangeHandler, false);
   }
 }
 
 function fullScreen() {
   var elem = document.getElementById("youtubePlayer");
+  var fullScreenPossible = false;
+  var ieEventListenerExists;
+
   if (elem.requestFullscreen) {
     elem.requestFullscreen();
-  } else if (elem.msRequestFullscreen) {
-    elem.msRequestFullscreen();
-  } else if (elem.mozRequestFullScreen) {
-    elem.mozRequestFullScreen();
-  } else if (elem.webkitRequestFullscreen) {
-    elem.webkitRequestFullscreen();
+    fullScreenPossible = true;
   }
-  // makes the youtube player the screen's size
-  elem.style.width = screen.width + "px";
-  elem.style.height = screen.height + "px";
+  else if (elem.msRequestFullscreen) {
+    elem.msRequestFullscreen();
+    fullScreenPossible = true;
+  }
+  else if (elem.mozRequestFullScreen) {
+    elem.mozRequestFullScreen();
+    fullScreenPossible = true;
+  }
+  else if (elem.webkitRequestFullscreen) {
+    elem.webkitRequestFullscreen();
+    fullScreenPossible = true;
+  }
 
-  document.addEventListener("fullscreenchange", fullScreenChangeHandler, false);
-  document.addEventListener("webkitfullscreenchange", fullScreenChangeHandler, false);
-  document.addEventListener("mozfullscreenchange", fullScreenChangeHandler, false);
+  if (fullScreenPossible) {
+    // makes the youtube player the screen's size
+    elem.style.width = screen.width + "px";
+    elem.style.height = screen.height + "px";
 
-  /* external fullscreen is still broken in IE but should now work in firefox, safari, and chrome */
+    document.addEventListener("fullscreenchange", fullScreenChangeHandler, false);
+    if (ieEventListenerExists != true) {
+      document.addEventListener("MSFullscreenChange", fullScreenChangeHandler, false);
+      ieEventListenerExists = true;
+    }
+    document.addEventListener("mozfullscreenchange", fullScreenChangeHandler, false);
+    document.addEventListener("webkitfullscreenchange", fullScreenChangeHandler, false);
+  }
+  /* external fullscreen is still partially broken in older versions
+     of IE and Safari but should now work in firefox, chrome, IE 11, and Safari 7+.
+     because of this leave the normal youtube controls on for now
+  */
 }
 
 

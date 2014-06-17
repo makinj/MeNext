@@ -24,6 +24,21 @@ body{
     width: 100%;
   }
 
+  /* for when the following are fixed in css 3.1
+  #youtubePlayer:fullscreen{
+    width: 100% !important;
+    height: 100% !important;
+  }  
+  #youtubePlayer:-webkit-full-screen{
+    width: 100% !important;
+    height: 100% !important;
+  }
+  #youtubePlayer:-moz-full-screen{
+    width: 100% !important;
+    height: 100% !important;
+  }
+  */
+
   /* narrow-width browsers -- currently broken, will work when CSS 3.1 is released (estimated July 30, 2014)
   @media screen and (max-width: 992px){
     #youtubePlayer {
@@ -52,6 +67,40 @@ body{
     }
   }
 
+  .btn-group{
+    width: 100.3%;
+  }
+
+  .btn-group > .btn:first-child,
+  .btn-group > .btn:last-child{
+    border-radius: 0px !important;
+  }
+
+    .btn-lg{
+      width: 25%;
+      border-bottom: 0px;
+    }
+
+    .btn{
+      border-radius: 0px;
+    }
+
+      #thumbDown:hover{
+        background-color: #c55;
+      }
+
+      #thumbDown:focus{
+        background-color: #a33;
+      }
+
+      #thumbUp:hover{
+        background-color: #5c5;
+      }
+
+      #thumbUp:focus{
+        background-color: #3a3;
+      }
+
   .panel{
     border-radius: 0px;
     background-color: #3f2557;
@@ -70,6 +119,8 @@ body{
   .table > tbody > tr > td{
     border: none;
     border-radius: 0px !important;
+    line-height: 2em;
+    font-size: 16px;
   }
 
     .table > tbody > tr > td:hover{
