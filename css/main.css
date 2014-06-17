@@ -20,6 +20,38 @@ body{
       background-color: #3f2557 !important;
     }
 
+  #youtubePlayer{
+    width: 100%;
+  }
+
+  /* narrow-width browsers -- currently broken, will work when CSS 3.1 is released (estimated July 30, 2014)
+  @media screen and (max-width: 992px){
+    #youtubePlayer {
+      height: calc(width*9/16);
+    }
+  }
+
+  In the meantime use the 3 elements below:
+  */
+
+  @media screen and (max-width: 992px){
+    #youtubePlayer{
+      height: 500px !important;
+    }
+  }
+
+  @media screen and (max-width: 650px){
+    #youtubePlayer{
+      height: 350px !important;
+    }
+  }
+
+  @media screen and (max-width: 400px){
+    #youtubePlayer{
+      height: 225px !important;
+    }
+  }
+
   .panel{
     border-radius: 0px;
     background-color: #3f2557;

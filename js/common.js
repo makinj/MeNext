@@ -237,9 +237,35 @@ function setupYouTube(){
   //"Chromeless" Player
   //swfobject.embedSWF("http://www.youtube.com/apiplayer/?enablejsapi=1&version=3&playerapiid=youtubePlayerParent",
 
-  swfobject.embedSWF("http://www.youtube.com/v/00000000000?version=3&enablejsapi=1",
-  "youtubePlayerParent", "560", "315", "8", null, null, params, atts);
+  swfobject.embedSWF("http://www.youtube.com/v/00000000000?version=3&enablejsapi=1&iv_load_policy=3", //add "&modestbranding=1&autohide=1&showinfo=0&controls=0" to remove youtube bars and controls
+  "youtubePlayerParent", "100%", "645", "8", null, null, params, atts);
 
+  /* -- youtube flash object url addition explanations --
+     "&iv_load_policy=3" disables annotations
+     "&modestbranding=1" makes youtube logo smaller  
+     "&autohide=1" makes the top and bottom bars go away faster
+     "&showinfo=0" removes the top bar
+     "&controls=0" removes the bottom bar
+  */
+
+}
+
+function fullScreenChangeHandler() {
+  var elem = document.getElementById("youtubePlayer");
+  if (elem && // if there is a youtube player and the page is in fullscreen mode
+      (document.webkitIsFullScreen != null && !document.webkitIsFullScreen) ||
+      (document.mozFullScreen != null && !document.mozFullScreen) ||
+      (document.fullScreen != null && !document.fullScreen)
+  ) {
+    // goes back to original style
+    elem.style.width = "100%";
+    elem.style.height = "645px";
+
+    // removes listeners
+    document.removeEventListener("fullscreenchange", fullScreenChangeHandler, false);
+    document.removeEventListener("webkitfullscreenchange", fullScreenChangeHandler, false);
+    document.removeEventListener("mozfullscreenchange", fullScreenChangeHandler, false);
+  }
 }
 
 function fullScreen() {
@@ -253,6 +279,15 @@ function fullScreen() {
   } else if (elem.webkitRequestFullscreen) {
     elem.webkitRequestFullscreen();
   }
+  // makes the youtube player the screen's size
+  elem.style.width = screen.width + "px";
+  elem.style.height = screen.height + "px";
+
+  document.addEventListener("fullscreenchange", fullScreenChangeHandler, false);
+  document.addEventListener("webkitfullscreenchange", fullScreenChangeHandler, false);
+  document.addEventListener("mozfullscreenchange", fullScreenChangeHandler, false);
+
+  /* external fullscreen is still broken in IE but should now work in firefox, safari, and chrome */
 }
 
 
