@@ -101,6 +101,14 @@ body{
         background-color: #3a3;
       }
 
+      #disabledFullScreen {
+        display: none;
+        float: right;
+        background-color: #c55;
+        padding: 20px;
+        margin: 5px;
+      }
+
   .panel{
     border-radius: 0px;
     background-color: #3f2557;

@@ -279,9 +279,24 @@ function fullScreenChangeHandler() {
 function fullScreen() {
   var elem = document.getElementById("youtubePlayer");
   var fullScreenPossible = false;
+  var fullScreenSupported = true;
   var ieEventListenerExists;
 
-  if (window.mozInnerScreenX == null) { //disables firefox external fullscreen support
+  // Disables external fullscreen button for operating systems on which firefox doesn't work
+
+  if( window.mozInnerScreenX != null &&
+      (
+        navigator.appVersion.indexOf("Linux") != -1 ||
+        navigator.appVersion.indexOf("Unix") != -1 ||
+        (navigator.appVersion.indexOf("Windows") != -1 && navigator.appVersion.indexOf("Windows") > 4) // Windows 8
+      )
+  ) {
+    fullScreenSupported = false;
+    var fullScreenButton = document.getElementById("fullScreen");
+    fullScreenButton.className += " disabled";
+  }
+
+  if (fullScreenSupported) {
     if (elem.requestFullscreen) {
       elem.requestFullscreen();
       fullScreenPossible = true;
@@ -312,6 +327,12 @@ function fullScreen() {
       document.addEventListener("mozfullscreenchange", fullScreenChangeHandler, false);
       document.addEventListener("webkitfullscreenchange", fullScreenChangeHandler, false);
     }
+  }
+
+  else {
+    // adds notification that browser/OS combo is not supported
+    document.getElementById("disabledFullScreen").style.display = "block";
+    $("#disabledFullScreen").children().click(function () { $("#disabledFullScreen").hide(); })
   }
   /* external fullscreen is still partially broken in older versions
      of IE and Safari but should now work in firefox, chrome, IE 11, and Safari 7+.

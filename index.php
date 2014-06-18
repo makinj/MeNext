@@ -12,10 +12,14 @@
     <script type="text/javascript">
       var isAdmin=1;
     </script>
+
     <div id='youtubePlayerParent'>
       You need Flash player 8+ and JavaScript enabled to view this video.
     </div>
 
+    <div id="disabledFullScreen">HTML5 fullscreen and firefox don't mix well with your operating system. We recommend Google Chrome.
+      <button type="button" id="closeAlert" class="btn btn-"><span class="glyphicon glyphicon-remove"></span></button>
+    </div>
     <div class="btn-group">
       <button type="button" id="thumbDown" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-thumbs-down"></span></button>
       <button type="button" id="playPause" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-play"></span></button>
