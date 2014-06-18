@@ -281,46 +281,37 @@ function fullScreen() {
   var fullScreenPossible = false;
   var ieEventListenerExists;
 
-  if (elem.requestFullscreen) {
-    elem.requestFullscreen();
-    fullScreenPossible = true;
-  }
-  else if (elem.msRequestFullscreen) {
-    elem.msRequestFullscreen();
-    fullScreenPossible = true;
-  }
-  else if (elem.mozRequestFullScreen) {
-    elem.mozRequestFullScreen();
-    fullScreenPossible = true;
-  }
-  else if (elem.webkitRequestFullscreen) {
-    elem.webkitRequestFullscreen();
-    fullScreenPossible = true;
-  }
-
-  if (fullScreenPossible) {
-    // makes the youtube player the screen's size
-    elem.style.width = screen.width + "px";
-    elem.style.height = screen.height + "px";
-
-    document.addEventListener("fullscreenchange", fullScreenChangeHandler, false);
-    if (ieEventListenerExists != true) {
-      document.addEventListener("MSFullscreenChange", fullScreenChangeHandler, false);
-      ieEventListenerExists = true;
+  if (window.mozInnerScreenX == null) { //disables firefox external fullscreen support
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+      fullScreenPossible = true;
     }
-    document.addEventListener("mozfullscreenchange", fullScreenChangeHandler, false);
-    document.addEventListener("webkitfullscreenchange", fullScreenChangeHandler, false);
+    else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+      fullScreenPossible = true;
+    }
+    else if (elem.mozRequestFullScreen) {
+      elem.mozRequestFullScreen();
+      fullScreenPossible = true;
+    }
+    else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+      fullScreenPossible = true;
+    }
 
-    document.addEventListener("keyup", function (e) {
-      if (e.keyCode == 27) {
-        if (document.fullScreen || document.msFullscreenEnabled || document.mozFullScreen || document.webkitIsFullScreen) {
-          document.exitFullscreen();
-          document.msExitFullscreen();
-          document.mozCancelFullScreen();
-          document.webkitExitFullscreen();
-        }
+    if (fullScreenPossible) {
+      // makes the youtube player the screen's size
+      elem.style.width = screen.width + "px";
+      elem.style.height = screen.height + "px";
+
+      document.addEventListener("fullscreenchange", fullScreenChangeHandler, false);
+      if (ieEventListenerExists != true) {
+        document.addEventListener("MSFullscreenChange", fullScreenChangeHandler, false);
+        ieEventListenerExists = true;
       }
-    }, false);
+      document.addEventListener("mozfullscreenchange", fullScreenChangeHandler, false);
+      document.addEventListener("webkitfullscreenchange", fullScreenChangeHandler, false);
+    }
   }
   /* external fullscreen is still partially broken in older versions
      of IE and Safari but should now work in firefox, chrome, IE 11, and Safari 7+.
