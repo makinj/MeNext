@@ -40,8 +40,10 @@
       $verify = json_decode(curl_exec($verify));//returned data from youtube
       if($verify->pageInfo->totalResults==1){//verified to be a real video
         $db->addVideo(array('youtubeId'=>$_POST['youtubeId'], 'userId'=>$_SESSION['userId'], 'title'=>$verify->items[0]->snippet->title));//calls database function to add the video
+        $result['status']="success";//was successful
+      }else{
+        $result['status']=-1;//failed
       }
-      $result['status']="success";//was successful
     }else if($_POST['action']=="markVideoWatched"){//adds new video to playlist
       $result=$db->markVideoWatched($_POST);
     }else if($_POST['action']=="removeVideo"){//adds new video to playlist

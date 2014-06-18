@@ -149,34 +149,41 @@ class DB{
   }
 
   public function addVideo($args){
-    if (is_array($args)&&array_key_exists("userId", $args)&&array_key_exists("youtubeId", $args)&&array_key_exists("title", $args)){
+    if (is_array($args)&&array_key_exists("youtubeId", $args)){
+      require('includes/constants.php');//some basic constants
       require_once("includes/functions.php");
-      require("includes/constants.php");//get system-specific variables
-
-      $submitterId = sanitizeString($args['userId']);
       $youtubeId = sanitizeString($args['youtubeId']);
-      $title = sanitizeString($args['title']);
+      $url= 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id='.$youtubeId.'&key='.$API_SERVER_KEY;//url to verify data from youtube
+      $verify = curl_init($url);//configures cURL with url
+      curl_setopt($verify, CURLOPT_SSL_VERIFYPEER, false);
+      curl_setopt($verify, CURLOPT_RETURNTRANSFER, 1);//don't echo returned info
+      $verify = json_decode(curl_exec($verify));//returned data from youtube
+      if($verify->pageInfo->totalResults==1){//verified to be a real video
+        $title = sanitizeString($verify->items[0]->snippet->title);
 
-      // Want to try to insert, but not change the videoId, and 
-      //   change LAST_INSERT_ID() to be the videoId of the inserted video
-      $stmt = $this->_db->prepare("
-        INSERT INTO Video (youtubeId, title) 
-        VALUES (:youtubeId, :title) 
-        ON DUPLICATE KEY UPDATE videoId = LAST_INSERT_ID(videoId);");
-      $stmt->bindValue(':youtubeId', $youtubeId);
-      $stmt->bindValue(':title', $title);
-      // TODO: Add error checking for SQL execution:
-      $stmt->execute();
+        // Want to try to insert, but not change the videoId, and
+        //   change LAST_INSERT_ID() to be the videoId of the inserted video
+        $stmt = $this->_db->prepare("
+          INSERT INTO Video (youtubeId, title)
+          VALUES (:youtubeId, :title)
+          ON DUPLICATE KEY UPDATE videoId = LAST_INSERT_ID(videoId);");
+        $stmt->bindValue(':youtubeId', $youtubeId);
+        $stmt->bindValue(':title', $title);
+        // TODO: Add error checking for SQL execution:
+        $stmt->execute();
 
-      // Insert into Submissions.
-      // LAST_INSERT_ID() returns id of last insertion's (or replace) auto-increment field
-      //     First we'll get this working with just 1 video party, vpid=1
-      $vpid = 1;
-      $stmt = $this->_db->prepare("INSERT INTO Submission (videoId, videoPartyId, submitterId) VALUES(LAST_INSERT_ID(), :vpid, :submitterId );");
-      $stmt->bindValue(':submitterId', $submitterId);
-      $stmt->bindValue(':vpid', $vpid);
-      $stmt->execute();
+        // Insert into Submissions.
+        // LAST_INSERT_ID() returns id of last insertion's (or replace) auto-increment field
+        //     First we'll get this working with just 1 video party, vpid=1
+        $vpid = 1;
+        $stmt = $this->_db->prepare("INSERT INTO Submission (videoId, videoPartyId, submitterId) VALUES(LAST_INSERT_ID(), :vpid, :submitterId );");
+        $stmt->bindValue(':submitterId', $_SESSION['userId']);
+        $stmt->bindValue(':vpid', $vpid);
+        $stmt->execute();
+        return "success";//was successful
+      }
     }
+    return -1;//failed
   }
 
   public function listVideos($vpid){
@@ -238,12 +245,11 @@ class DB{
         session_start();
       }
       $stmt = $this->_db->prepare("
-        UPDATE Submission s, User u, VideoParty vp 
+        UPDATE Submission s, VideoParty vp
         SET s.wasPlayed = 1 
         WHERE s.submissionId = :submissionId AND 
         s.videoPartyId=vp.vpid AND 
-        vp.creatorId=u.userId AND 
-        u.userId=:userId;");
+        vp.creatorId=:userId;");
       $submissionId = sanitizeString($arr['submissionId']);
       $stmt->bindValue(':submissionId', $submissionId);
       $stmt->bindValue(':userId', $_SESSION['userId']);
