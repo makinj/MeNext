@@ -310,6 +310,17 @@ function fullScreen() {
     }
     document.addEventListener("mozfullscreenchange", fullScreenChangeHandler, false);
     document.addEventListener("webkitfullscreenchange", fullScreenChangeHandler, false);
+
+    document.addEventListener("keyup", function (e) {
+      if (e.keyCode == 27) {
+        if (document.fullScreen || document.msFullscreenEnabled || document.mozFullScreen || document.webkitIsFullScreen) {
+          document.exitFullscreen();
+          document.msExitFullscreen();
+          document.mozCancelFullScreen();
+          document.webkitExitFullscreen();
+        }
+      }
+    }, false);
   }
   /* external fullscreen is still partially broken in older versions
      of IE and Safari but should now work in firefox, chrome, IE 11, and Safari 7+.
