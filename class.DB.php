@@ -53,18 +53,18 @@ class DB{
      played BIT(1) DEFAULT 0, 
      PRIMARY KEY(videoId), 
      INDEX(videoId));');//specific video, avoids popular selections bloating database
-    $this->executeSQL('CREATE TABLE VideoParty(
-     vpid int NOT NULL AUTO_INCREMENT,
+    $this->executeSQL('CREATE TABLE Party(
+     partyId int NOT NULL AUTO_INCREMENT,
      title VARCHAR(255),
      creatorId int REFERENCES User(uid),
-     PRIMARY KEY(vpid));');//each party has row right now there is only one
+     PRIMARY KEY(partyId));');//each party has row right now there is only one
 
-    // Index is on videoPartyId, then rating. This will facilitate searching
-    // a certain video party for the highest rated video.
+    // Index is on partyId, then rating. This will facilitate searching
+    // a certain party for the highest rated video.
     $this->executeSQL('CREATE TABLE Submission(
      submissionId int NOT NULL AUTO_INCREMENT,
      videoId int REFERENCES Video(videoId),
-     videoPartyId int REFERENCES VideoParty(vpid),
+     partyId int REFERENCES Party(partyId),
      submitterId int REFERENCES User(userId),
      upvotes int DEFAULT 0,
      downvotes int DEFAULT 0,
@@ -79,9 +79,9 @@ class DB{
     voteValue int,
     PRIMARY KEY(voterId, submissionId));');//stores votes by users to songs
     $this->createAccount(array('username'=>$ADMIN_NAME, 'password'=>$ADMIN_PASS),1);//makes default admin user
-    // Create videoparty for testing:
-    //   (vpid=1, userId=1)
-    $this->executeSQL('INSERT INTO VideoParty(title, creatorId) VALUES (1,1)');
+    // Create party for testing:
+    //   (partyId=1, userId=1)
+    $this->executeSQL('INSERT INTO Party(title, creatorId) VALUES (1,1)');
   }
 
   private function executeSQL($query){//runs a query with PDO's specific syntax
@@ -174,11 +174,11 @@ class DB{
 
         // Insert into Submissions.
         // LAST_INSERT_ID() returns id of last insertion's (or replace) auto-increment field
-        //     First we'll get this working with just 1 video party, vpid=1
-        $vpid = 1;
-        $stmt = $this->_db->prepare("INSERT INTO Submission (videoId, videoPartyId, submitterId) VALUES(LAST_INSERT_ID(), :vpid, :submitterId );");
+        //     First we'll get this working with just 1 party, partyId=1
+        $partyId = 1;
+        $stmt = $this->_db->prepare("INSERT INTO Submission (videoId, partyId, submitterId) VALUES(LAST_INSERT_ID(), :partyId, :submitterId );");
         $stmt->bindValue(':submitterId', $_SESSION['userId']);
-        $stmt->bindValue(':vpid', $vpid);
+        $stmt->bindValue(':partyId', $partyId);
         $stmt->execute();
         return "success";//was successful
       }
@@ -186,21 +186,21 @@ class DB{
     return -1;//failed
   }
 
-  public function listVideos($vpid){
+  public function listVideos($partyId){
     require_once("includes/functions.php");
     try {
-      // Find all videos associated with $vpid (set to 1 for testing)
+      // Find all videos associated with $partyId (set to 1 for testing)
       $stmt = $this->_db->prepare("
         SELECT v.youtubeId, v.title, s.submissionId, u.username
         FROM Submission s, Video v, User u
         WHERE s.videoId = v.videoId AND
-        s.videoPartyId = :vpid AND
+        s.partyId = :partyId AND
         s.wasPlayed=0 AND
         s.removed=0 AND
         s.submitterId = u.userId
         ORDER BY s.submissionId ASC;");
-      $vpid = sanitizeString($vpid);
-      $stmt->bindValue(':vpid', $vpid);
+      $partyId = sanitizeString($partyId);
+      $stmt->bindValue(':partyId', $partyId);
       $stmt->execute();
       $result=array();
       while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {//creates an array of the results to return
@@ -212,22 +212,22 @@ class DB{
       exit();
     }
   }
-  public function getCurrentVideo($vpid){
+  public function getCurrentVideo($partyId){
     require_once("includes/functions.php");
     try {
-      // Find all videos associated with $vpid (set to 1 for testing)
+      // Find all videos associated with $partyId (set to 1 for testing)
       $stmt = $this->_db->prepare("
         SELECT v.youtubeId, v.title, s.submissionId, u.username
         FROM Submission s, Video v, User u
         WHERE s.videoId = v.videoId AND
-        s.videoPartyId = :vpid AND
+        s.partyId = :partyId AND
         s.wasPlayed=0 AND
         s.removed=0 AND
         s.submitterId = u.userId
         ORDER BY s.submissionId ASC
         LIMIT 1;");
-      $vpid = sanitizeString($vpid);
-      $stmt->bindValue(':vpid', $vpid);
+      $partyId = sanitizeString($partyId);
+      $stmt->bindValue(':partyId', $partyId);
       $stmt->execute();
       if($stmt->rowCount()==0){
         return -1;
@@ -238,19 +238,19 @@ class DB{
       exit();
     }
   }
-  public function markVideoWatched($arr){//takes an array of or argument with the submission id of what to mark as watched
+  public function markVideoWatched($args){//takes an array of or argument with the submission id of what to mark as watched
     require_once("includes/functions.php");
     try {
       if(session_id() == '') {
         session_start();
       }
       $stmt = $this->_db->prepare("
-        UPDATE Submission s, VideoParty vp
+        UPDATE Submission s, Party p
         SET s.wasPlayed = 1 
         WHERE s.submissionId = :submissionId AND 
-        s.videoPartyId=vp.vpid AND 
-        vp.creatorId=:userId;");
-      $submissionId = sanitizeString($arr['submissionId']);
+        s.partyId=p.partyId AND 
+        p.creatorId=:userId;");
+      $submissionId = sanitizeString($args['submissionId']);
       $stmt->bindValue(':submissionId', $submissionId);
       $stmt->bindValue(':userId', $_SESSION['userId']);
       $stmt->execute();
@@ -262,20 +262,20 @@ class DB{
     }
   }
 
-  public function removeVideo($arr){//takes an array of or argument with the submission id of what to mark as watched
+  public function removeVideo($args){//takes an array of or argument with the submission id of what to mark as watched
     require_once("includes/functions.php");
     try {
       if(session_id() == '') {
         session_start();
       }
       $stmt = $this->_db->prepare("
-        UPDATE Submission s, User u, VideoParty vp 
+        UPDATE Submission s, User u, Party p 
         SET s.removed = 1 
         WHERE s.submissionId = :submissionId AND 
-        s.videoPartyId=vp.vpid AND 
-        vp.creatorId=u.userId AND 
+        s.partyId=p.partyId AND 
+        p.creatorId=u.userId AND 
         u.userId=:userId;");
-      $submissionId = sanitizeString($arr['submissionId']);
+      $submissionId = sanitizeString($args['submissionId']);
       $stmt->bindValue(':submissionId', $submissionId);
       $stmt->bindValue(':userId', $_SESSION['userId']);
       $stmt->execute();
@@ -286,8 +286,35 @@ class DB{
       exit();
     }
   }
+
+  /*
+  Adds video party by the username stored in session and title given
+  */
+  public function createParty ($args){
+    require_once("includes/functions.php");
+    $title = $args;
+    if (is_array($args) && array_key_exists('title', $args)){
+      $title = $args['title'];
+    }
+    $title = sanitizeString($title);
+
+    $stmt = $this->_db->prepare('
+      INSERT INTO 
+        Party
+        (title, creatorId) 
+      VALUES
+        (:title,:creatorId)'
+    );
+    $stmt->bindValue(':title', $title);
+    $stmt->bindValue(':creatorId', $_SESSION['userId']);
+    $stmt->execute();
+  }
+
 
 
 }
+
+
+
 
 ?> 
