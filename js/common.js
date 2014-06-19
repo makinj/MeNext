@@ -288,7 +288,7 @@ function fullScreen() {
       (
         navigator.appVersion.indexOf("Linux") != -1 ||
         navigator.appVersion.indexOf("Unix") != -1 ||
-        (navigator.appVersion.indexOf("Windows") != -1 && navigator.appVersion.indexOf("Windows") > 4) // Windows 8
+        (navigator.appVersion.indexOf("Windows") != -1 && navigator.appVersion.indexOf("Windows") > 5) // Windows 8
       )
   ) {
     fullScreenSupported = false;
@@ -340,17 +340,29 @@ function fullScreen() {
   */
 }
 
+function submitContentToggle() {
+  if ($('.submitContent').is(':visible')) {
+    $('.submitContent').hide();
+    $('.container').css('margin-left', 'auto');
+  }
+  else {
+    $('.submitContent').show();
+    $('.container').css('margin-left', 0);
+  }
+}
 
-$(document).ready(function(){
+$(document).ready(function () {
+  $('.submitContent').hide();
   $("#searchText").googleSuggest({ service: "youtube" });
   $('#register').submit(register);
   $('#login').submit(login);
+  $('#submitContentToggle').click(submitContentToggle);
   //$("#searchForm").submit(searchYouTube);
   listQueue();
   var listQueueTimer=window.setInterval(listQueue, 5000);
   var currentSubmissionId;
   var loadVideoTimer;
-  if ($("#youtubePlayerParent").length > 0){
+  if ($("#youtubePlayerParent").length > 0) {
     setupYouTube();
     $("#playPause").click(playPause);
     $("#fullScreen").click(fullScreen);

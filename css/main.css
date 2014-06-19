@@ -8,7 +8,17 @@ body{
     background-color: #2A0D45;
     border: 5px solid transparent;
     border-radius: 0px;
+    z-index: 15;
   }
+
+    .navbar-nav,
+    .navbar-nav:nth-child(n){
+      display: none;
+    }
+
+    .navbar-right{
+      display: block !important;
+    }
 
     .navbar-toggle:hover,
     .navbar-toggle:focus{
@@ -19,6 +29,29 @@ body{
     .navbar-nav>.active>a{
       background-color: #3f2557 !important;
     }
+
+  .submitContent{
+    position: fixed;
+    right: -18px;
+    top: 0px;
+    width: 788px;
+    height: 100%;
+    border: none;
+    border-left: 2px solid #3f2557;
+    z-index: 5;
+  }
+  
+    #searchForm{
+      margin-top: 100px;
+    }
+
+  #submitContentToggle{
+    position: fixed;
+    right: 0px;
+    bottom: 0px;
+    width: 10%;
+    z-index: 10;
+  }
 
   #youtubePlayer{
     width: 100%;

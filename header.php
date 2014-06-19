@@ -25,6 +25,15 @@
     <!-- Main Stylesheet -->
     <link href="css/main.css" rel="stylesheet" />
 
+    <?php
+      if(isset($_SESSION['logged'])){
+    ?>
+    <!-- Altering of main page based on render location -->
+    <script type="text/javascript" src="js/renderlocation.js"></script>
+    <?php
+      }
+    ?>
+
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -66,7 +75,6 @@
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown"> <?php echo $_SESSION['username'];?><b class="caret"></b></a>
                 <ul class="dropdown-menu">
-                  <li class="divider"></li>
                   <li><a href="logout.php">Log Out</a></li>
                 </ul>
               </li>
