@@ -287,7 +287,7 @@ function fullScreen() {
   if( window.mozInnerScreenX != null &&
       (
         navigator.appVersion.indexOf("Linux") != -1 ||
-        navigator.appVersion.indexOf("Unix") != -1 ||
+        navigator.appVersion.indexOf("X11") != -1 ||
         (navigator.appVersion.indexOf("Windows") != -1 && navigator.appVersion.indexOf("Windows") > 4) // Windows 8
       )
   ) {
