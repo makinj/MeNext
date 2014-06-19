@@ -340,11 +340,22 @@ function fullScreen() {
   */
 }
 
+function submitContentToggle() {
+  if ($('.submitContent').is(':visible')) {
+    $('.submitContent').hide();
+    $('.container').css('margin-left', 'auto');
+  }
+  else {
+    $('.submitContent').show();
+    $('.container').css('margin-left', 0);
+  }
+}
 
 $(document).ready(function(){
   $("#searchText").googleSuggest({ service: "youtube" });
   $('#register').submit(register);
   $('#login').submit(login);
+  $('#submitContentToggle').click(submitContentToggle);
   //$("#searchForm").submit(searchYouTube);
   listQueue();
   var listQueueTimer=window.setInterval(listQueue, 5000);

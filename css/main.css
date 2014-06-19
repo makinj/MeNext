@@ -32,6 +32,7 @@ body{
 
   .submitContent{
     position: fixed;
+    display: none;
     right: -18px;
     top: 0px;
     width: 788px;
