@@ -37,13 +37,14 @@ body{
     top: 0px;
     width: 788px;
     height: 100%;
+    background-color: #eee;
     border: none;
-    border-left: 2px solid #3f2557;
+    overflow-y: scroll;
     z-index: 5;
   }
   
     #searchForm{
-      margin-top: 100px;
+      margin-top: 80px;
     }
 
   #submitContentToggle{
@@ -158,6 +159,14 @@ body{
       background-color: #2A0D45;
     }
 
+    .panel > table > tbody > tr:nth-child(even){
+      background-color: #3f2557;
+    }
+
+    #searchTableHeader{
+      background-color: #999;
+    }
+
   .table > tbody > tr > td{
     border: none;
     border-radius: 0px !important;
@@ -170,7 +179,7 @@ body{
     }
 
     .table > tbody > tr:hover,
-    .panel > table > tbody > tr:nth-child(odd):hover{
+    .panel > table > tbody > tr:nth-child(n):hover{
       background-color: #ffd700;
       color: #3f2557;
       border: none;

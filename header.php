@@ -25,14 +25,8 @@
     <!-- Main Stylesheet -->
     <link href="css/main.css" rel="stylesheet" />
 
-    <?php
-      if(isset($_SESSION['logged'])){
-    ?>
-    <!-- Altering of main page based on render location -->
-    <script type="text/javascript" src="js/renderlocation.js"></script>
-    <?php
-      }
-    ?>
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -65,12 +59,6 @@
               <li<?php if($title=="submit"){echo ' class="active"';}?>><a href="submit.php">Submit</a></li>
             </ul>
 
-            <form id="searchForm" class="navbar-form navbar-left" role="search" action="submit.php" method="get">
-              <div class="form-group">
-                <input type="text" id="searchText" name="q" class="form-control" placeholder="Search">
-              </div>
-              <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
-            </form>
             <ul class="nav navbar-nav navbar-right">
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown"> <?php echo $_SESSION['username'];?><b class="caret"></b></a>

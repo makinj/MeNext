@@ -61,7 +61,43 @@
     if(isset($_SESSION['logged'])){
   ?>
 
-    <iframe src="submit.php" class="submitContent"></iframe>
+    <div class="submitContent">
+      <form id="searchForm" class="navbar-form navbar-left" role="search" method="get">
+        <script type="text/javascript">
+          // Forces only the required div to be reloaded
+          $('#searchForm').submit(function (e) {
+            e.preventDefault();
+            searchYouTube();
+            return false;
+          });
+        </script>
+        <div class="form-group">
+          <input type="text" id="searchText" name="q" class="form-control" placeholder="Search">
+        </div>
+        <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
+      </form>
+
+      <div class="panel panel-default" id="searchTableHeader">
+        <table class="table">
+          <thead>
+            <tr>
+              <th></th>
+              <th></th>
+              <th></th>
+              <th>Title</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody id="searchResults">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+    <!--THIS IS THE OLD METHOD
+      <iframe src="submit.php" class="submitContent"></iframe>
+      -->
     <button type="button" id="submitContentToggle" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-search"></span></button>
 
   <?php
