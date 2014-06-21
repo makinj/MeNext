@@ -78,7 +78,7 @@ function listSearchResults(data){
 
 function listQueue(){
   $(document).ready(function(){
-    $.get("handler.php?action=listVideos",        
+    $.get("handler.php?action=listVideos&partyId="+partyId,        
       function(data,status){
         if (status=="success"){
           
@@ -124,7 +124,7 @@ function loadCurrentVideo(){
     clearInterval(loadVideoTimer);
   }
   $(document).ready(function(){
-    $.get("handler.php?action=getCurrentVideo",        
+    $.get("handler.php?action=getCurrentVideo&partyId="+partyId,        
       function(data,status){
         if (status=="success"){
           var video= JSON.parse(data);
@@ -153,7 +153,7 @@ function removeVideo(submissionId){
 }
 
 function submitVideo(youtubeId){
-  $.post("handler.php", {'action':'addVideo', 'youtubeId':youtubeId}, function(data){});
+  $.post("handler.php", {'action':'addVideo', 'partyId':partyId, 'youtubeId':youtubeId}, function(data){});
 }
 
 

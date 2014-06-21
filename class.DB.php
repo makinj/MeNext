@@ -35,49 +35,91 @@ class DB{
     }
     $this->_db = new PDO("mysql:host=$DB_HOST;dbname=$DB_NAME", $DB_USER, $DB_PASS);//connects to new database 
     // Temporarily not enforcing foreign key constraints, only noting with "References"
-    $this->executeSQL('CREATE TABLE User(
-     userId int NOT NULL AUTO_INCREMENT,
-     username VARCHAR(16) UNIQUE,
-     password VARCHAR(128),
-     admin BIT(1) DEFAULT 0,
-     date_joined TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-     INDEX(username),
-     PRIMARY KEY(userId));');//stores each user as a row with relevent info
+    $this->executeSQL(
+      'CREATE TABLE User(
+        userId int NOT NULL AUTO_INCREMENT,
+        username VARCHAR(16) UNIQUE,
+        password VARCHAR(128),
+        admin BIT(1) DEFAULT 0,
+        date_joined TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        
+        INDEX(username),
+        
+        PRIMARY KEY(userId)
+      );'
+    );//stores each user as a row with relevent info
+    
     // Other ideas for attributes include length, and url
     // May remove videoId in the future, as youtubeId is unique to the video already
     // If so, would make Index(youtubeId) instead of videoId
-    $this->executeSQL('CREATE TABLE Video( 
-     videoId int NOT NULL AUTO_INCREMENT, 
-     youtubeId VARCHAR(11) UNIQUE, 
-     title VARCHAR(255), 
-     played BIT(1) DEFAULT 0, 
-     PRIMARY KEY(videoId), 
-     INDEX(videoId));');//specific video, avoids popular selections bloating database
-    $this->executeSQL('CREATE TABLE Party(
-     partyId int NOT NULL AUTO_INCREMENT,
-     title VARCHAR(255),
-     creatorId int REFERENCES User(uid),
-     PRIMARY KEY(partyId));');//each party has row right now there is only one
+    $this->executeSQL(
+      'CREATE TABLE Video( 
+        videoId int NOT NULL AUTO_INCREMENT, 
+        youtubeId VARCHAR(11) UNIQUE, 
+        title VARCHAR(255), 
+        played BIT(1) DEFAULT 0, 
+      
+        PRIMARY KEY(videoId), 
+      
+        INDEX(videoId)
+      );'
+    );//specific video, avoids popular selections bloating database
+    
+    $this->executeSQL(
+      'CREATE TABLE Party(
+        partyId int NOT NULL AUTO_INCREMENT,
+        title VARCHAR(255),
+        creatorId int REFERENCES User(userId),
+      
+        PRIMARY KEY(partyId)
+      );'
+    );//each party has row right now there is only one
 
     // Index is on partyId, then rating. This will facilitate searching
     // a certain party for the highest rated video.
-    $this->executeSQL('CREATE TABLE Submission(
-     submissionId int NOT NULL AUTO_INCREMENT,
-     videoId int REFERENCES Video(videoId),
-     partyId int REFERENCES Party(partyId),
-     submitterId int REFERENCES User(userId),
-     upvotes int DEFAULT 0,
-     downvotes int DEFAULT 0,
-     rating int DEFAULT 0,
-     wasPlayed BIT(1) DEFAULT 0,
-     removed BIT(1) DEFAULT 0,
-     INDEX(submissionId, wasPlayed, rating),
-     PRIMARY KEY(submissionId));');//individual actual submission
-    $this->executeSQL('CREATE TABLE Vote(
-     voterId int REFERENCES User(userId),
-    submissionId int REFERENCES Submission(submissionId),
-    voteValue int,
-    PRIMARY KEY(voterId, submissionId));');//stores votes by users to songs
+    $this->executeSQL(
+      'CREATE TABLE Submission(
+        submissionId int NOT NULL AUTO_INCREMENT,
+        videoId int REFERENCES Video(videoId),
+        partyId int REFERENCES Party(partyId),
+        submitterId int REFERENCES User(userId),
+        upvotes int DEFAULT 0,
+        downvotes int DEFAULT 0,
+        rating int DEFAULT 0,
+        wasPlayed BIT(1) DEFAULT 0,
+        removed BIT(1) DEFAULT 0,
+      
+        INDEX(submissionId, wasPlayed, rating),
+        
+        PRIMARY KEY(submissionId)
+      );'
+    );//individual actual submission
+
+    // Index is on userId, then partyId. This will facilitate searching
+    // a certain user for the highest rated video.
+    $this->executeSQL(
+      'CREATE TABLE PartyUser(
+        partyId int REFERENCES Party(partyId),
+        userId int REFERENCES User(userId),
+        admin BIT(1) DEFAULT 0,
+
+        INDEX(partyId, userId),
+        
+        PRIMARY KEY(userId, partyId)
+      );'
+    );//Relationship between user and party.  Shows that user has "joined" the party
+
+
+    $this->executeSQL(
+      'CREATE TABLE Vote(
+        voterId int REFERENCES User(userId),
+        submissionId int REFERENCES Submission(submissionId),
+        voteValue int,
+        
+        PRIMARY KEY(voterId, submissionId)
+      );'
+    );//stores votes by users to songs
+    
     $this->createAccount(array('username'=>$ADMIN_NAME, 'password'=>$ADMIN_PASS),1);//makes default admin user
     // Create party for testing:
     //   (partyId=1, userId=1)
@@ -149,7 +191,7 @@ class DB{
   }
 
   public function addVideo($args){
-    if (is_array($args)&&array_key_exists("youtubeId", $args)){
+    if (is_array($args)&&array_key_exists("youtubeId", $args)&&array_key_exists("partyId", $args)){
       require('includes/constants.php');//some basic constants
       require_once("includes/functions.php");
       $youtubeId = sanitizeString($args['youtubeId']);
@@ -175,7 +217,7 @@ class DB{
         // Insert into Submissions.
         // LAST_INSERT_ID() returns id of last insertion's (or replace) auto-increment field
         //     First we'll get this working with just 1 party, partyId=1
-        $partyId = 1;
+        $partyId = $args['partyId'];
         $stmt = $this->_db->prepare("INSERT INTO Submission (videoId, partyId, submitterId) VALUES(LAST_INSERT_ID(), :partyId, :submitterId );");
         $stmt->bindValue(':submitterId', $_SESSION['userId']);
         $stmt->bindValue(':partyId', $partyId);
@@ -186,58 +228,64 @@ class DB{
     return -1;//failed
   }
 
-  public function listVideos($partyId){
-    require_once("includes/functions.php");
-    try {
-      // Find all videos associated with $partyId (set to 1 for testing)
-      $stmt = $this->_db->prepare("
-        SELECT v.youtubeId, v.title, s.submissionId, u.username
-        FROM Submission s, Video v, User u
-        WHERE s.videoId = v.videoId AND
-        s.partyId = :partyId AND
-        s.wasPlayed=0 AND
-        s.removed=0 AND
-        s.submitterId = u.userId
-        ORDER BY s.submissionId ASC;");
-      $partyId = sanitizeString($partyId);
-      $stmt->bindValue(':partyId', $partyId);
-      $stmt->execute();
-      $result=array();
-      while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {//creates an array of the results to return
-        array_push($result, $row);
+  public function listVideos($args){
+    if(is_array($args)&&array_key_exists("partyId", $args)){//valid array was given
+      require_once("includes/functions.php");
+      try {
+        // Find all videos associated with $partyId (set to 1 for testing)
+        $stmt = $this->_db->prepare("
+          SELECT v.youtubeId, v.title, s.submissionId, u.username
+          FROM Submission s, Video v, User u
+          WHERE s.videoId = v.videoId AND
+          s.partyId = :partyId AND
+          s.wasPlayed=0 AND
+          s.removed=0 AND
+          s.submitterId = u.userId
+          ORDER BY s.submissionId ASC;");
+        $partyId = sanitizeString($args['partyId']);
+        $stmt->bindValue(':partyId', $partyId);
+        $stmt->execute();
+        $result=array();
+        while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {//creates an array of the results to return
+          array_push($result, $row);
+        }
+        return $result;
+      } catch (PDOException $e) {//something went wrong...
+        error_log("Error: " . $e->getMessage());
+        exit();
       }
-      return $result;
-    } catch (PDOException $e) {//something went wrong...
-      error_log("Error: " . $e->getMessage());
-      exit();
     }
   }
-  public function getCurrentVideo($partyId){
-    require_once("includes/functions.php");
-    try {
-      // Find all videos associated with $partyId (set to 1 for testing)
-      $stmt = $this->_db->prepare("
-        SELECT v.youtubeId, v.title, s.submissionId, u.username
-        FROM Submission s, Video v, User u
-        WHERE s.videoId = v.videoId AND
-        s.partyId = :partyId AND
-        s.wasPlayed=0 AND
-        s.removed=0 AND
-        s.submitterId = u.userId
-        ORDER BY s.submissionId ASC
-        LIMIT 1;");
-      $partyId = sanitizeString($partyId);
-      $stmt->bindValue(':partyId', $partyId);
-      $stmt->execute();
-      if($stmt->rowCount()==0){
-        return -1;
+  public function getCurrentVideo($args){
+    if(is_array($args)&&array_key_exists("partyId", $args)){//valid array was given
+      require_once("includes/functions.php");
+      try {
+        // Find all videos associated with $partyId (set to 1 for testing)
+        $stmt = $this->_db->prepare("
+          SELECT v.youtubeId, v.title, s.submissionId, u.username
+          FROM Submission s, Video v, User u
+          WHERE s.videoId = v.videoId AND
+          s.partyId = :partyId AND
+          s.wasPlayed=0 AND
+          s.removed=0 AND
+          s.submitterId = u.userId
+          ORDER BY s.submissionId ASC
+          LIMIT 1;");
+        $partyId = sanitizeString($args['partyId']);
+        $stmt->bindValue(':partyId', $partyId);
+        $stmt->execute();
+        if($stmt->rowCount()==0){
+          return -1;
+        }
+        return $stmt->fetch(PDO::FETCH_OBJ);
+      } catch (PDOException $e) {//something went wrong...
+        error_log("Error: " . $e->getMessage());
+        exit();
       }
-      return $stmt->fetch(PDO::FETCH_OBJ);
-    } catch (PDOException $e) {//something went wrong...
-      error_log("Error: " . $e->getMessage());
-      exit();
     }
+    return -1;
   }
+
   public function markVideoWatched($args){//takes an array of or argument with the submission id of what to mark as watched
     require_once("includes/functions.php");
     try {
@@ -288,9 +336,9 @@ class DB{
   }
 
   /*
-  Adds video party by the username stored in session and title given
+  Adds party by the username stored in session and title given
   */
-  public function createParty ($args){
+  public function createParty($args){
     require_once("includes/functions.php");
     $title = $args;
     if (is_array($args) && array_key_exists('title', $args)){
@@ -308,13 +356,84 @@ class DB{
     $stmt->bindValue(':title', $title);
     $stmt->bindValue(':creatorId', $_SESSION['userId']);
     $stmt->execute();
+    $partyId = $this->_db->lastInsertId();
+    
+    $stmt = $this->_db->prepare('
+      INSERT IGNORE INTO 
+        PartyUser
+        (userId, partyId, admin) 
+      VALUES
+        (:userId, :partyId, 1)'
+    );
+    $stmt->bindValue(':userId', $_SESSION['userId']);
+    $stmt->bindValue(':partyId', $partyId);
+    $stmt->execute();
   }
 
+  /*
+  Add the current user to the party specified
+  */
+  public function joinParty($args, $admin=0){
+    if(is_array($args)&&array_key_exists("partyId", $args)){//valid array was given
+      require_once("includes/functions.php");
+      require("includes/constants.php");//get system-specific variables
+      $partyId = sanitizeString($args['partyId']);
+      $stmt = $this->_db->prepare("insert into PartyUser (userId, partyId, admin) VALUES(:userId, :partyId, :admin);");//makes new row with given info
+      $stmt->bindValue(':userId', $_SESSION['userId']);
+      $stmt->bindValue(':partyId', $partyId);
+      $stmt->bindValue(':admin', $admin, PDO::PARAM_BOOL);
+      $stmt->execute();
+      return "success";
+    }
+  }
 
+  /*
+  List the parties a user is in
+  */
+  public function listJoinedParties(){
+    try {
+      // Find all videos associated with $partyId (set to 1 for testing)
+      $stmt = $this->_db->prepare("
+        SELECT p.partyId, p.title, p.admin
+        FROM Party p, PartyUser pu
+        WHERE p.partyId = pu.partyId AND
+        pu.creatorId = :partyId;");
+      $stmt->bindValue(':userId', $_SESSION['userId']);
+      $stmt->execute();
+      $result=array();
+      while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {//creates an array of the results to return
+        array_push($result, $row);
+      }
+      return $result;
+    } catch (PDOException $e) {//something went wrong...
+      error_log("Error: " . $e->getMessage());
+      exit();
+    }
+  }
+
+  /*
+  List parties a user hasn't joined
+  */
+  public function listUnjoinedParties(){
+    try {
+      // Find all videos associated with $partyId (set to 1 for testing)
+      $stmt = $this->_db->prepare("
+        SELECT p.partyId, p.title
+        FROM Party p, PartyUser pu
+        WHERE p.partyId = pu.partyId AND
+        pu.creatorId != :partyId;");
+      $stmt->bindValue(':userId', $_SESSION['userId']);
+      $stmt->execute();
+      $result=array();
+      while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {//creates an array of the results to return
+        array_push($result, $row);
+      }
+      return $result;
+    } catch (PDOException $e) {//something went wrong...
+      error_log("Error: " . $e->getMessage());
+      exit();
+    }
+  }
 
 }
-
-
-
-
 ?> 

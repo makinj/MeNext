@@ -7,8 +7,9 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js" type="text/javascript"></script>
     <script src="/js/common.js" type="text/javascript"></script>
     <script type="text/javascript">
+      var partyId = 1;
       var API_KEY =
-      <?php 
+      <?php
         require_once("includes/constants.php");
         echo"'".$API_CLIENT_KEY."';\n";
         if (isset($_GET['q'])){
