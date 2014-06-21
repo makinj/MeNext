@@ -237,8 +237,10 @@ function setupYouTube(){
   //"Chromeless" Player
   //swfobject.embedSWF("http://www.youtube.com/apiplayer/?enablejsapi=1&version=3&playerapiid=youtubePlayerParent",
 
-  swfobject.embedSWF("http://www.youtube.com/v/00000000000?version=3&enablejsapi=1&iv_load_policy=3", //add "&modestbranding=1&autohide=1&showinfo=0&controls=0" to remove youtube bars and controls
+  swfobject.embedSWF("http://www.youtube.com/v/00000000000?version=3&enablejsapi=1&iv_load_policy=3&autohide=1&showinfo=0",
   "youtubePlayerParent", "100%", "645", "8", null, null, params, atts);
+
+  //add "&modestbranding=1&autohide=1&showinfo=0&controls=0" to remove youtube bars and controls
 
   /* -- youtube flash object url addition explanations --
      "&iv_load_policy=3" disables annotations
@@ -288,7 +290,7 @@ function fullScreen() {
       (
         navigator.appVersion.indexOf("Linux") != -1 ||
         navigator.appVersion.indexOf("X11") != -1 ||
-        (navigator.appVersion.indexOf("Windows") != -1 && navigator.appVersion.indexOf("Windows") > 4) // Windows 8
+        (navigator.appVersion.indexOf("Windows") != -1 && navigator.appVersion.indexOf("Windows") > 5) // Windows 8
       )
   ) {
     fullScreenSupported = false;

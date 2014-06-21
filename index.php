@@ -29,7 +29,6 @@
     </div>
 
 <?php
-  
   }
 ?>
     <div class="panel panel-default">
@@ -62,13 +61,14 @@
   ?>
 
     <div class="submitContent">
+      <div class="spacer"></div>
       <form id="searchForm" class="navbar-form navbar-left" role="search" method="get">
         <script type="text/javascript">
           // Forces only the required div to be reloaded
-          $('#searchForm').submit(function (e) {
-            e.preventDefault();
-            searchYouTube();
-            return false;
+          $('#searchForm').submit(function(onSubmitClick){
+            onSubmitClick.preventDefault(); //prevents default submit
+            searchYouTube(); //puts the search query through and writes out to #searchResults
+            return false; //prevents page reload
           });
         </script>
         <div class="form-group">
@@ -93,7 +93,6 @@
         </table>
       </div>
     </div>
-
 
     <!--THIS IS THE OLD METHOD
       <iframe src="submit.php" class="submitContent"></iframe>

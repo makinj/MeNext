@@ -30,6 +30,10 @@ body{
       background-color: #3f2557 !important;
     }
 
+    .navbar-nav > li > .dropdown-menu{
+      border-radius: 0px;
+    }
+
   .submitContent{
     position: fixed;
     display: none;
@@ -38,13 +42,22 @@ body{
     width: 788px;
     height: 100%;
     background-color: #eee;
+    padding-left: 15px;
     border: none;
+    border-left: 4px solid #161;
     overflow-y: scroll;
     z-index: 5;
   }
+
+    .submitContent > .spacer{
+      width: 100%;
+      padding-top: 80px;
+    }
   
     #searchForm{
-      margin-top: 80px;
+      width: 100%;
+      display: inline-block;
+      margin-top: 20px;
     }
 
   #submitContentToggle{
@@ -136,6 +149,14 @@ body{
         background-color: #3a3;
       }
 
+      .removeVideo:hover{
+        background-color: #c55;
+      }
+
+      .removeVideo:focus{
+        background-color: #a33;
+      }
+
       #disabledFullScreen {
         display: none;
         float: right;
@@ -164,7 +185,10 @@ body{
     }
 
     #searchTableHeader{
-      background-color: #999;
+      display: inline-block;
+      width: 100%;
+      background-color: #161;
+      border: none;
     }
 
   .table > tbody > tr > td{
