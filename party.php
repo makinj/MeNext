@@ -1,5 +1,5 @@
 <?php
-  $title="Party";
+  $title="index";
   require_once('header.php');//bar at the top of the page
   require_once("class.DB.php");//basic database operations
   if(session_id() == '') {
@@ -16,7 +16,7 @@
   }
   if($isOwner){
 ?>
-  <!-- beginning of youtube player and queuelist -->
+ <!-- beginning of youtube player and queuelist -->
   <div class="mainPageContent">
     <!--SWFObject to Verify Flash Version-->
     <script type='text/javascript' src='js/swfobject.js'></script>
@@ -72,13 +72,14 @@
   ?>
 
     <div class="submitContent">
+      <div class="spacer"></div>
       <form id="searchForm" class="navbar-form navbar-left" role="search" method="get">
         <script type="text/javascript">
           // Forces only the required div to be reloaded
-          $('#searchForm').submit(function (e) {
-            e.preventDefault();
-            searchYouTube();
-            return false;
+          $('#searchForm').submit(function(onSubmitClick){
+            onSubmitClick.preventDefault(); //prevents default submit
+            searchYouTube(); //puts the search query through and writes out to #searchResults
+            return false; //prevents page reload
           });
         </script>
         <div class="form-group">
@@ -103,7 +104,6 @@
         </table>
       </div>
     </div>
-
 
     <!--THIS IS THE OLD METHOD
       <iframe src="submit.php" class="submitContent"></iframe>

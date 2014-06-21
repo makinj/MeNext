@@ -328,26 +328,6 @@ class DB{
   }
 
   /*
-  Add the current user to the party specified
-  */
-  public function joinParty($args, $owner=0){
-    if(!isset($_SESSION['userId'])){
-      return -1;
-    }
-    if(is_array($args)&&array_key_exists("partyId", $args)){//valid array was given
-      require_once("includes/functions.php");
-      require("includes/constants.php");//get system-specific variables
-      $partyId = sanitizeString($args['partyId']);
-      $stmt = $this->_db->prepare("insert into PartyUser (userId, partyId, owner) VALUES(:userId, :partyId, :owner);");//makes new row with given info
-      $stmt->bindValue(':userId', $_SESSION['userId']);
-      $stmt->bindValue(':partyId', $partyId);
-      $stmt->bindValue(':owner', $owner, PDO::PARAM_BOOL);
-      $stmt->execute();
-      return "success";
-    }
-  }
-
-  /*
   Adds party by the username stored in session and title given
   */
   public function createParty($args){
@@ -372,8 +352,28 @@ class DB{
     $stmt->bindValue(':creatorId', $_SESSION['userId']);
     $stmt->execute();
     $partyId = $this->_db->lastInsertId();
-    joinParty(array("partyId"=>$partyId), 1);
+    $this->joinParty(array("partyId"=>$partyId), 1);
     return $partyId;
+  }
+
+  /*
+  Add the current user to the party specified
+  */
+  public function joinParty($args, $owner=0){
+    if(!isset($_SESSION['userId'])){
+      return -1;
+    }
+    if(is_array($args)&&array_key_exists("partyId", $args)){//valid array was given
+      require_once("includes/functions.php");
+      require("includes/constants.php");//get system-specific variables
+      $partyId = sanitizeString($args['partyId']);
+      $stmt = $this->_db->prepare("insert into PartyUser (userId, partyId, owner) VALUES(:userId, :partyId, :owner);");//makes new row with given info
+      $stmt->bindValue(':userId', $_SESSION['userId']);
+      $stmt->bindValue(':partyId', $partyId);
+      $stmt->bindValue(':owner', $owner, PDO::PARAM_BOOL);
+      $stmt->execute();
+      return "success";
+    }
   }
 
   /*
