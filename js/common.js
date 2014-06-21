@@ -51,6 +51,7 @@ function searchYouTube(){//searches youtube to get a list of
           submitVideo($(this).val());
           $(this).attr('class',"btn btn-success");
           $(this).html("<span class='glyphicon glyphicon-ok'/>");
+          listQueue();
         });
     });
   }else{
@@ -74,6 +75,15 @@ function listSearchResults(data){
       "<td>"+videos[i].snippet.description+"</td>"+
       "</tr>"); 
   } 
+}
+
+function createParty(){
+  $.post("handler.php", $("#createPartyForm").serialize(),
+    function(data){
+      listParties();
+    }
+  );
+  return false;
 }
 
 function listQueue(){
@@ -156,6 +166,44 @@ function submitVideo(youtubeId){
   $.post("handler.php", {'action':'addVideo', 'partyId':partyId, 'youtubeId':youtubeId}, function(data){});
 }
 
+function listParties(){
+  if($("#joinedList").length >0){
+    $.get("handler.php?action=listJoinedParties",        
+      function(data,status){
+        if (status=="success"){
+          var parties= JSON.parse(data);
+          $("#joinedList").html("");
+          for (var i=0;i<parties.length;i++){
+            var row="<tr><td>"+parties[i].partyId+"</td><td>"+parties[i].name+"</td><td>"+parties[i].username+"</td>";
+            row=row+"</tr>"
+            $('#joinedList').append(row);
+          }
+   
+        }else{
+          $("#joinedList").html("Failed :(");
+        }
+      }
+    );
+  }
+  if($("#unjoinedList").length >0){
+    $.get("handler.php?action=listUnjoinedParties",        
+      function(data,status){
+        if (status=="success"){
+          var parties= JSON.parse(data);
+          $("#unjoinedList").html("");
+          for (var i=0;i<parties.length;i++){
+            var row="<tr><td>"+parties[i].partyId+"</td><td>"+parties[i].name+"</td><td>"+parties[i].username+"</td>";
+            row=row+"</tr>"
+            $('#unjoinedList').append(row);
+          }
+   
+        }else{
+          $("#unjoinedList").html("Failed :(");
+        }
+      }
+    );
+  }
+}
 
 /**@license
 This function uses Google Suggest for jQuery plugin (licensed under GPLv3) by Haochi Chen ( http://ihaochi.com )
@@ -355,9 +403,11 @@ $(document).ready(function(){
   $("#searchText").googleSuggest({ service: "youtube" });
   $('#register').submit(register);
   $('#login').submit(login);
+  $('#createPartyForm').submit(createParty);
   $('#submitContentToggle').click(submitContentToggle);
   //$("#searchForm").submit(searchYouTube);
   listQueue();
+  listParties();
   var listQueueTimer=window.setInterval(listQueue, 5000);
   var currentSubmissionId;
   var loadVideoTimer;

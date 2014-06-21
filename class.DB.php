@@ -40,7 +40,6 @@ class DB{
         userId int NOT NULL AUTO_INCREMENT,
         username VARCHAR(16) UNIQUE,
         password VARCHAR(128),
-        admin BIT(1) DEFAULT 0,
         date_joined TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         
         INDEX(username),
@@ -68,7 +67,7 @@ class DB{
     $this->executeSQL(
       'CREATE TABLE Party(
         partyId int NOT NULL AUTO_INCREMENT,
-        title VARCHAR(255),
+        name VARCHAR(255),
         creatorId int REFERENCES User(userId),
       
         PRIMARY KEY(partyId)
@@ -101,7 +100,7 @@ class DB{
       'CREATE TABLE PartyUser(
         partyId int REFERENCES Party(partyId),
         userId int REFERENCES User(userId),
-        admin BIT(1) DEFAULT 0,
+        owner BIT(1) DEFAULT 0,
 
         INDEX(partyId, userId),
         
@@ -118,12 +117,7 @@ class DB{
         
         PRIMARY KEY(voterId, submissionId)
       );'
-    );//stores votes by users to songs
-    
-    $this->createAccount(array('username'=>$ADMIN_NAME, 'password'=>$ADMIN_PASS),1);//makes default admin user
-    // Create party for testing:
-    //   (partyId=1, userId=1)
-    $this->executeSQL('INSERT INTO Party(title, creatorId) VALUES (1,1)');
+    );//stores votes by users to songs    
   }
 
   private function executeSQL($query){//runs a query with PDO's specific syntax
@@ -145,7 +139,7 @@ class DB{
     return ($result->rowCount()>0);//1 if exists
   }
 
-  public function createAccount($args, $admin=0){//creates account with an array of user information given
+  public function createAccount($args){//creates account with an array of user information given
     if(is_array($args)&&array_key_exists("username", $args)&&array_key_exists("password", $args)){//valid array was given
       require_once("includes/functions.php");
       require("includes/constants.php");//get system-specific variables
@@ -154,10 +148,9 @@ class DB{
       if($this->isUser($username)){//user already exists
         return "alreadyExists";
       } else {
-        $stmt = $this->_db->prepare("insert into User (username, password, admin) VALUES(:username, :password, :admin);");//makes new row with given info
+        $stmt = $this->_db->prepare("insert into User (username, password) VALUES(:username, :password);");//makes new row with given info
         $stmt->bindValue(':username', $username);
         $stmt->bindValue(':password', $password);
-        $stmt->bindValue(':admin', $admin, PDO::PARAM_BOOL);
         $stmt->execute();
         return "success";
       }
@@ -180,7 +173,6 @@ class DB{
         }
         $_SESSION['username']=$username;
         $_SESSION['userId']=$result[0];
-        $_SESSION['admin']=$result[3];
         $_SESSION['logged']=1;
         return session_id();
       }
@@ -217,7 +209,7 @@ class DB{
         // Insert into Submissions.
         // LAST_INSERT_ID() returns id of last insertion's (or replace) auto-increment field
         //     First we'll get this working with just 1 party, partyId=1
-        $partyId = $args['partyId'];
+        $partyId = sanitizeString($args['partyId']);
         $stmt = $this->_db->prepare("INSERT INTO Submission (videoId, partyId, submitterId) VALUES(LAST_INSERT_ID(), :partyId, :submitterId );");
         $stmt->bindValue(':submitterId', $_SESSION['userId']);
         $stmt->bindValue(':partyId', $partyId);
@@ -336,55 +328,52 @@ class DB{
   }
 
   /*
-  Adds party by the username stored in session and title given
-  */
-  public function createParty($args){
-    require_once("includes/functions.php");
-    $title = $args;
-    if (is_array($args) && array_key_exists('title', $args)){
-      $title = $args['title'];
-    }
-    $title = sanitizeString($title);
-
-    $stmt = $this->_db->prepare('
-      INSERT INTO 
-        Party
-        (title, creatorId) 
-      VALUES
-        (:title,:creatorId)'
-    );
-    $stmt->bindValue(':title', $title);
-    $stmt->bindValue(':creatorId', $_SESSION['userId']);
-    $stmt->execute();
-    $partyId = $this->_db->lastInsertId();
-    
-    $stmt = $this->_db->prepare('
-      INSERT IGNORE INTO 
-        PartyUser
-        (userId, partyId, admin) 
-      VALUES
-        (:userId, :partyId, 1)'
-    );
-    $stmt->bindValue(':userId', $_SESSION['userId']);
-    $stmt->bindValue(':partyId', $partyId);
-    $stmt->execute();
-  }
-
-  /*
   Add the current user to the party specified
   */
-  public function joinParty($args, $admin=0){
+  public function joinParty($args, $owner=0){
+    if(!isset($_SESSION['userId'])){
+      return -1;
+    }
     if(is_array($args)&&array_key_exists("partyId", $args)){//valid array was given
       require_once("includes/functions.php");
       require("includes/constants.php");//get system-specific variables
       $partyId = sanitizeString($args['partyId']);
-      $stmt = $this->_db->prepare("insert into PartyUser (userId, partyId, admin) VALUES(:userId, :partyId, :admin);");//makes new row with given info
+      $stmt = $this->_db->prepare("insert into PartyUser (userId, partyId, owner) VALUES(:userId, :partyId, :owner);");//makes new row with given info
       $stmt->bindValue(':userId', $_SESSION['userId']);
       $stmt->bindValue(':partyId', $partyId);
-      $stmt->bindValue(':admin', $admin, PDO::PARAM_BOOL);
+      $stmt->bindValue(':owner', $owner, PDO::PARAM_BOOL);
       $stmt->execute();
       return "success";
     }
+  }
+
+  /*
+  Adds party by the username stored in session and title given
+  */
+  public function createParty($args){
+    if(!isset($_SESSION['userId'])){
+      return -1;
+    }
+    require_once("includes/functions.php");
+    $name = $args;
+    if (is_array($args) && array_key_exists('name', $args)){
+      $name = $args['name'];
+    }
+    $name = sanitizeString($name);
+
+    $stmt = $this->_db->prepare('
+      INSERT INTO 
+        Party
+        (name, creatorId) 
+      VALUES
+        (:name,:creatorId)'
+    );
+    $stmt->bindValue(':name', $name);
+    $stmt->bindValue(':creatorId', $_SESSION['userId']);
+    $stmt->execute();
+    $partyId = $this->_db->lastInsertId();
+    joinParty(array("partyId"=>$partyId), 1);
+    return $partyId;
   }
 
   /*
@@ -394,10 +383,11 @@ class DB{
     try {
       // Find all videos associated with $partyId (set to 1 for testing)
       $stmt = $this->_db->prepare("
-        SELECT p.partyId, p.title, p.admin
-        FROM Party p, PartyUser pu
+        SELECT p.partyId, p.name, u.username
+        FROM Party p, PartyUser pu, User u
         WHERE p.partyId = pu.partyId AND
-        pu.creatorId = :partyId;");
+        pu.userId = :userId AND
+        p.creatorId=u.userId;");
       $stmt->bindValue(':userId', $_SESSION['userId']);
       $stmt->execute();
       $result=array();
@@ -418,10 +408,18 @@ class DB{
     try {
       // Find all videos associated with $partyId (set to 1 for testing)
       $stmt = $this->_db->prepare("
-        SELECT p.partyId, p.title
-        FROM Party p, PartyUser pu
-        WHERE p.partyId = pu.partyId AND
-        pu.creatorId != :partyId;");
+        SELECT 
+          p.partyId, 
+          p.name, 
+          u.username
+        FROM 
+          Party p, 
+          User u
+        WHERE
+          p.creatorId=u.userId AND
+          p.partyId NOT IN (
+            Select partyId from PartyUser where userId=:userId 
+          );");
       $stmt->bindValue(':userId', $_SESSION['userId']);
       $stmt->execute();
       $result=array();
@@ -433,6 +431,25 @@ class DB{
       error_log("Error: " . $e->getMessage());
       exit();
     }
+  }
+
+  /*
+  Returns 1 or 0 based on whether the user owns the party
+  */
+  public function isPartyOwner($partyId){
+    $stmt = $this->_db->prepare(
+      "SELECT
+        * 
+      FROM
+        PartyUser
+      Where  
+        partyId=:partyId AND
+        userId=:userId AND
+        owner=1;");//makes new row with given info
+    $stmt->bindValue(':userId', $_SESSION['userId']);
+    $stmt->bindValue(':partyId', $partyId);
+    $stmt->execute();
+    return $stmt->rowCount()>0;
   }
 
 }
