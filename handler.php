@@ -20,9 +20,13 @@
   
   if(isset($_GET['action'])){//GETs info ie. list of Videos or list of users
     if($_GET['action']=="listVideos"){
-      $result=$db->listVideos(1);
+      $result=$db->listVideos($_GET);
     }else if($_GET['action']=="getCurrentVideo"){
-      $result=$db->getCurrentVideo(1);
+      $result=$db->getCurrentVideo($_GET);
+    }else if($_GET['action']=="listJoinedParties"){
+      $result=$db->listJoinedParties();
+    }else if($_GET['action']=="listUnjoinedParties"){
+      $result=$db->listUnjoinedParties();
     }
   }else if(isset($_POST['action'])){//handles POST requests ie. login or addVideo
     if($_POST['action']=="register"){//registers new user
@@ -30,24 +34,16 @@
       $result['token']=$db->logIn($_POST);//logs into created account
     }else if($_POST['action']=="login"){//logs into an account
       $result['token']=$db->logIn($_POST);//send POST data to log in
-
     }else if($_POST['action']=="addVideo"){//adds new video to playlist
-      require('includes/constants.php');//some basic constants
-      $url= 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id='.$_POST['youtubeId'].'&key='.$API_SERVER_KEY;//url to verify data from youtube
-      $verify = curl_init($url);//configures cURL with url
-      curl_setopt($verify, CURLOPT_SSL_VERIFYPEER, false);
-      curl_setopt($verify, CURLOPT_RETURNTRANSFER, 1);//don't echo returned info
-      $verify = json_decode(curl_exec($verify));//returned data from youtube
-      if($verify->pageInfo->totalResults==1){//verified to be a real video
-        $db->addVideo(array('youtubeId'=>$_POST['youtubeId'], 'userId'=>$_SESSION['userId'], 'title'=>$verify->items[0]->snippet->title));//calls database function to add the video
-        $result['status']="success";//was successful
-      }else{
-        $result['status']=-1;//failed
-      }
+      $result['status']= $db->addVideo($_POST);
     }else if($_POST['action']=="markVideoWatched"){//adds new video to playlist
       $result=$db->markVideoWatched($_POST);
     }else if($_POST['action']=="removeVideo"){//adds new video to playlist
       $result=$db->removeVideo($_POST);
+    }else if($_POST['action']=="createParty"){//adds new video to playlist
+      $result=$db->createParty($_POST);
+    }else if($_POST['action']=="joinParty"){//adds new video to playlist
+      $result=$db->joinParty($_POST);
     }
   }
   echo json_encode($result);//return info to client
