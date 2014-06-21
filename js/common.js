@@ -192,7 +192,7 @@ function listParties(){
           var parties= JSON.parse(data);
           $("#unjoinedList").html("");
           for (var i=0;i<parties.length;i++){
-            var row="<tr><td>"+parties[i].partyId+"</td><td>"+parties[i].name+"</td><td>"+parties[i].username+"</td>";
+            var row="<tr><td>"+parties[i].partyId+"</td><td><a href='/party.php?partyId="+parties[i].partyId+"'>"+parties[i].name+"</a></td><td>"+parties[i].username+"</td>";
             row=row+"</tr>"
             $('#unjoinedList').append(row);
           }
