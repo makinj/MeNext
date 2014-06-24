@@ -391,6 +391,13 @@ function fullScreen() {
 }
 
 function submitContentToggle() {
+  if (window.innerWidth < 770) {
+    $('.submitContent').css('width', window.innerWidth);
+  }
+  else {
+    $('.submitContent').css('width', '788px');
+  }
+
   if ($('.submitContent').is(':visible')) {
     $('.submitContent').hide();
     $('.container').css('margin-left', 'auto');
