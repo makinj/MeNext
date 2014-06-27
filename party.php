@@ -1,18 +1,18 @@
 <?php
   $title="index";
   require_once('header.php');//bar at the top of the page
-  require_once("class.DB.php");//basic database operations
+  require_once("includes/functions.php");//basic database operations
   if(session_id() == '') {
     session_start();
   }
 
-  $db = new DB();//connect to mysql
+  $db = connectDb();//connect to mysql
 
-  $partyId=-1;
-  $isOwner=0;
+  $partyId = -1;
+  $isOwner = 0;
   if(isset($_GET['partyId'])){
-    $partyId=$_GET['partyId'];
-    $isOwner=$db->isPartyOwner($partyId);
+    $partyId = $_GET['partyId'];
+    $isOwner = isPartyOwner($db, $partyId);
   }
   if($isOwner){
 ?>
@@ -39,7 +39,7 @@
     </div>
 
 <?php
-  
+
   }
 ?>
     <div class="panel panel-default">
@@ -59,7 +59,7 @@
         </thead>
         <tbody id="queueList">
         </tbody>
-      
+
       </table>
     </div>
   </div>

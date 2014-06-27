@@ -30,7 +30,7 @@ function login(){
   return false;
 }
 
-function searchYouTube(){//searches youtube to get a list of 
+function searchYouTube(){//searches youtube to get a list of
   if($("#searchText").val()!=""){
     $.get("https://www.googleapis.com/youtube/v3/search"+
       "?part=snippet"+//don't question this part
@@ -39,7 +39,7 @@ function searchYouTube(){//searches youtube to get a list of
       "&maxResults=25"+//up to 25 results
       "&q="+$("#searchText").val()+//query with search term
       "&key="+API_KEY,//Client API key
-      
+
       function(data,status){
         if (status=="success"){
           listSearchResults(data);
@@ -73,8 +73,8 @@ function listSearchResults(data){
       "<td><img src='"+videos[i].snippet.thumbnails.default.url+"'/></td>"+
       "<td>"+videos[i].snippet.title+"</td>"+
       "<td>"+videos[i].snippet.description+"</td>"+
-      "</tr>"); 
-  } 
+      "</tr>");
+  }
 }
 
 function createParty(){
@@ -88,12 +88,12 @@ function createParty(){
 
 function listQueue(){
   $(document).ready(function(){
-    $.get("handler.php?action=listVideos&partyId="+partyId,        
+    $.get("handler.php?action=listVideos&partyId="+partyId,
       function(data,status){
         if (status=="success"){
-          
+
           var videos= JSON.parse(data);
-          //var users=data;         
+          //var users=data;
           $("#queueList").html("");
           for (var i=0;i<videos.length;i++){
             var queueRow="<tr><td>"+(i+1).toString()+"</td><td>"+videos[i].title+"</td><td>"+videos[i].username+"</td>";
@@ -105,7 +105,7 @@ function listQueue(){
                     "<span class='glyphicon glyphicon-remove'/>"+
                 "</button>"+
               "</td>";
-              
+
             }
             queueRow=queueRow+"</tr>"
             $('#queueList').append(queueRow);
@@ -120,7 +120,7 @@ function listQueue(){
               loadCurrentVideo();
             }
           });
-          
+
         }else{
           $("#queueList").html("Failed :(");
         }
@@ -134,7 +134,7 @@ function loadCurrentVideo(){
     clearInterval(loadVideoTimer);
   }
   $(document).ready(function(){
-    $.get("handler.php?action=getCurrentVideo&partyId="+partyId,        
+    $.get("handler.php?action=getCurrentVideo&partyId="+partyId,
       function(data,status){
         if (status=="success"){
           var video= JSON.parse(data);
@@ -154,11 +154,11 @@ function loadCurrentVideo(){
   });
 }
 
-function markVideoWatched(){ 
+function markVideoWatched(){
   $.post("handler.php", {'action':'markVideoWatched', 'submissionId':currentSubmissionId}, function(data){});
 }
 
-function removeVideo(submissionId){ 
+function removeVideo(submissionId){
   $.post("handler.php", {'action':'removeVideo', 'submissionId':submissionId}, function(data){});
 }
 
@@ -168,7 +168,7 @@ function submitVideo(youtubeId){
 
 function listParties(){
   if($("#joinedList").length >0){
-    $.get("handler.php?action=listJoinedParties",        
+    $.get("handler.php?action=listJoinedParties",
       function(data,status){
         if (status=="success"){
           var parties= JSON.parse(data);
@@ -178,7 +178,7 @@ function listParties(){
             row=row+"</tr>"
             $('#joinedList').append(row);
           }
-   
+
         }else{
           $("#joinedList").html("Failed :(");
         }
@@ -186,7 +186,7 @@ function listParties(){
     );
   }
   if($("#unjoinedList").length >0){
-    $.get("handler.php?action=listUnjoinedParties",        
+    $.get("handler.php?action=listUnjoinedParties",
       function(data,status){
         if (status=="success"){
           var parties= JSON.parse(data);
@@ -196,7 +196,7 @@ function listParties(){
             row=row+"</tr>"
             $('#unjoinedList').append(row);
           }
-   
+
         }else{
           $("#unjoinedList").html("Failed :(");
         }
@@ -236,7 +236,7 @@ $.fn.googleSuggest = function(opts){
           return { value: $("<span>").html(item[0]).text() };
         }));
       }
-    });  
+    });
   };
   opts.delay = 50;
   opts.autoFocus = true;
@@ -292,7 +292,7 @@ function setupYouTube(){
 
   /* -- youtube flash object url addition explanations --
      "&iv_load_policy=3" disables annotations
-     "&modestbranding=1" makes youtube logo smaller  
+     "&modestbranding=1" makes youtube logo smaller
      "&autohide=1" makes the top and bottom bars go away faster
      "&showinfo=0" removes the top bar
      "&controls=0" removes the bottom bar
@@ -417,6 +417,5 @@ $(document).ready(function(){
     setupYouTube();
     $("#playPause").click(playPause);
     $("#fullScreen").click(fullScreen);
-
   }
 });

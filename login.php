@@ -1,5 +1,4 @@
 <?php
-  require_once("class.DB.php");//database funcitonality 
   $title="Login | Register";//to be displayed in tab
   include("header.php");//open html bar
 ?>
