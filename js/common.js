@@ -135,7 +135,6 @@ function loadCurrentVideo(){
   $(document).ready(function(){
     $.get("handler.php?action=getCurrentVideo&partyId="+partyId,
       function(data,status){
-            alert(data);
         if (status=="success"){
           var video= JSON.parse(data);
           if(video!=-1){
