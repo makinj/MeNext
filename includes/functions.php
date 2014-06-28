@@ -220,16 +220,31 @@
     if(is_array($args)&&array_key_exists("partyId", $args)){//valid array was given
       try {
         // Find all videos associated with $partyId (set to 1 for testing)
+        $userId = -1;
+        if(isset($_SESSION['userId'])) $userId=sanitizeString($_SESSION['userId']);
+
         $stmt = $db->prepare("
-          SELECT v.youtubeId, v.title, s.submissionId, u.username
-          FROM Submission s, Video v, User u
-          WHERE s.videoId = v.videoId AND
-          s.partyId = :partyId AND
-          s.wasPlayed=0 AND
-          s.removed=0 AND
-          s.submitterId = u.userId
-          ORDER BY s.submissionId ASC;");
+          SELECT
+            v.youtubeId,
+            v.title,
+            s.submissionId,
+            u.username,
+            (select sum(voteValue) from Vote where submissionId=s.submissionId) as rating,
+            (select voteValue from Vote where submissionId=s.submissionId and voterId=:userId) as userRating
+          FROM
+            Submission s,
+            Video v,
+            User u
+          WHERE
+            s.videoId = v.videoId AND
+            s.partyId = :partyId AND
+            s.wasPlayed=0 AND
+            s.removed=0 AND
+            s.submitterId = u.userId
+          ORDER BY
+            s.submissionId ASC;");
         $partyId = sanitizeString($args['partyId']);
+        $stmt->bindValue(':userId', $userId);
         $stmt->bindValue(':partyId', $partyId);
         $stmt->execute();
         $result=array();
@@ -247,15 +262,29 @@
     if(is_array($args)&&array_key_exists("partyId", $args)){//valid array was given
       try {
         // Find all videos associated with $partyId (set to 1 for testing)
+        $userId = -1;
+        if(isset($_SESSION['userId'])) $userId=sanitizeString($_SESSION['userId']);
+
         $stmt = $db->prepare("
-          SELECT v.youtubeId, v.title, s.submissionId, u.username
-          FROM Submission s, Video v, User u
-          WHERE s.videoId = v.videoId AND
-          s.partyId = :partyId AND
-          s.wasPlayed=0 AND
-          s.removed=0 AND
-          s.submitterId = u.userId
-          ORDER BY s.submissionId ASC
+          SELECT
+            v.youtubeId,
+            v.title,
+            s.submissionId,
+            u.username
+            (select sum(voteValue) from Vote where submissionId=s.submissionId) as rating,
+            (select voteValue from Vote where submissionId=:userId) as userRating
+          FROM
+            Submission s,
+            Video v,
+            User u
+          WHERE
+            s.videoId = v.videoId AND
+            s.partyId = :partyId AND
+            s.wasPlayed=0 AND
+            s.removed=0 AND
+            s.submitterId = u.userId
+          ORDER BY
+            s.submissionId ASC
           LIMIT 1;");
         $partyId = sanitizeString($args['partyId']);
         $stmt->bindValue(':partyId', $partyId);
@@ -439,5 +468,29 @@
     $stmt->bindValue(':partyId', $partyId);
     $stmt->execute();
     return $stmt->rowCount()>0;
+  }
+
+  function vote($db, $args){
+    if (is_array($args)&&array_key_exists("submissionId", $args)&&array_key_exists("direction", $args)&&isset($_SESSION['userId'])){
+      try {
+        $voterId = sanitizeString($_SESSION['userId']);
+        $submissionId = sanitizeString($args['submissionId']);
+        $voteValue = intval(sanitizeString($args['direction']));
+        if($voteValue>0)$voteValue=1;
+        else if($voteValue<0)$voteValue=-1;
+        $stmt = $db->prepare("
+          INSERT INTO Vote (voterId, submissionId, voteValue)
+          VALUES (:voterId, :submissionId, :voteValue);");
+        $stmt->bindValue(':voterId', $voterId);
+        $stmt->bindValue(':submissionId', $submissionId);
+        $stmt->bindValue(':voteValue', $voteValue);
+        $stmt->execute();
+        return "success";//was successful
+      }catch(PDOException $e){//something went wrong...
+        error_log('Query failed: ' . $e->getMessage());
+        exit;
+      }
+    }
+    return -1;//failed
   }
 ?>

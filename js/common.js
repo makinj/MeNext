@@ -91,7 +91,6 @@ function listQueue(){
     $.get("handler.php?action=listVideos&partyId="+partyId,
       function(data,status){
         if (status=="success"){
-
           var videos= JSON.parse(data);
           //var users=data;
           $("#queueList").html("");
@@ -160,6 +159,18 @@ function markVideoWatched(){
 
 function removeVideo(submissionId){
   $.post("handler.php", {'action':'removeVideo', 'submissionId':submissionId}, function(data){});
+}
+
+function upVote(submissionId){
+  $.post("handler.php", {'action':'vote', 'direction':1, 'submissionId':submissionId}, function(data){});
+}
+
+function downVote(submissionId){
+  $.post("handler.php", {'action':'vote', 'direction':-1, 'submissionId':submissionId}, function(data){});
+}
+
+function unVote(submissionId){
+  $.post("handler.php", {'action':'vote', 'direction':0, 'submissionId':submissionId}, function(data){});
 }
 
 function submitVideo(youtubeId){
@@ -263,7 +274,6 @@ function playPause() {
 }
 
 function playerStateHandler(state){
-  //alert(state);
   if (state==-1) {//unstarted
     loadCurrentVideo();
   }else if (state==0){//ended

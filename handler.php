@@ -44,6 +44,8 @@
       $result = createParty($db, $_POST);
     }else if($_POST['action']=="joinParty"){//adds new video to playlist
       $result = joinParty($db, $_POST);
+    }else if($_POST['action']=="vote"){//adds new video to playlist
+      $result = vote($db, $_POST);
     }
   }
   echo json_encode($result);//return info to client
