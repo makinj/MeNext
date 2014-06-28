@@ -270,7 +270,7 @@
             v.youtubeId,
             v.title,
             s.submissionId,
-            u.username
+            u.username,
             (select sum(voteValue) from Vote where submissionId=s.submissionId) as rating,
             (select voteValue from Vote where submissionId=:userId) as userRating
           FROM
