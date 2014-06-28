@@ -287,6 +287,7 @@
             s.submissionId ASC
           LIMIT 1;");
         $partyId = sanitizeString($args['partyId']);
+        $stmt->bindValue(':userId', $userId);
         $stmt->bindValue(':partyId', $partyId);
         $stmt->execute();
         if($stmt->rowCount()==0){
