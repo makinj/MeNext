@@ -18,9 +18,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo "MeNext | ".$title;?></title>
 
-    <!-- Bootstrap -->
-    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Bootstrap 
+    <link href="css/bootstrap.min.css" rel="stylesheet" />-->
     <link href="css/jquery-ui.css" type="text/css" rel="stylesheet"/>
+    
+    <!-- BASE -->
+    <link href="css/base.css" type="text/css" rel="stylesheet"/>
 
     <!-- Main Stylesheet -->
     <link href="css/main.css" rel="stylesheet" />
@@ -43,51 +46,30 @@
   </head>
   <body>
     
-    <nav class="navbar navbar-inverse" role="navigation">
-      <div class="container-fluid">
-        <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="/">MeNext</a>
+      <div class="header dark-blue-row">
+        <div class="row clear">
+          <div class="col col-2 tablet-col-10 mobile-col-3-4">
+            <a class="logo left mobile-no-float" href="/">MeNext</a>
+          </div>
+          <div class="col col-10 tablet-col-2 mobile-col-1-4">
+          
+            <?php
+              if(isset($_SESSION['logged'])){
+            ?>
+            
+            <a class="right mobile-no-float" href="logout.php">Log Out</a>
+            
+            <?php
+              }else{
+            ?>
+            
+            <a class="right mobile-no-float" href="login.php">Login/Register</a>
+            
+            <?php
+              }
+            ?>
+          </div>
         </div>
-        <?php
-          if(isset($_SESSION['logged'])){
-        ?>
-          <!-- Collect the nav links, forms, and other content for toggling -->
-          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav">
-              <li<?php if($title=="index"){echo ' class="active"';}?>><a href="/">Home</a></li>
-              <li<?php if($title=="submit"){echo ' class="active"';}?>><a href="submit.php">Submit</a></li>
-            </ul>
-
-            <ul class="nav navbar-nav navbar-right">
-              <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown"> <?php echo $_SESSION['username'];?><b class="caret"></b></a>
-                <ul class="dropdown-menu">
-                  <li><a href="logout.php">Log Out</a></li>
-                </ul>
-              </li>
-            </ul>
-          </div><!-- /.navbar-collapse -->
-        <?php
-          }else{
-        ?>
-          <!-- Collect the nav links, forms, and other content for toggling -->
-          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav navbar-right">
-              <li><a href="login.php">Login/Register</a></li>
-            </ul>
-          </div><!-- /.navbar-collapse -->
-        <?php
-          }
-        ?>
-
       </div><!-- /.container-fluid -->
-    </nav>
-    <div class="container">
+    <div class="container row-2">
     

@@ -49,7 +49,7 @@ function searchYouTube(){//searches youtube to get a list of
         $('button.addVideo').click(function(){
           $(this).attr('disabled',1);
           submitVideo($(this).val());
-          $(this).attr('class',"btn btn-success");
+          $(this).attr('class',"button button-success");
           $(this).html("<span class='glyphicon glyphicon-ok'/>");
           listQueue();
         });
@@ -69,7 +69,7 @@ function listSearchResults(data){
   for (var i=0;i<videos.length;i++){
     $('#searchResults').append("<tr>"+
       "<td>"+(i+1).toString()+"</td>"+
-      "<td><button class='addVideo btn btn-default' value='"+videos[i].id.videoId+"'><span class='glyphicon glyphicon-plus'/></button></td>"+
+      "<td><button class='addVideo button' value='"+videos[i].id.videoId+"'><span class='glyphicon glyphicon-plus'/></button></td>"+
       "<td><img src='"+videos[i].snippet.thumbnails.default.url+"'/></td>"+
       "<td>"+videos[i].snippet.title+"</td>"+
       "<td>"+videos[i].snippet.description+"</td>"+
@@ -99,7 +99,7 @@ function listQueue(){
             if(typeof isAdmin != 'undefined' &&isAdmin==1){
               queueRow=queueRow+"<td>"+
                 "<button "+
-                  "class='removeVideo btn btn-default' "+
+                  "class='removeVideo button' "+
                   "value='"+videos[i].submissionId+"'>"+
                     "<span class='glyphicon glyphicon-remove'/>"+
                 "</button>"+
@@ -401,20 +401,15 @@ function fullScreen() {
 }
 
 function submitContentToggle() {
-  if (window.innerWidth < 770) {
-    $('.submitContent').css('width', window.innerWidth);
-  }
-  else {
-    $('.submitContent').css('width', '788px');
-  }
-
   if ($('.submitContent').is(':visible')) {
     $('.submitContent').hide();
     $('.container').css('margin-left', 'auto');
+    $('.container').css('width', '100%');
   }
   else {
     $('.submitContent').show();
     $('.container').css('margin-left', 0);
+    $('.container').css('width', '50%');
   }
 }
 

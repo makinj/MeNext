@@ -3,8 +3,8 @@
   include("header.php");//open html bar
 ?>
 <table class="loginTable">
-  <tr>
-    <td class="registerLoginContainer">
+  <tr class="no-border">
+    <td class="registerLoginContainer no-border">
       <h1 class="loginTitle">Login</h1>
       <div id="problem"></div>
       <div class="formContainer">
@@ -28,8 +28,8 @@
       </div>
     </td>
 
-    <td class="registerLoginContainer">
-      <h2 class="loginTitle">Register</h2>
+    <td class="registerLoginContainer no-border">
+      <h1 class="loginTitle">Register</h1>
       <div class="formContainer">
         <form id="register">
           <div class="formItem">

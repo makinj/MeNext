@@ -18,7 +18,7 @@
 ?>
  <!-- beginning of youtube player and queuelist -->
   <div class="mainPageContent">
-    <!--SWFObject to Verify Flash Version-->
+    <!-- SWFObject to Verify Flash Version -->
     <script type='text/javascript' src='js/swfobject.js'></script>
     <script type="text/javascript">
       var isAdmin=1;
@@ -29,27 +29,29 @@
     </div>
 
     <div id="disabledFullScreen">HTML5 fullscreen and firefox don't mix well with your operating system. We recommend Google Chrome.
-      <button type="button" id="closeAlert" class="btn btn-"><span class="glyphicon glyphicon-remove"></span></button>
+      <button type="button" id="closeAlert" class="btn"><span class="glyphicon glyphicon-remove"></span></button>
     </div>
-    <div class="btn-group">
-      <button type="button" id="thumbDown" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-thumbs-down"></span></button>
-      <button type="button" id="playPause" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-play"></span></button>
-      <button type="button" id="thumbUp" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-thumbs-up"></span></button>
-      <button type="button" id="fullScreen" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-fullscreen"></span></button>
+    
+    <div class="row clear" id="controls">
+      <button type="button" id="thumbDown" class="button col col-3 tablet-col-9 mobile-col-1-2"><span class="glyphicon glyphicon-thumbs-down"></span></button>
+      <button type="button" id="playPause" class="button col col-3 tablet-col-9 mobile-col-1-2"><span class="glyphicon glyphicon-play"></span></button>
+      <button type="button" id="thumbUp" class="button col col-3 tablet-col-9 mobile-col-1-2"><span class="glyphicon glyphicon-thumbs-up"></span></button>
+      <button type="button" id="fullScreen" class="button col col-3 tablet-col-9 mobile-col-1-2"><span class="glyphicon glyphicon-fullscreen"></span></button>
     </div>
 
 <?php
 
   }
 ?>
-    <div class="panel panel-default">
-      <div class="panel-heading">Song Queue</div>
-      <table class="table">
+    <div>
+      <div>Song Queue</div>
+      <table class="table no-border">
         <thead>
-          <tr>
+          <tr id="queueHeader">
             <th>#</th>
             <th>Title</th>
             <th>Submitted by:</th>
+            <th></th>
             <?php
               if(isset($_SESSION['admin'])&&$_SESSION['admin']==True){
                 echo"<th>Remove</th>";
@@ -59,11 +61,11 @@
         </thead>
         <tbody id="queueList">
         </tbody>
-
       </table>
     </div>
   </div>
-  <!-- end of youtube player and queuelist
+  <!-- 
+       end of youtube player and queuelist
        beginning of search content
   -->
 
@@ -85,10 +87,10 @@
         <div class="form-group">
           <input type="text" id="searchText" name="q" class="form-control" placeholder="Search">
         </div>
-        <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
+        <button type="submit" class="button search"><span class="glyphicon glyphicon-search"></span></button>
       </form>
 
-      <div class="panel panel-default" id="searchTableHeader">
+      <div id="searchTableHeader">
         <table class="table">
           <thead>
             <tr>
@@ -104,12 +106,9 @@
         </table>
       </div>
     </div>
-
-    <!--THIS IS THE OLD METHOD
-      <iframe src="submit.php" class="submitContent"></iframe>
-      -->
-    <button type="button" id="submitContentToggle" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-search"></span></button>
-
+    <div id="submitContentToggleContainer">
+      <button type="button" id="submitContentToggle" class="button"></button>
+    </div>
   <?php
     }
   ?>
