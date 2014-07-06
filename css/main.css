@@ -455,6 +455,11 @@ body{
   background-color: #a33;
 }
 
+.search{
+  padding: 8px 20px;
+  top: 1px;
+}
+
 .searchBar{
   display: inline-block;
 }
@@ -477,6 +482,7 @@ body{
   height: 16px;
   width: 16px;
   padding: 0px;
+  margin-top: 3px;
 }
 
 .button-success,
@@ -597,8 +603,14 @@ form{
   }
 
   #submitPartyName{
-    height: 60px;
+    height: 2.4em;
+    padding: 0 1em;
+    top: .25em;
     display: inline-block;
+  }
+
+  .addPartyButton{
+    margin-top: 3px;
   }
 
 .partyCreateWrapper{

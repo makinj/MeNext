@@ -9,7 +9,7 @@
       <div class="form-group" id="createPartyNameWrapper">
         <input type="text" id="createPartyName" class="form-control" name="name" placeholder="Party Name">
       </div>
-      <button type="submit" class="button" id="submitPartyName"><img class="icon" src="images/plus.png" /></button>
+      <button type="submit" class="button" id="submitPartyName"><img class="icon addPartyButton" src="images/plus.png" /></button>
       <input type="hidden" name="action" value='createParty'>
     </form>
   </div>
