@@ -354,27 +354,26 @@
   */
   function createParty($db, $args){
     if(!isset($_SESSION['userId'])){
-      return -1;
+      return "not logged in";
     }
-    $name = $args;
-    if (is_array($args) && array_key_exists('name', $args)){
+    if (is_array($args) && isset($args['name']) && $args['name']!=''){
       $name = $args['name'];
-    }
-    $name = sanitizeString($name);
+      $name = sanitizeString($name);
 
-    $stmt = $db->prepare('
-      INSERT INTO
-        Party
-        (name, creatorId)
-      VALUES
-        (:name,:creatorId)'
-    );
-    $stmt->bindValue(':name', $name);
-    $stmt->bindValue(':creatorId', $_SESSION['userId']);
-    $stmt->execute();
-    $partyId = $db->lastInsertId();
-    joinParty($db, array("partyId"=>$partyId), 1);
-    return $partyId;
+      $stmt = $db->prepare('
+        INSERT INTO
+          Party
+          (name, creatorId)
+        VALUES
+          (:name,:creatorId)'
+      );
+      $stmt->bindValue(':name', $name);
+      $stmt->bindValue(':creatorId', $_SESSION['userId']);
+      $stmt->execute();
+      $partyId = $db->lastInsertId();
+      joinParty($db, array("partyId"=>$partyId), 1);
+      return $partyId;
+    }
   }
 
   /*
@@ -401,19 +400,23 @@
   function listJoinedParties($db){
     try {
       // Find all videos associated with $partyId (set to 1 for testing)
-      $stmt = $db->prepare("
-        SELECT p.partyId, p.name, u.username
-        FROM Party p, PartyUser pu, User u
-        WHERE p.partyId = pu.partyId AND
-        pu.userId = :userId AND
-        p.creatorId=u.userId;");
-      $stmt->bindValue(':userId', $_SESSION['userId']);
-      $stmt->execute();
-      $result=array();
-      while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {//creates an array of the results to return
-        array_push($result, $row);
+      if(isset($_SESSION['userId'])){
+        $stmt = $db->prepare("
+          SELECT p.partyId, p.name, u.username
+          FROM Party p, PartyUser pu, User u
+          WHERE p.partyId = pu.partyId AND
+          pu.userId = :userId AND
+          p.creatorId=u.userId;");
+        $stmt->bindValue(':userId', $_SESSION['userId']);
+        $stmt->execute();
+        $result=array();
+        while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {//creates an array of the results to return
+          array_push($result, $row);
+        }
+        return $result;
+      }else{
+
       }
-      return $result;
     } catch (PDOException $e) {//something went wrong...
       error_log("Error: " . $e->getMessage());
       exit();
