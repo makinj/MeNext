@@ -319,6 +319,8 @@ body{
 }
 
 .header{
+  padding-top: .4em;
+  padding-bottom: .4em;
   padding-left: 1%;
   padding-right: 1%;
   z-index: 15;
@@ -339,6 +341,11 @@ body{
 
 #searchTableHeader > table > thead > tr > th:nth-child(3){
   width: 150px;
+}
+
+#youtubePlayer{
+  width: 100%;
+  height: 
 }
 
 #disabledFullScreen {
@@ -381,8 +388,13 @@ body{
 }
 
 .button{
+  background-color: #888;
   border-radius: 2px;
 }
+
+  .button:hover{
+    background-color: #333;
+  }
 
 #controls > button:nth-child(n)
 {
@@ -397,6 +409,16 @@ body{
 #controls > button:last-child{
   border-top-right-radius: 2px;
   border-bottom-right-radius: 2px;
+}
+
+.control{
+  height: 60px;
+  padding-top: .8em;
+  padding-bottom: .8em;
+}
+
+.icon{
+  height: 24px;
 }
 
 #thumbDown:hover{
@@ -415,9 +437,13 @@ body{
   background-color: #3a3;
 }
 
+#queueTable{
+  background-color: #ddd;
+}
+
 .removeVideo{
-  width: 35px;
-  height: 35px;
+  width: 30px;
+  height: 30px;
   padding: 0px;
 }
 
@@ -429,8 +455,8 @@ body{
   background-color: #a33;
 }
 
-.search{
-
+.searchBar{
+  display: inline-block;
 }
 
 .addVideo{
@@ -442,6 +468,15 @@ body{
 
 .addVideo:hover{
   background-color: #393;
+}
+
+.removeVideoIcon,
+.addVideoIcon,
+.videoAdded,
+.searchIcon{
+  height: 16px;
+  width: 16px;
+  padding: 0px;
 }
 
 .button-success,
@@ -474,7 +509,7 @@ body{
   right: 0px;
   bottom: 0px;
   width: 150px;
-  height: 50px;
+  height: 64px;
   z-index: 10;
 }
 
@@ -557,6 +592,36 @@ form{
     float: right;
   }
 
+  #createPartyNameWrapper{
+    display: inline-block;
+  }
+
+  #submitPartyName{
+    height: 60px;
+    display: inline-block;
+  }
+
+.partyCreateWrapper{
+  margin-bottom: 5px;
+}
+
+.joinedPartiesWrapper{
+  background-color: #ccc;
+}
+
+  .joinedPartiesWrapper > table > thead > tr > th:first-child{
+    width: 40px;
+  }
+
+  .joinedPartiesHeading{
+    padding-top: 1em;
+    padding-left: 1em;
+  }
+
+.welcomeText{
+  font-size: 2em;
+}
+
 .submit{
   border: none;
   padding: 20px;
@@ -591,6 +656,7 @@ form{
     background-color: #282;
     border-bottom: 2px solid #282;
     margin-top: 38px;
+    outline: none;
     /* future-proofing 
     -o-transition: background 0s;
     -ms-transition: background 0s;
@@ -598,4 +664,8 @@ form{
     -webkit-transition: background 0s;
     /* overridden with proper element */
     transition: background 0s;
+  }
+
+  .submit:focus{
+    outline: none;
   }

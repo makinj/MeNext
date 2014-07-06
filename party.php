@@ -33,10 +33,10 @@
     </div>
     
     <div class="row clear" id="controls">
-      <button type="button" id="thumbDown" class="button col col-3 tablet-col-9 mobile-col-1-2"><span class="glyphicon glyphicon-thumbs-down"></span></button>
-      <button type="button" id="playPause" class="button col col-3 tablet-col-9 mobile-col-1-2"><span class="glyphicon glyphicon-play"></span></button>
-      <button type="button" id="thumbUp" class="button col col-3 tablet-col-9 mobile-col-1-2"><span class="glyphicon glyphicon-thumbs-up"></span></button>
-      <button type="button" id="fullScreen" class="button col col-3 tablet-col-9 mobile-col-1-2"><span class="glyphicon glyphicon-fullscreen"></span></button>
+      <button type="button" id="thumbDown" class="button control col col-3 tablet-col-9 mobile-col-1-2"><img class="icon" src="images/dislike.png" /></button>
+      <button type="button" id="playPause" class="button control col col-3 tablet-col-9 mobile-col-1-2"><img class="icon" src="images/play.png" /></button>
+      <button type="button" id="thumbUp" class="button control col col-3 tablet-col-9 mobile-col-1-2"><img class="icon" src="images/like.png" /></button>
+      <button type="button" id="fullScreen" class="button control col col-3 tablet-col-9 mobile-col-1-2"><img class="icon" src="images/fullscreen.png" /></button>
     </div>
 
 <?php
@@ -45,7 +45,7 @@
 ?>
     <div>
       <div>Song Queue</div>
-      <table class="table no-border">
+      <table class="table no-border" id="queueTable">
         <thead>
           <tr id="queueHeader">
             <th>#</th>
@@ -84,10 +84,10 @@
             return false; //prevents page reload
           });
         </script>
-        <div class="form-group">
+        <div class="form-group searchBar">
           <input type="text" id="searchText" name="q" class="form-control" placeholder="Search">
         </div>
-        <button type="submit" class="button search"><span class="glyphicon glyphicon-search"></span></button>
+        <button type="submit" class="button search"><img class="searchIcon" src="/images/search.png"/></button>
       </form>
 
       <div id="searchTableHeader">
@@ -107,7 +107,7 @@
       </div>
     </div>
     <div id="submitContentToggleContainer">
-      <button type="button" id="submitContentToggle" class="button"></button>
+      <button type="button" id="submitContentToggle" class="button"><img class="icon" src="images/search.png" /></button>
     </div>
   <?php
     }
