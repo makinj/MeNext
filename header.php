@@ -48,22 +48,22 @@
     
       <div class="header dark-blue-row">
         <div class="row clear">
-          <div class="col col-2 tablet-col-10 mobile-col-3-4">
-            <a class="logo left mobile-no-float" href="/">MeNext</a>
+          <div class="col col-2 tablet-col-10 mobile-col-3-4 colHeader">
+            <a class="logo left mobile-no-float" href="/"><img src="/images/headerLogoSmall.png" id="headerLogo" /></a>
           </div>
-          <div class="col col-10 tablet-col-2 mobile-col-1-4">
+          <div class="col col-10 tablet-col-2 mobile-col-1-4 colHeader">
           
             <?php
               if(isset($_SESSION['logged'])){
             ?>
             
-            <a class="right mobile-no-float" href="logout.php">Log Out</a>
+            <a class="right mobile-no-float logLink" href="logout.php">Log Out</a>
             
             <?php
               }else{
             ?>
             
-            <a class="right mobile-no-float" href="login.php">Login/Register</a>
+            <a class="right mobile-no-float logLink" href="login.php">Login/Register</a>
             
             <?php
               }

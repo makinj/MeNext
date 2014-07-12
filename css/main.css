@@ -318,6 +318,14 @@ body{
   color: #fff;
 }
 
+.colHeader{
+  height: 35px;
+}
+
+#headerLogo{
+  height: 35px;
+}
+
 .header{
   padding-top: .4em;
   padding-bottom: .4em;
@@ -329,6 +337,10 @@ body{
 .logo{
   color: #fff;
   text-decoration: none;
+}
+
+.logLink{
+  padding: 6px 0;
 }
 
 #searchTableHeader > table > thead > tr > th:first-child{
@@ -345,7 +357,6 @@ body{
 
 #youtubePlayer{
   width: 100%;
-  height: 
 }
 
 #disabledFullScreen {
