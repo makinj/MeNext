@@ -49,8 +49,8 @@
         INDEX(username),
 
         PRIMARY KEY(userId)
-      );'
-    );//stores each user as a row with relevent info
+      )
+    ;');//stores each user as a row with relevent info
 
     // Other ideas for attributes include length, and url
     // May remove videoId in the future, as youtubeId is unique to the video already
@@ -65,8 +65,8 @@
         PRIMARY KEY(videoId),
 
         INDEX(videoId)
-      );'
-    );//specific video, avoids popular selections bloating database
+      )
+    ;');//specific video, avoids popular selections bloating database
 
     executeSQL($db,
       'CREATE TABLE Party(
@@ -75,8 +75,8 @@
         creatorId int REFERENCES User(userId),
 
         PRIMARY KEY(partyId)
-      );'
-    );//each party has row right now there is only one
+      )
+    ;');//each party has row right now there is only one
 
     // Index is on partyId, then rating. This will facilitate searching
     // a certain party for the highest rated video.
@@ -95,8 +95,8 @@
         INDEX(submissionId, wasPlayed, rating),
 
         PRIMARY KEY(submissionId)
-      );'
-    );//individual actual submission
+      )
+    ;');//individual actual submission
 
     // Index is on userId, then partyId. This will facilitate searching
     // a certain user for the highest rated video.
@@ -109,8 +109,8 @@
         INDEX(partyId, userId),
 
         PRIMARY KEY(userId, partyId)
-      );'
-    );//Relationship between user and party.  Shows that user has "joined" the party
+      )
+    ;');//Relationship between user and party.  Shows that user has "joined" the party
 
 
     executeSQL($db,
@@ -120,13 +120,13 @@
         voteValue int,
 
         PRIMARY KEY(voterId, submissionId)
-      );'
-    );//stores votes by users to songs
+      )
+    ;');//stores votes by users to songs
   }
 
   function executeSQL($db, $query){//runs a query with PDO's specific syntax
     try{
-      $db->exec("$query");
+      $db->exec($query);
     }catch(PDOException $e){//something went wrong...
       error_log('Query failed: ' . $e->getMessage());
       exit;
@@ -135,52 +135,119 @@
 
   function isUser($db, $name){//checks for row in user table corresponding to username provided
     $name = sanitizeString($name);//prevents sql injection attempts
-    $result = $db->prepare("SELECT * FROM User WHERE username=:username;");//performs check
+    $result = $db->prepare(
+      'SELECT
+        *
+      FROM
+        User
+      WHERE
+        username=:username
+    ;');//performs check
     $result->bindValue(':username', $name);
     $result->execute();
     return ($result->rowCount()>0);//1 if exists
   }
 
+  /*
+  Returns 1 or 0 based on whether the user owns the party
+  */
+  function isPartyOwner($db, $partyId, $userId=0){
+    if ($userId==0 && isset($_SESSION['userId'])){
+      $userId = $_SESSION['userId'];
+    }
+    $stmt = $db->prepare(
+      'SELECT
+        *
+      FROM
+        PartyUser
+      Where
+        partyId=:partyId AND
+        userId=:userId AND
+        owner=1
+    ;');//makes new row with given info
+    $stmt->bindValue(':userId', $userId);
+    $stmt->bindValue(':partyId', $partyId);
+    $stmt->execute();
+    return $stmt->rowCount()>0;
+  }
+
   function createAccount($db, $args){//creates account with an array of user information given
+    $results = array("errors"=>array());
     if(is_array($args)&&array_key_exists("username", $args)&&array_key_exists("password", $args)){//valid array was given
       $username = sanitizeString($args['username']);
       $password = hash('sha512',PRE_SALT.sanitizeString($args['password']).POST_SALT);
       if(isUser($db, $username)){//user already exists
-        return "alreadyExists";
+        array_push($results['errors'], "username unavailable");
       } else {
-        $stmt = $db->prepare("insert into User (username, password) VALUES(:username, :password);");//makes new row with given info
-        $stmt->bindValue(':username', $username);
-        $stmt->bindValue(':password', $password);
-        $stmt->execute();
-        return "success";
+        try {
+          $stmt = $db->prepare(
+            'INSERT INTO
+              User(
+                username,
+                password
+              )
+            VALUES(
+              :username,
+              :password
+            )
+          ;');//makes new row with given info
+          $stmt->bindValue(':username', $username);
+          $stmt->bindValue(':password', $password);
+          $stmt->execute();
+          $results['status'] = "success";
+        } catch (PDOException $e) {//something went wrong...
+          error_log("Error: " . $e->getMessage());
+          array_push($results['errors'], "database error");
+        }
       }
+    }else{
+      array_push($results['errors'], "missing username or password");
     }
+    return $results;
   }
+
   function logIn($db, $args){//sets session data if the user information matches a user's row
+    $results = array("errors"=>array());
     if(is_array($args)&&array_key_exists("username", $args)&&array_key_exists("password", $args)){//valid array was given
       $username = sanitizeString($args['username']);
       $password = hash('sha512',PRE_SALT.sanitizeString($args['password']).POST_SALT);
-      $stmt = $db->prepare("SELECT * FROM User WHERE username=:username and password=:password;");//checks for matching row
-      $stmt->bindValue(':username', $username);
-      $stmt->bindValue(':password', $password);
-      $stmt->execute();
-      if($stmt->rowCount()==1){//if successfully logged in
-        $result = $stmt->fetch();
-        if(session_id() == '') {
-          session_start();
+      try{
+        $stmt = $db->prepare(
+          'SELECT
+            *
+          FROM
+            User
+          WHERE
+            username=:username and
+            password=:password
+        ;');//checks for matching row
+        $stmt->bindValue(':username', $username);
+        $stmt->bindValue(':password', $password);
+        $stmt->execute();
+
+        if($stmt->rowCount()==1){//if successfully logged in
+          $result = $stmt->fetch(PDO::FETCH_OBJ);
+          $_SESSION['username'] = $username;
+          $_SESSION['userId'] = $result->userId;
+          $_SESSION['logged'] = 1;
+          $results['status'] = 'success';
+          $results['token'] = session_id();
+        }else{
+          array_push($results['errors'], "bad username/password combination");
         }
-        $_SESSION['username']=$username;
-        $_SESSION['userId']=$result[0];
-        $_SESSION['logged']=1;
-        return session_id();
+      } catch (PDOException $e) {//something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($results['errors'], "database error");
       }
-      else{//unsuccessful login attempt
-        return -1;
-      }
+
+    }else{
+      array_push($results['errors'], "missing username or password");
     }
+    return $results;
   }
 
   function addVideo($db, $args){
+    $results = array("errors"=>array());
     if (is_array($args)&&array_key_exists("youtubeId", $args)&&array_key_exists("partyId", $args)){
       $youtubeId = sanitizeString($args['youtubeId']);
       $url= 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id='.$youtubeId.'&key='.API_SERVER_KEY;//url to verify data from youtube
@@ -193,86 +260,92 @@
 
         // Want to try to insert, but not change the videoId, and
         //   change LAST_INSERT_ID() to be the videoId of the inserted video
-        $stmt = $db->prepare("
-          INSERT INTO Video (youtubeId, title)
-          VALUES (:youtubeId, :title)
-          ON DUPLICATE KEY UPDATE videoId = LAST_INSERT_ID(videoId);");
-        $stmt->bindValue(':youtubeId', $youtubeId);
-        $stmt->bindValue(':title', $title);
-        // TODO: Add error checking for SQL execution:
-        $stmt->execute();
+        try{
+          $stmt = $db->prepare(
+            'INSERT INTO
+              Video(
+                youtubeId,
+                title
+              )
+            VALUES(
+              :youtubeId,
+              :title
+            )
+            ON
+              DUPLICATE KEY
+            UPDATE
+              videoId = LAST_INSERT_ID(videoId)
+          ;');
+          $stmt->bindValue(':youtubeId', $youtubeId);
+          $stmt->bindValue(':title', $title);
+          // TODO: Add error checking for SQL execution:
+          $stmt->execute();
 
-        // Insert into Submissions.
-        // LAST_INSERT_ID() returns id of last insertion's (or replace) auto-increment field
-        //     First we'll get this working with just 1 party, partyId=1
-        $partyId = sanitizeString($args['partyId']);
-        $stmt = $db->prepare("INSERT INTO Submission (videoId, partyId, submitterId) VALUES(LAST_INSERT_ID(), :partyId, :submitterId );");
-        $stmt->bindValue(':submitterId', $_SESSION['userId']);
-        $stmt->bindValue(':partyId', $partyId);
-        $stmt->execute();
-        return "success";//was successful
+          // Insert into Submissions.
+          // LAST_INSERT_ID() returns id of last insertion's (or replace) auto-increment field
+          //     First we'll get this working with just 1 party, partyId=1
+          $partyId = sanitizeString($args['partyId']);
+          $stmt = $db->prepare(
+            'INSERT INTO
+              Submission(
+                videoId,
+                partyId,
+                submitterId
+              )
+            VALUES(
+              LAST_INSERT_ID(),
+              :partyId,
+              :submitterId
+            )
+          ;');
+          $stmt->bindValue(':submitterId', $_SESSION['userId']);
+          $stmt->bindValue(':partyId', $partyId);
+          $stmt->execute();
+          $results['status'] = 'success';
+        }catch (PDOException $e) {//something went wrong...
+          error_log("Error: " . $e->getMessage());
+          array_push($results['errors'], "database error");
+        }
+      }else{
+        array_push($results['errors'], "could not verify youtubeId");
       }
+    }else{
+      array_push($results['errors'], "missing youtubeId or partyId");
     }
-    return -1;//failed
+    return $results;
   }
 
   function listVideos($db, $args){
+    $results = array("errors"=>array());
     if(is_array($args)&&array_key_exists("partyId", $args)){//valid array was given
-      try {
-        // Find all videos associated with $partyId (set to 1 for testing)
-        $userId = -1;
-        if(isset($_SESSION['userId'])) $userId=sanitizeString($_SESSION['userId']);
-
-        $stmt = $db->prepare("
-          SELECT
+      $userId = -1;
+      if(isset($_SESSION['userId'])) $userId=sanitizeString($_SESSION['userId']);
+      // Find all videos associated with partyId
+      $partyId = sanitizeString($args['partyId']);
+      try{
+        $stmt = $db->prepare(
+          'SELECT
             v.youtubeId,
             v.title,
             s.submissionId,
             u.username,
-            (select sum(voteValue) from Vote where submissionId=s.submissionId) as rating,
-            (select voteValue from Vote where submissionId=s.submissionId and voterId=:userId) as userRating
-          FROM
-            Submission s,
-            Video v,
-            User u
-          WHERE
-            s.videoId = v.videoId AND
-            s.partyId = :partyId AND
-            s.wasPlayed=0 AND
-            s.removed=0 AND
-            s.submitterId = u.userId
-          ORDER BY
-            s.submissionId ASC;");
-        $partyId = sanitizeString($args['partyId']);
-        $stmt->bindValue(':userId', $userId);
-        $stmt->bindValue(':partyId', $partyId);
-        $stmt->execute();
-        $result=array();
-        while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {//creates an array of the results to return
-          array_push($result, $row);
-        }
-        return $result;
-      } catch (PDOException $e) {//something went wrong...
-        error_log("Error: " . $e->getMessage());
-        exit();
-      }
-    }
-  }
-  function getCurrentVideo($db, $args){
-    if(is_array($args)&&array_key_exists("partyId", $args)){//valid array was given
-      try {
-        // Find all videos associated with $partyId (set to 1 for testing)
-        $userId = -1;
-        if(isset($_SESSION['userId'])) $userId=sanitizeString($_SESSION['userId']);
-
-        $stmt = $db->prepare("
-          SELECT
-            v.youtubeId,
-            v.title,
-            s.submissionId,
-            u.username,
-            (select sum(voteValue) from Vote where submissionId=s.submissionId) as rating,
-            (select voteValue from Vote where submissionId=:userId) as userRating
+            (
+              SELECT
+                sum(voteValue)
+              FROM
+                Vote
+              WHERE
+                submissionId=s.submissionId
+            ) as rating,
+            (
+              SELECT
+                voteValue
+              FROM
+                Vote
+              WHERE
+                submissionId=s.submissionId AND
+                voterId=:userId
+            ) as userRating
           FROM
             Submission s,
             Video v,
@@ -285,152 +358,285 @@
             s.submitterId = u.userId
           ORDER BY
             s.submissionId ASC
-          LIMIT 1;");
-        $partyId = sanitizeString($args['partyId']);
+        ;');
         $stmt->bindValue(':userId', $userId);
         $stmt->bindValue(':partyId', $partyId);
         $stmt->execute();
-        if($stmt->rowCount()==0){
-          return -1;
+        $results['videos']=array();
+        while ($row = $stmt->fetch(PDO::FETCH_OBJ)){//creates an array of the results to return
+          array_push($results['videos'], $row);
         }
-        return $stmt->fetch(PDO::FETCH_OBJ);
-      } catch (PDOException $e) {//something went wrong...
+        $results['status']='success';
+      }catch (PDOException $e) {//something went wrong...
         error_log("Error: " . $e->getMessage());
-        exit();
+        array_push($results['errors'], "database error");
       }
+    }else{
+      array_push($results['errors'], "missing partyId");
     }
-    return -1;
+    return $results;
   }
 
-  function markVideoWatched($db, $args){//takes an array of or argument with the submission id of what to mark as watched
-    try {
-      if(session_id() == '') {
-        session_start();
+  function getCurrentVideo($db, $args){
+    $results = array("errors"=>array());
+    if(is_array($args)&&array_key_exists("partyId", $args)){//valid array was given
+      $userId = -1;
+      if(isset($_SESSION['userId'])) $userId=sanitizeString($_SESSION['userId']);
+      // Find all videos associated with partyId
+      $partyId = sanitizeString($args['partyId']);
+      try{
+        $stmt = $db->prepare(
+          'SELECT
+            v.youtubeId,
+            v.title,
+            s.submissionId,
+            u.username,
+            (
+              SELECT
+                sum(voteValue)
+              FROM
+                Vote
+              WHERE
+                submissionId=s.submissionId
+            ) as rating,
+            (
+              SELECT
+                voteValue
+              FROM
+                Vote
+              WHERE
+                submissionId=s.submissionId and
+                voterId=:userId
+            ) as userRating
+          FROM
+            Submission s,
+            Video v,
+            User u
+          WHERE
+            s.videoId = v.videoId AND
+            s.partyId = :partyId AND
+            s.wasPlayed=0 AND
+            s.removed=0 AND
+            s.submitterId = u.userId
+          ORDER BY
+            s.submissionId ASC
+          LIMIT 1
+        ;');
+        $stmt->bindValue(':userId', $userId);
+        $stmt->bindValue(':partyId', $partyId);
+        $stmt->execute();
+        $results['video'] = $stmt->fetch(PDO::FETCH_OBJ);
+        $results['status']='success';
+      }catch (PDOException $e) {//something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($results['errors'], "database error");
       }
-      $stmt = $db->prepare("
-        UPDATE Submission s, Party p
-        SET s.wasPlayed = 1
-        WHERE s.submissionId = :submissionId AND
-        s.partyId=p.partyId AND
-        p.creatorId=:userId;");
-      $submissionId = sanitizeString($args['submissionId']);
-      $stmt->bindValue(':submissionId', $submissionId);
-      $stmt->bindValue(':userId', $_SESSION['userId']);
-      $stmt->execute();
-      return "success";
-    } catch (PDOException $e) {
-      //something went wrong...
-      error_log("Error: " . $e->getMessage());
-      exit();
+    }else{
+      array_push($results['errors'], "missing partyId");
     }
+    return $results;
+  }
+
+  function markVideoWatched($db, $args){//takes an array with the submission id of what to mark as watched
+    $results = array("errors"=>array());
+    if(isset($_SESSION['userId'])&&is_array($args)&&array_key_exists("submissionId", $args)){
+      $submissionId = sanitizeString($args['submissionId']);
+      try {
+      $stmt = $db->prepare(
+        'UPDATE
+          Submission s,
+          User u,
+          Party p
+        SET
+          s.wasPlayed = 1
+        WHERE
+          s.submissionId = :submissionId AND
+          s.partyId=p.partyId AND
+          p.creatorId=u.userId AND
+          u.userId=:userId
+        ;');
+        $stmt->bindValue(':submissionId', $submissionId);
+        $stmt->bindValue(':userId', $_SESSION['userId']);
+        $stmt->execute();
+        $result['status'] = 'success';
+      } catch (PDOException $e) {
+        //something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($results['errors'], "database error");
+      }
+    }else{
+      array_push($results['errors'], "missing submissionId or not logged in");
+    }
+    return $results;
   }
 
   function removeVideo($db, $args){//takes an array of or argument with the submission id of what to mark as watched
-    try {
-      if(session_id() == '') {
-        session_start();
-      }
-      $stmt = $db->prepare("
-        UPDATE Submission s, User u, Party p
-        SET s.removed = 1
-        WHERE s.submissionId = :submissionId AND
-        s.partyId=p.partyId AND
-        p.creatorId=u.userId AND
-        u.userId=:userId;");
+    $results = array("errors"=>array());
+    if(isset($_SESSION['userId'])&&is_array($args)&&array_key_exists("submissionId", $args)){
       $submissionId = sanitizeString($args['submissionId']);
-      $stmt->bindValue(':submissionId', $submissionId);
-      $stmt->bindValue(':userId', $_SESSION['userId']);
-      $stmt->execute();
-      return "success";
-    } catch (PDOException $e) {
-      //something went wrong...
-      error_log("Error: " . $e->getMessage());
-      exit();
+      try {
+      $stmt = $db->prepare(
+        'UPDATE
+          Submission s,
+          User u,
+          Party p
+        SET
+          s.removed = 1
+        WHERE
+          s.submissionId = :submissionId AND
+          s.partyId=p.partyId AND
+          p.creatorId=u.userId AND
+          u.userId=:userId
+        ;');
+        $stmt->bindValue(':submissionId', $submissionId);
+        $stmt->bindValue(':userId', $_SESSION['userId']);
+        $stmt->execute();
+        $results['status'] = 'success';
+      } catch (PDOException $e) {
+        //something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($results['errors'], "database error");
+      }
+    }else{
+      array_push($results['errors'], "missing submissionId or not logged in");
     }
+    return $results;
   }
 
   /*
   Adds party by the username stored in session and title given
   */
   function createParty($db, $args){
-    if(!isset($_SESSION['userId'])){
-      return "not logged in";
+    $results = array("errors"=>array());
+    if (isset($_SESSION['userId']) && is_array($args) && array_key_exists("name", $args) && $args['name']!=''){
+      $name = sanitizeString($args['name']);
+      try{
+        $stmt = $db->prepare(
+          'INSERT INTO
+            Party(
+              name,
+              creatorId
+            )
+          VALUES(
+            :name,
+            :creatorId
+          )
+        ;');
+        $stmt->bindValue(':name', $name);
+        $stmt->bindValue(':creatorId', $_SESSION['userId']);
+        $stmt->execute();
+        $partyId = $db->lastInsertId();
+        $results = array_merge_recursive($results, joinParty($db, array("partyId"=>$partyId), 1));
+        $results['status']='success';
+        $results['partyId']=$partyId;
+      } catch (PDOException $e) {
+        //something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($results['errors'], "database error");
+      }
+    }else{
+      if(!isset($_SESSION['userId'])){
+        array_push($results['errors'], "must be logged in");
+      }
+      if(!array_key_exists("name", $args) || $args['name']==''){
+        array_push($results['errors'], "party name was not specified");
+      }
     }
-    if (is_array($args) && isset($args['name']) && $args['name']!=''){
-      $name = $args['name'];
-      $name = sanitizeString($name);
-
-      $stmt = $db->prepare('
-        INSERT INTO
-          Party
-          (name, creatorId)
-        VALUES
-          (:name,:creatorId)'
-      );
-      $stmt->bindValue(':name', $name);
-      $stmt->bindValue(':creatorId', $_SESSION['userId']);
-      $stmt->execute();
-      $partyId = $db->lastInsertId();
-      joinParty($db, array("partyId"=>$partyId), 1);
-      return $partyId;
-    }
+    return $results;
   }
 
   /*
   Add the current user to the party specified
   */
   function joinParty($db, $args, $owner=0){
-    if(!isset($_SESSION['userId'])){
-      return -1;
-    }
-    if(is_array($args)&&array_key_exists("partyId", $args)){//valid array was given
+    $results = array("errors"=>array());
+    if (isset($_SESSION['userId']) && is_array($args) && array_key_exists("partyId", $args)){
       $partyId = sanitizeString($args['partyId']);
-      $stmt = $db->prepare("insert into PartyUser (userId, partyId, owner) VALUES(:userId, :partyId, :owner);");//makes new row with given info
-      $stmt->bindValue(':userId', $_SESSION['userId']);
-      $stmt->bindValue(':partyId', $partyId);
-      $stmt->bindValue(':owner', $owner, PDO::PARAM_BOOL);
-      $stmt->execute();
-      return "success";
+      try{
+        $stmt = $db->prepare(
+          'INSERT INTO
+            PartyUser(
+              userId,
+              partyId,
+              owner
+            )
+          VALUES(
+            :userId,
+            :partyId,
+            :owner
+          )
+        ;');//makes new row with given info
+        $stmt->bindValue(':userId', $_SESSION['userId']);
+        $stmt->bindValue(':partyId', $partyId);
+        $stmt->bindValue(':owner', $owner, PDO::PARAM_BOOL);
+        $stmt->execute();
+        $results['status'] = "success";
+      } catch (PDOException $e) {
+        //something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($results['errors'], "database error");
+      }
+    }else{
+      if(!isset($_SESSION['userId'])){
+        array_push($results['errors'], "must be logged in");
+      }
+      if(!array_key_exists("partyId", $args)){
+        array_push($results['errors'], "partyId was not specified");
+      }
     }
+    return $results;
   }
 
   /*
   List the parties a user is in
   */
-  function listJoinedParties($db){
-    try {
-      // Find all videos associated with $partyId (set to 1 for testing)
-      if(isset($_SESSION['userId'])){
-        $stmt = $db->prepare("
-          SELECT p.partyId, p.name, u.username
-          FROM Party p, PartyUser pu, User u
-          WHERE p.partyId = pu.partyId AND
-          pu.userId = :userId AND
-          p.creatorId=u.userId;");
+  function listJoinedParties($db, $args=0){
+    $results = array("errors"=>array());
+    if(isset($_SESSION['userId'])){
+      try {
+        $stmt = $db->prepare(
+          'SELECT
+            p.partyId,
+            p.name,
+            u.username
+          FROM
+            Party p,
+            PartyUser pu,
+            User u
+          WHERE
+            p.partyId = pu.partyId AND
+            pu.userId = :userId AND
+            p.creatorId = u.userId
+        ;');
         $stmt->bindValue(':userId', $_SESSION['userId']);
         $stmt->execute();
-        $result=array();
+        $results['parties'] = array();
         while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {//creates an array of the results to return
-          array_push($result, $row);
+          array_push($results['parties'], $row);
         }
-        return $result;
-      }else{
-
+        $results['status'] = "success";
+      } catch (PDOException $e) {//something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($results['errors'], "database error");
       }
-    } catch (PDOException $e) {//something went wrong...
-      error_log("Error: " . $e->getMessage());
-      exit();
+    }else{
+      array_push($results['errors'], "must be logged in");
     }
+    return $results;
   }
 
   /*
   List parties a user hasn't joined
   */
   function listUnjoinedParties($db){
+    $results = array("errors"=>array());
+    $userId = -1;
+    if(isset($_SESSION['userId'])){
+      $userId = $_SESSION['userId'];
+    }
     try {
-      // Find all videos associated with $partyId (set to 1 for testing)
-      $stmt = $db->prepare("
-        SELECT
+      $stmt = $db->prepare(
+        'SELECT
           p.partyId,
           p.name,
           u.username
@@ -440,41 +646,31 @@
         WHERE
           p.creatorId=u.userId AND
           p.partyId NOT IN (
-            Select partyId from PartyUser where userId=:userId
-          );");
-      $stmt->bindValue(':userId', $_SESSION['userId']);
+            SELECT
+              partyId
+            FROM
+              PartyUser
+            WHERE
+              userId=:userId
+          )
+      ;');
+      $stmt->bindValue(':userId', $userId);
       $stmt->execute();
-      $result=array();
+      $results['parties'] = array();
       while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {//creates an array of the results to return
-        array_push($result, $row);
+        array_push($results['parties'], $row);
       }
-      return $result;
+      $results['status'] = "success";
     } catch (PDOException $e) {//something went wrong...
       error_log("Error: " . $e->getMessage());
-      exit();
+      array_push($results['errors'], "database error");
     }
+    return $results;
   }
 
-  /*
-  Returns 1 or 0 based on whether the user owns the party
-  */
-  function isPartyOwner($db, $partyId){
-    $stmt = $db->prepare(
-      "SELECT
-        *
-      FROM
-        PartyUser
-      Where
-        partyId=:partyId AND
-        userId=:userId AND
-        owner=1;");//makes new row with given info
-    $stmt->bindValue(':userId', $_SESSION['userId']);
-    $stmt->bindValue(':partyId', $partyId);
-    $stmt->execute();
-    return $stmt->rowCount()>0;
-  }
 
   function vote($db, $args){
+    $results = array("errors"=>array());
     if (is_array($args)&&array_key_exists("submissionId", $args)&&array_key_exists("direction", $args)&&isset($_SESSION['userId'])){
       try {
         $voterId = sanitizeString($_SESSION['userId']);
@@ -482,19 +678,39 @@
         $voteValue = intval(sanitizeString($args['direction']));
         if($voteValue>0)$voteValue=1;
         else if($voteValue<0)$voteValue=-1;
-        $stmt = $db->prepare("
-          INSERT INTO Vote (voterId, submissionId, voteValue)
-          VALUES (:voterId, :submissionId, :voteValue);");
+        $stmt = $db->prepare(
+          'INSERT INTO
+            Vote(
+              voterId,
+              submissionId,
+              voteValue
+            )
+          VALUES(
+            :voterId,
+            :submissionId,
+            :voteValue
+          )
+        ;');
         $stmt->bindValue(':voterId', $voterId);
         $stmt->bindValue(':submissionId', $submissionId);
         $stmt->bindValue(':voteValue', $voteValue);
         $stmt->execute();
-        return "success";//was successful
+        $results['status'] = "success";//was successful
       }catch(PDOException $e){//something went wrong...
         error_log('Query failed: ' . $e->getMessage());
-        exit;
+        array_push($results['errors'], "database error");
+      }
+    }else{
+      if(!isset($_SESSION['userId'])){
+        array_push($results['errors'], "must be logged in");
+      }
+      if(!array_key_exists("submissionId", $args)){
+        array_push($results['errors'], "submissionId was not specified");
+      }
+      if(!array_key_exists("direction", $args)){
+        array_push($results['errors'], "direction was not specified");
       }
     }
-    return -1;//failed
+    return $results;
   }
 ?>

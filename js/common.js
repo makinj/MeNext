@@ -2,14 +2,10 @@ function register(){
   $.post("handler.php", $("#register").serialize(),
     function(data){
       var result= JSON.parse(data);
-      if(result['token']!=-1){
+      if(result['status']=='success'){
         window.location.href = "/";
       }else{
-        if(result['registerStat']=="alreadyExists"){
-          $("#problem").html("username already in use");
-        }else{
-          $("#problem").html("unable to register user");
-        }
+        $("#problem").html(result['errors'][0]);
       }
     }
   );
@@ -20,10 +16,10 @@ function login(){
   $.post("handler.php", $("#login").serialize(),
     function(data){
       var result= JSON.parse(data);
-      if(result['token']!=-1){
+      if(result['status']=='success'){
         window.location.href = "/";
       }else{
-        $("#problem").html("unable to log in");
+        $("#problem").html(result['errors'][0]);
       }
     }
   );
@@ -80,7 +76,13 @@ function listSearchResults(data){
 function createParty(){
   $.post("handler.php", $("#createPartyForm").serialize(),
     function(data){
-      listParties();
+      var result= JSON.parse(data);
+      if(result['status']=='success'){
+        window.location.href = "/party.php?partyId="+result['partyId'];
+      }else{
+        $("#problem").html(result['errors'][0]);
+        listParties();
+      }
     }
   );
   return false;
@@ -88,15 +90,16 @@ function createParty(){
 
 function listQueue(){
   $(document).ready(function(){
+    loadCurrentVideo();
     $.get("handler.php?action=listVideos&partyId="+partyId,
       function(data,status){
-        if (status=="success"){
-          var videos= JSON.parse(data);
-          //var users=data;
+        var result= JSON.parse(data);
+        if(result['status']=='success'){
+          var videos = result['videos'];
           $("#queueList").html("");
           for (var i=0;i<videos.length;i++){
             var queueRow="<tr><td>"+(i+1).toString()+"</td><td>"+videos[i].title+"</td><td>"+videos[i].username+"</td>";
-            if(typeof isAdmin != 'undefined' &&isAdmin==1){
+            if(typeof isAdmin != 'undefined' && isAdmin==1){
               queueRow=queueRow+"<td>"+
                 "<button "+
                   "class='removeVideo button' "+
@@ -119,97 +122,142 @@ function listQueue(){
               loadCurrentVideo();
             }
           });
-
         }else{
-          $("#queueList").html("Failed :(");
+          $("#problem").html(result['errors'][0]);
         }
-      }
-    );
+    });
   });
 }
 
 function loadCurrentVideo(){
-  if(typeof loadVideoTimer != 'undefined'){
-    clearInterval(loadVideoTimer);
-  }
-  $(document).ready(function(){
-    $.get("handler.php?action=getCurrentVideo&partyId="+partyId,
-      function(data,status){
-        if (status=="success"){
-          var video= JSON.parse(data);
-          if(video!=-1){
-            $("#youtubePlayerParent").show();
-            currentSubmissionId=video.submissionId;
-            player.loadVideoById(video.youtubeId, 0);
+  if(typeof isAdmin != 'undefined' && isAdmin==1){
+    $(document).ready(function(){
+      $.get("handler.php?action=getCurrentVideo&partyId="+partyId,
+        function(data,status){
+          var result= JSON.parse(data);
+          if(result['status']=='success'){
+            var video = result['video'];
+            if(video){
+              if(currentSubmissionId != video.submissionId){
+                $("#youtubePlayerParent").show();
+                currentSubmissionId=video.submissionId;
+                player.loadVideoById(video.youtubeId, 0);
+              }
+            }else{
+              currentSubmissionId = -1;
+              player.loadVideoById(0, 0);
+              $("#youtubePlayerParent").hide();
+              //swfobject.removeSWF("youtubePlayerParent");
+            }
           }else{
-            $("#youtubePlayerParent").hide();
-            //swfobject.removeSWF("youtubePlayerParent");
-
-            loadVideoTimer=setTimeout(loadCurrentVideo, 5000);
+            $("#problem").html(result['errors'][0]);
           }
         }
-      }
-    );
-  });
+      );
+    });
+  }
 }
 
 function markVideoWatched(){
-  $.post("handler.php", {'action':'markVideoWatched', 'submissionId':currentSubmissionId}, function(data){});
+  $.post("handler.php", {'action':'markVideoWatched', 'submissionId':currentSubmissionId},
+    function(data){
+      var result= JSON.parse(data);
+      if(result['status']!='success'){
+        $("#problem").html(result['errors'][0]);
+      }
+    }
+  );
 }
 
 function removeVideo(submissionId){
-  $.post("handler.php", {'action':'removeVideo', 'submissionId':submissionId}, function(data){});
+  $.post("handler.php", {'action':'removeVideo', 'submissionId':submissionId},
+    function(data){
+      var result= JSON.parse(data);
+      if(result['status']!='success'){
+        $("#problem").html(result['errors'][0]);
+      }
+    }
+  );
 }
 
 function upVote(submissionId){
-  $.post("handler.php", {'action':'vote', 'direction':1, 'submissionId':submissionId}, function(data){});
+  $.post("handler.php", {'action':'vote', 'direction':1, 'submissionId':submissionId},
+    function(data){
+      var result= JSON.parse(data);
+      if(result['status']!='success'){
+        $("#problem").html(result['errors'][0]);
+      }
+    }
+  );
 }
 
 function downVote(submissionId){
-  $.post("handler.php", {'action':'vote', 'direction':-1, 'submissionId':submissionId}, function(data){});
+  $.post("handler.php", {'action':'vote', 'direction':-1, 'submissionId':submissionId},
+    function(data){
+      var result= JSON.parse(data);
+      if(result['status']!='success'){
+        $("#problem").html(result['errors'][0]);
+      }
+    }
+  );
 }
 
 function unVote(submissionId){
-  $.post("handler.php", {'action':'vote', 'direction':0, 'submissionId':submissionId}, function(data){});
+  $.post("handler.php", {'action':'vote', 'direction':0, 'submissionId':submissionId},
+    function(data){
+      var result= JSON.parse(data);
+      if(result['status']!='success'){
+        $("#problem").html(result['errors'][0]);
+      }
+    }
+  );
 }
 
 function submitVideo(youtubeId){
-  $.post("handler.php", {'action':'addVideo', 'partyId':partyId, 'youtubeId':youtubeId}, function(data){});
+  $.post("handler.php", {'action':'addVideo', 'partyId':partyId, 'youtubeId':youtubeId},
+    function(data){
+      var result= JSON.parse(data);
+      if(result['status']!='success'){
+        $("#problem").html(result['errors'][0]);
+      }
+    }
+  );
 }
 
 function listParties(){
   if($("#joinedList").length >0){
     $.get("handler.php?action=listJoinedParties",
       function(data,status){
-        if (status=="success"){
-          var parties= JSON.parse(data);
+        var result= JSON.parse(data);
+        if(result['status']=='success'){
+          var parties= result['parties'];
           $("#joinedList").html("");
           for (var i=0;i<parties.length;i++){
             var row="<tr><td>"+parties[i].partyId+"</td><td><a href='/party.php?partyId="+parties[i].partyId+"'>"+parties[i].name+"</a></td><td>"+parties[i].username+"</td>";
             row=row+"</tr>"
             $('#joinedList').append(row);
           }
-
         }else{
-          $("#joinedList").html("Failed :(");
+          $("#problem").html(result['errors'][0]);
         }
       }
     );
   }
+
   if($("#unjoinedList").length >0){
     $.get("handler.php?action=listUnjoinedParties",
       function(data,status){
-        if (status=="success"){
-          var parties= JSON.parse(data);
+        var result= JSON.parse(data);
+        if(result['status']=='success'){
+          var parties= result['parties'];
           $("#unjoinedList").html("");
           for (var i=0;i<parties.length;i++){
             var row="<tr><td>"+parties[i].partyId+"</td><td><a href='/party.php?partyId="+parties[i].partyId+"'>"+parties[i].name+"</a></td><td>"+parties[i].username+"</td>";
             row=row+"</tr>"
             $('#unjoinedList').append(row);
           }
-
         }else{
-          $("#unjoinedList").html("Failed :(");
+          $("#problem").html(result['errors'][0]);
         }
       }
     );
@@ -420,12 +468,17 @@ $(document).ready(function(){
   $('#createPartyForm').submit(createParty);
   $('#submitContentToggle').click(submitContentToggle);
   //$("#searchForm").submit(searchYouTube);
-  listQueue();
-  listParties();
-  var listQueueTimer=window.setInterval(listQueue, 5000);
+  if ($("#queueList").length > 0){
+    listQueue();
+  }
+
+  if ($("#unjoinedList").length > 0){
+    listParties();
+  }
+
   var currentSubmissionId;
-  var loadVideoTimer;
   if ($("#youtubePlayerParent").length > 0){
+    var listQueueTimer=window.setInterval(listQueue, 5000);
     setupYouTube();
     $("#playPause").click(playPause);
     $("#fullScreen").click(fullScreen);
