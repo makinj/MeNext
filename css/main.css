@@ -318,6 +318,14 @@ body{
   color: #fff;
 }
 
+.colHeader{
+  height: 35px;
+}
+
+#headerLogo{
+  height: 35px;
+}
+
 .header{
   padding-top: .4em;
   padding-bottom: .4em;
@@ -329,6 +337,10 @@ body{
 .logo{
   color: #fff;
   text-decoration: none;
+}
+
+.logLink{
+  padding: 6px 0;
 }
 
 #searchTableHeader > table > thead > tr > th:first-child{
@@ -345,7 +357,6 @@ body{
 
 #youtubePlayer{
   width: 100%;
-  height: 
 }
 
 #disabledFullScreen {
@@ -378,7 +389,7 @@ body{
 
 .submitContent > .spacer{
   width: 100%;
-  padding-top: 55px;
+  padding-top: 65px;
 }
   
 #searchForm{
@@ -455,10 +466,18 @@ body{
   background-color: #a33;
 }
 
+#searchText{
+  line-height: 1.7em;
+}
+
 .search{
   padding: 8px 20px;
-  top: 1px;
+  top: 2px;
 }
+
+  .search:active{
+    top: 3px;
+  }
 
 .searchBar{
   display: inline-block;
@@ -602,10 +621,14 @@ form{
     display: inline-block;
   }
 
+    #createPartyName{
+      line-height: 1.7em;
+    }
+
   #submitPartyName{
     height: 2.4em;
     padding: 0 1em;
-    top: .25em;
+    top: .35em;
     display: inline-block;
   }
 
