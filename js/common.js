@@ -130,7 +130,7 @@ function listQueue(){
 }
 
 function loadCurrentVideo(){
-  if(typeof isAdmin != 'undefined' && isAdmin==1){
+  if(typeof player != 'undefined' && typeof isAdmin != 'undefined' && isAdmin==1){
     $(document).ready(function(){
       $.get("handler.php?action=getCurrentVideo&partyId="+partyId,
         function(data,status){
@@ -138,14 +138,12 @@ function loadCurrentVideo(){
           if(result['status']=='success'){
             var video = result['video'];
             if(video){
-              if(currentSubmissionId != video.submissionId){
+              if(typeof currentSubmissionId == 'undefined' || currentSubmissionId != video.submissionId){
                 $("#youtubePlayerParent").show();
                 currentSubmissionId=video.submissionId;
                 player.loadVideoById(video.youtubeId, 0);
               }
             }else{
-              currentSubmissionId = -1;
-              player.loadVideoById(0, 0);
               $("#youtubePlayerParent").hide();
               //swfobject.removeSWF("youtubePlayerParent");
             }
@@ -462,6 +460,14 @@ function submitContentToggle() {
 }
 
 $(document).ready(function(){
+  var currentSubmissionId;
+  var player;
+  if ($("#youtubePlayerParent").length > 0){
+    setupYouTube();
+    $("#playPause").click(playPause);
+    $("#fullScreen").click(fullScreen);
+  }
+  var listQueueTimer=window.setInterval(listQueue, 5000);
   $("#searchText").googleSuggest({ service: "youtube" });
   $('#register').submit(register);
   $('#login').submit(login);
@@ -476,11 +482,4 @@ $(document).ready(function(){
     listParties();
   }
 
-  var currentSubmissionId;
-  if ($("#youtubePlayerParent").length > 0){
-    var listQueueTimer=window.setInterval(listQueue, 5000);
-    setupYouTube();
-    $("#playPause").click(playPause);
-    $("#fullScreen").click(fullScreen);
-  }
 });
