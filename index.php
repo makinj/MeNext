@@ -29,12 +29,13 @@
   </div>
   <div class="joinedPartiesWrapper">
     <div class="joinedPartiesHeading">Unjoined Parties</div>
-    <table class="table">
+    <table class="table" id="unjoinedPartiesTable">
       <thead>
         <tr>
           <th>#</th>
           <th>Name</th>
           <th>Owner:</th>
+          <th></th>
         </tr>
       </thead>
       <tbody id="unjoinedList">

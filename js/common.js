@@ -88,6 +88,21 @@ function createParty(){
   return false;
 }
 
+function joinParty(passedId) {
+  console.log(passedId);
+  $.post("handler.php", { 'action': 'joinParty', 'partyId': passedId },
+    function (data) {
+      var result = JSON.parse(data);
+      if (result['status'] == 'success') {
+        window.location.href = "/party.php?partyId="+passedId;
+      }
+      else {
+        $("#problem").html(result['errors'][0]);
+      }
+    }
+  );
+}
+
 function listQueue(){
   $(document).ready(function(){
     loadCurrentVideo();
@@ -250,7 +265,7 @@ function listParties(){
           var parties= result['parties'];
           $("#unjoinedList").html("");
           for (var i=0;i<parties.length;i++){
-            var row="<tr><td>"+parties[i].partyId+"</td><td><a href='/party.php?partyId="+parties[i].partyId+"'>"+parties[i].name+"</a></td><td>"+parties[i].username+"</td>";
+            var row = "<tr><td>" + parties[i].partyId + "</td><td><a href='/party.php?partyId=" + parties[i].partyId + "'>" + parties[i].name + "</a></td><td>" + parties[i].username + "</td><td><button type='submit' class='joinPartyButton' value=" + parties[i].partyId + ">Join</button></td>";
             row=row+"</tr>"
             $('#unjoinedList').append(row);
           }
@@ -475,6 +490,7 @@ $(document).ready(function(){
   $('#login').submit(login);
   $('#createPartyForm').submit(createParty);
   $('#submitContentToggle').click(submitContentToggle);
+  
   //$("#searchForm").submit(searchYouTube);
   if ($("#queueList").length > 0){
     listQueue();
@@ -483,5 +499,9 @@ $(document).ready(function(){
   if ($("#unjoinedList").length > 0){
     listParties();
   }
+
+  $(document).on("click", ".joinPartyButton", function () {
+    joinParty($(this).attr("value"));
+  });
 
 });

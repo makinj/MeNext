@@ -664,6 +664,10 @@ form{
     padding-bottom: 1em;
   }
 
+  #unjoinedPartiesTable > thead > tr > th:last-child{
+    width: 80px;
+  }
+
 .welcomeText{
   font-size: 2em;
 }
