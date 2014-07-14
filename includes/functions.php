@@ -117,7 +117,7 @@
       'CREATE TABLE Vote(
         voterId int REFERENCES User(userId),
         submissionId int REFERENCES Submission(submissionId),
-        voteValue int,
+        voteValue tinyint,
 
         PRIMARY KEY(voterId, submissionId)
       )
@@ -328,6 +328,7 @@
             v.youtubeId,
             v.title,
             s.submissionId,
+            s.submitterId,
             u.username,
             (
               SELECT
@@ -485,7 +486,10 @@
         WHERE
           s.submissionId = :submissionId AND
           s.partyId=p.partyId AND
-          p.creatorId=u.userId AND
+          (
+            p.creatorId=u.userId OR
+            s.submitterId=u.userId
+          )AND
           u.userId=:userId
         ;');
         $stmt->bindValue(':submissionId', $submissionId);

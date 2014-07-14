@@ -31,7 +31,7 @@
     <div id="disabledFullScreen">HTML5 fullscreen and firefox don't mix well with your operating system. We recommend Google Chrome.
       <button type="button" id="closeAlert" class="btn"><span class="glyphicon glyphicon-remove"></span></button>
     </div>
-    
+
     <div class="row clear" id="controls">
       <button type="button" id="thumbDown" class="button control col col-3 tablet-col-9 mobile-col-1-2"><img class="icon" src="images/dislike.png" /></button>
       <button type="button" id="playPause" class="button control col col-3 tablet-col-9 mobile-col-1-2"><img class="icon" src="images/play.png" /></button>
@@ -52,11 +52,6 @@
             <th>Title</th>
             <th>Submitted by:</th>
             <th></th>
-            <?php
-              if(isset($_SESSION['admin'])&&$_SESSION['admin']==True){
-                echo"<th>Remove</th>";
-              }
-            ?>
           </tr>
         </thead>
         <tbody id="queueList">
@@ -64,7 +59,7 @@
       </table>
     </div>
   </div>
-  <!-- 
+  <!--
        end of youtube player and queuelist
        beginning of search content
   -->

@@ -99,7 +99,7 @@ function listQueue(){
           $("#queueList").html("");
           for (var i=0;i<videos.length;i++){
             var queueRow="<tr><td>"+(i+1).toString()+"</td><td>"+videos[i].title+"</td><td>"+videos[i].username+"</td>";
-            if(typeof isAdmin != 'undefined' && isAdmin==1){
+            if((typeof isAdmin != 'undefined' && isAdmin==1) || userId == videos[i].submitterId){
               queueRow=queueRow+"<td>"+
                 "<button "+
                   "class='removeVideo button' "+
