@@ -377,7 +377,7 @@ body{
   display: none;
   right: -18px;
   top: 0px;
-  width: 50%;
+  width: 1014px;
   height: 100%;
   background-color: #eee;
   padding-left: 15px;
@@ -396,6 +396,14 @@ body{
   width: 100%;
   display: inline-block;
   margin-top: 20px;
+}
+
+.table{
+  margin-top: 0px;
+}
+
+th{
+  
 }
 
 .button{
@@ -637,6 +645,7 @@ form{
   }
 
 .partyCreateWrapper{
+  padding: 0 36%;
   margin-bottom: 5px;
 }
 
@@ -649,8 +658,10 @@ form{
   }
 
   .joinedPartiesHeading{
+    background-color: #d55;
     padding-top: 1em;
     padding-left: 1em;
+    padding-bottom: 1em;
   }
 
 .welcomeText{

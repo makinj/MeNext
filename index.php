@@ -20,7 +20,7 @@
         <tr>
           <th>#</th>
           <th>Name</th>
-          <th>Creator:</th>
+          <th>Owner:</th>
         </tr>
       </thead>
       <tbody id="joinedList">
@@ -34,7 +34,7 @@
         <tr>
           <th>#</th>
           <th>Name</th>
-          <th>Creator:</th>
+          <th>Owner:</th>
         </tr>
       </thead>
       <tbody id="unjoinedList">

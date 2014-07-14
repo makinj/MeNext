@@ -453,11 +453,13 @@ function submitContentToggle() {
     $('.submitContent').hide();
     $('.container').css('margin-left', 'auto');
     $('.container').css('width', '100%');
+    $('#submitContentToggle').html('<img class="icon" src="images/search.png" />');
   }
   else {
     $('.submitContent').show();
     $('.container').css('margin-left', 0);
     $('.container').css('width', '50%');
+    $('#submitContentToggle').html('<img class="icon" src="images/close.png" />');
   }
 }
 
