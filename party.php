@@ -65,7 +65,10 @@
   -->
 
   <?php
-    if(isset($_SESSION['logged'])){
+    if(isset($_GET['partyId'])){ // then $partyId must be set from above
+      $inParty = isInParty($db, $partyId);
+    }    
+    if($inParty){
   ?>
 
     <div class="submitContent">

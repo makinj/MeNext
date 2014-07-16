@@ -170,6 +170,28 @@
     $stmt->execute();
     return $stmt->rowCount()>0;
   }
+  
+  /*
+  Returns 1 or 0 based on whether the user is in the party
+  */
+  function isInParty($db, $partyId, $userId=0){
+  if ($userId==0 && isset($_SESSION['userId'])){
+    $userId = $_SESSION['userId'];
+  }
+  $stmt = $db->prepare(
+    'SELECT
+      *
+    FROM
+      PartyUser
+    Where
+      partyId=:partyId AND
+      userId=:userId
+  ;');//makes new row with given info
+  $stmt->bindValue(':userId', $userId);
+  $stmt->bindValue(':partyId', $partyId);
+  $stmt->execute();
+  return $stmt->rowCount()>0;
+}
 
   function createAccount($db, $args){//creates account with an array of user information given
     $results = array("errors"=>array());
