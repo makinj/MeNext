@@ -69,6 +69,7 @@
       $inParty = isInParty($db, $partyId);
     }    
     if($inParty){
+    // makes sure user is a member of the party
   ?>
 
     <div class="submitContent">

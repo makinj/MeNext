@@ -4,6 +4,10 @@
   
   if(isset($_SESSION['logged'])){
 ?>
+
+  <div class="createPartyPrompt">
+    <h3>Create a new party or join one below</h3>
+  </div>
   <div class="partyCreateWrapper">
     <form id="createPartyForm">
       <div class="form-group" id="createPartyNameWrapper">
