@@ -59,6 +59,20 @@
       </table>
     </div>
   </div>
+  
+  <!-- generates QR Code -->
+  <div id="qrContainer" class="container">
+    <button id="qrcodetoggle">QR code</button>
+    <div id="qrcode"></div>
+    <script type="text/javascript">
+      new QRCode(document.getElementById("qrcode"), { 
+        text: document.URL,
+        colorLight: "#eeeeee"
+      }
+      );
+    </script>
+  </div>
+  
   <!--
        end of youtube player and queuelist
        beginning of search content

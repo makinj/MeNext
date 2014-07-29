@@ -422,3 +422,7 @@ form{
   .submit:focus{
     outline: none;
   }
+
+#qrcode {
+  display: none;
+}
