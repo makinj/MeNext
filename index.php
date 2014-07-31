@@ -1,7 +1,7 @@
 <?php
   $title="index";
   require_once('header.php');//bar at the top of the page
-  
+  require_once('includes/constants.php');
   if(isset($_SESSION['logged'])){
 ?>
   <div class="partyCreateWrapper">

@@ -490,7 +490,7 @@ $(document).ready(function(){
   $('#login').submit(login);
   $('#createPartyForm').submit(createParty);
   $('#submitContentToggle').click(submitContentToggle);
-  
+
   //$("#searchForm").submit(searchYouTube);
   if ($("#queueList").length > 0){
     listQueue();

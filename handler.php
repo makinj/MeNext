@@ -38,15 +38,15 @@
       $results = array_merge_recursive($results, logIn($db, $_POST));//send POST data to log in
     }else if($_POST['action']=="addVideo"){//adds new video to playlist
       $results = array_merge_recursive($results, addVideo($db, $_POST));
-    }else if($_POST['action']=="markVideoWatched"){//adds new video to playlist
+    }else if($_POST['action']=="markVideoWatched"){//marks video as watched
       $results = array_merge_recursive($results, markVideoWatched($db, $_POST));
-    }else if($_POST['action']=="removeVideo"){//adds new video to playlist
+    }else if($_POST['action']=="removeVideo"){//removes video
       $results = array_merge_recursive($results, removeVideo($db, $_POST));
-    }else if($_POST['action']=="createParty"){//adds new video to playlist
+    }else if($_POST['action']=="createParty"){//creates a party
       $results = array_merge_recursive($results, createParty($db, $_POST));
-    }else if($_POST['action']=="joinParty"){//adds new video to playlist
+    }else if($_POST['action']=="joinParty"){//joins current user to party
       $results = array_merge_recursive($results, joinParty($db, $_POST));
-    }else if($_POST['action']=="vote"){//adds new video to playlist
+    }else if($_POST['action']=="vote"){//votes on video
       $results = array_merge_recursive($results, vote($db, $_POST));
     }
   }

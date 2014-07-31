@@ -65,10 +65,11 @@
   -->
 
   <?php
+    $writeParty = 0;
     if(isset($_GET['partyId'])){ // then $partyId must be set from above
-      $inParty = isInParty($db, $partyId);
-    }    
-    if($inParty){
+      $writeParty = canWriteParty($db, $partyId);
+    }
+    if($writeParty){
   ?>
 
     <div class="submitContent">

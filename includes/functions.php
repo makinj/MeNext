@@ -72,9 +72,12 @@
       'CREATE TABLE Party(
         partyId int NOT NULL AUTO_INCREMENT,
         name VARCHAR(255),
+        passwordProtected BIT(1) DEFAULT 0,
+        password VARCHAR(255),
+        privacyId int DEFAULT 0,
         creatorId int REFERENCES User(userId),
 
-        PRIMARY KEY(partyId)
+        PRIMARY KEY(partyId, name)
       )
     ;');//each party has row right now there is only one
 
@@ -170,28 +173,28 @@
     $stmt->execute();
     return $stmt->rowCount()>0;
   }
-  
+
   /*
-  Returns 1 or 0 based on whether the user is in the party
+  Returns 1 or 0 based on whether the user has permission to write to the party
   */
-  function isInParty($db, $partyId, $userId=0){
-  if ($userId==0 && isset($_SESSION['userId'])){
-    $userId = $_SESSION['userId'];
+  function canWriteParty($db, $partyId, $userId=0){
+    if ($userId==0 && isset($_SESSION['userId'])){
+      $userId = $_SESSION['userId'];
+    }
+    $stmt = $db->prepare(
+      'SELECT
+        *
+      FROM
+        PartyUser
+      Where
+        partyId=:partyId AND
+        userId=:userId
+    ;');
+    $stmt->bindValue(':userId', $userId);
+    $stmt->bindValue(':partyId', $partyId);
+    $stmt->execute();
+    return $stmt->rowCount()>0;
   }
-  $stmt = $db->prepare(
-    'SELECT
-      *
-    FROM
-      PartyUser
-    Where
-      partyId=:partyId AND
-      userId=:userId
-  ;');//makes new row with given info
-  $stmt->bindValue(':userId', $userId);
-  $stmt->bindValue(':partyId', $partyId);
-  $stmt->execute();
-  return $stmt->rowCount()>0;
-}
 
   function createAccount($db, $args){//creates account with an array of user information given
     $results = array("errors"=>array());
@@ -536,23 +539,43 @@
     $results = array("errors"=>array());
     if (isset($_SESSION['userId']) && is_array($args) && array_key_exists("name", $args) && $args['name']!=''){
       $name = sanitizeString($args['name']);
+      $password = '';
+      $passwordProtected = 0;
+      if (array_key_exists("password", $args) && $args['password'] != ''){
+        $password = hash('sha512',PRE_SALT.sanitizeString($args['password']).POST_SALT);
+        $passwordProtected = 1;
+      }
+      $privacyId = FULLY_PUBLIC;
+      if (array_key_exists("privacy", $args)){
+        $privacyId = $args['privacy'];
+      }
+
       try{
         $stmt = $db->prepare(
           'INSERT INTO
             Party(
               name,
-              creatorId
+              creatorId,
+              passwordProtected,
+              password,
+              privacyId
             )
           VALUES(
             :name,
-            :creatorId
+            :creatorId,
+            :passwordProtected,
+            :password,
+            :privacyId
           )
         ;');
         $stmt->bindValue(':name', $name);
         $stmt->bindValue(':creatorId', $_SESSION['userId']);
+        $stmt->bindValue(':passwordProtected', $passwordProtected, PDO::PARAM_BOOL);
+        $stmt->bindValue(':password', $password);
+        $stmt->bindValue(':privacyId', $privacyId);
         $stmt->execute();
         $partyId = $db->lastInsertId();
-        $results = array_merge_recursive($results, joinParty($db, array("partyId"=>$partyId), 1));
+        $results = array_merge_recursive($results, joinParty($db, array("partyId"=>$partyId, "password"=>$password), 1));
         $results['status']='success';
         $results['partyId']=$partyId;
       } catch (PDOException $e) {
@@ -578,25 +601,50 @@
     $results = array("errors"=>array());
     if (isset($_SESSION['userId']) && is_array($args) && array_key_exists("partyId", $args)){
       $partyId = sanitizeString($args['partyId']);
+      $password = '';
+      if (array_key_exists("password", $args)){
+        $password = hash('sha512',PRE_SALT.sanitizeString($args['password']).POST_SALT);
+      }
+
       try{
         $stmt = $db->prepare(
-          'INSERT INTO
-            PartyUser(
-              userId,
-              partyId,
-              owner
+          'SELECT
+            *
+          FROM
+            Party
+          WHERE
+            partyId=:partyId and
+            (
+              passwordProtected=0 or
+              password=:password
             )
-          VALUES(
-            :userId,
-            :partyId,
-            :owner
-          )
-        ;');//makes new row with given info
-        $stmt->bindValue(':userId', $_SESSION['userId']);
+        ;');//checks for matching row
         $stmt->bindValue(':partyId', $partyId);
-        $stmt->bindValue(':owner', $owner, PDO::PARAM_BOOL);
+        $stmt->bindValue(':password', $password);
         $stmt->execute();
-        $results['status'] = "success";
+
+        if($stmt->rowCount()==1){//if successfully logged in
+          $stmt = $db->prepare(
+            'INSERT INTO
+              PartyUser(
+                userId,
+                partyId,
+                owner
+              )
+            VALUES(
+              :userId,
+              :partyId,
+              :owner
+            )
+          ;');//makes new row with given info
+          $stmt->bindValue(':userId', $_SESSION['userId']);
+          $stmt->bindValue(':partyId', $partyId);
+          $stmt->bindValue(':owner', $owner, PDO::PARAM_BOOL);
+          $stmt->execute();
+          $results['status'] = "success";
+        }else{
+          array_push($results['errors'], "bad authentication");
+        }
       } catch (PDOException $e) {
         //something went wrong...
         error_log("Error: " . $e->getMessage());
@@ -716,6 +764,8 @@
             :submissionId,
             :voteValue
           )
+          ON DUPLICATE KEY UPDATE
+            voteValue = :voteValue
         ;');
         $stmt->bindValue(':voterId', $voterId);
         $stmt->bindValue(':submissionId', $submissionId);

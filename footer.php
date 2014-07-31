@@ -23,7 +23,9 @@
 
       var userId =
       <?php
-        echo"'".$_SESSION['userId']."';\n";
+        if (isset($_SESSION['userId'])){
+          echo"'".$_SESSION['userId']."';\n";
+        }
       ?>
     </script>
 
