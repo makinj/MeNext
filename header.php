@@ -31,6 +31,8 @@
     <!-- jQuery -->
     <script src="js/jquery.min.js"></script>
 
+    <!-- QR Code generation from github user davidshimjs -->
+    <script src="js/qrcode.min.js" type="text/javascript"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="js/bootstrap.min.js"></script>
 

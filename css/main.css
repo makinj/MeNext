@@ -1,312 +1,4 @@
-﻿/* CSS changes from framework
-
-OLD STUFF FOR REFERENCE
-
-body{
-  background-color: #eee;
-}
-
-  .navbar {
-    background-color: #2A0D45;
-    border: 5px solid transparent;
-    border-radius: 0px;
-    z-index: 15;
-  }
-
-    .navbar-nav,
-    .navbar-nav:nth-child(n){
-      display: none;
-    }
-
-    .navbar-right{
-      display: block !important;
-    }
-
-    .navbar-toggle:hover,
-    .navbar-toggle:focus{
-      background-color: #3f2557 !important;
-    }
-
-    .navbar-nav>.open>a,
-    .navbar-nav>.active>a{
-      background-color: #3f2557 !important;
-    }
-
-    .navbar-nav > li > .dropdown-menu{
-      border-radius: 0px;
-    }
-
-  .submitContent{
-    position: fixed;
-    display: none;
-    right: -18px;
-    top: 0px;
-    width: 788px;
-    height: 100%;
-    background-color: #eee;
-    padding-left: 15px;
-    border: none;
-    border-left: 4px solid #161;
-    overflow-y: scroll;
-    z-index: 5;
-  }
-
-    .submitContent > .spacer{
-      width: 100%;
-      padding-top: 80px;
-    }
-  
-    #searchForm{
-      width: 100%;
-      display: inline-block;
-      margin-top: 20px;
-    }
-
-  #submitContentToggle{
-    position: fixed;
-    right: 0px;
-    bottom: 0px;
-    width: 10%;
-    z-index: 10;
-  }
-
-  #youtubePlayer{
-    width: 100%;
-  }
-
-  /* for when the following are fixed in css 3.1
-  #youtubePlayer:fullscreen{
-    width: 100% !important;
-    height: 100% !important;
-  }  
-  #youtubePlayer:-webkit-full-screen{
-    width: 100% !important;
-    height: 100% !important;
-  }
-  #youtubePlayer:-moz-full-screen{
-    width: 100% !important;
-    height: 100% !important;
-  }
-  
-
-  narrow-width browsers -- currently broken, will work when CSS 3.1 is released (estimated July 30, 2014)
-  @media screen and (max-width: 992px){
-    #youtubePlayer {
-      height: calc(width*9/16);
-    }
-  }
-
-  In the meantime use the 3 elements below:
-  
-
-  @media screen and (max-width: 992px){
-    #youtubePlayer{
-      height: 500px !important;
-    }
-  }
-
-  @media screen and (max-width: 650px){
-    #youtubePlayer{
-      height: 350px !important;
-    }
-  }
-
-  @media screen and (max-width: 400px){
-    #youtubePlayer{
-      height: 225px !important;
-    }
-  }
-
-  .btn-group{
-    width: 100.3%;
-  }
-
-  .btn-group > .btn:first-child,
-  .btn-group > .btn:last-child{
-    border-radius: 0px !important;
-  }
-
-    .btn-lg{
-      width: 25%;
-      border-bottom: 0px;
-    }
-
-    .btn{
-      border-radius: 0px;
-    }
-
-      #thumbDown:hover{
-        background-color: #c55;
-      }
-
-      #thumbDown:focus{
-        background-color: #a33;
-      }
-
-      #thumbUp:hover{
-        background-color: #5c5;
-      }
-
-      #thumbUp:focus{
-        background-color: #3a3;
-      }
-
-      .removeVideo:hover{
-        background-color: #c55;
-      }
-
-      .removeVideo:focus{
-        background-color: #a33;
-      }
-
-      #disabledFullScreen {
-        display: none;
-        float: right;
-        background-color: #c55;
-        padding: 20px;
-        margin: 5px;
-      }
-
-  .panel{
-    border-radius: 0px;
-    background-color: #3f2557;
-    color: #eee;
-  }
-  
-    .panel-heading{
-      border-top-left-radius: 0px;
-      border-top-right-radius: 0px;
-    }
-
-    .panel > table > tbody > tr:nth-child(odd){
-      background-color: #2A0D45;
-    }
-
-    .panel > table > tbody > tr:nth-child(even){
-      background-color: #3f2557;
-    }
-
-    #searchTableHeader{
-      display: inline-block;
-      width: 100%;
-      background-color: #161;
-      border: none;
-    }
-
-  .table > tbody > tr > td{
-    border: none;
-    border-radius: 0px !important;
-    line-height: 2em;
-    font-size: 16px;
-  }
-
-    .table > tbody > tr > td:hover{
-      border-radius: 0px !important;
-    }
-
-    .table > tbody > tr:hover,
-    .panel > table > tbody > tr:nth-child(n):hover{
-      background-color: #ffd700;
-      color: #3f2557;
-      border: none;
-      border-radius: 0px;
-    }
-
-  .loginTable {
-    width: 100%;
-  }
-
-    .registerLoginContainer{
-      width: 50%;
-      color: #999;
-      background-color: #2A0D45;
-      padding: 40px;
-      padding-top: 25px;
-    }
-
-      /* for mobile devices and browsers with very narrow width 
-      @media screen and (max-width: 992px) {
-        .registerLoginContainer {
-          table-layout: fixed;
-          display: block;
-          width: 100%;
-          padding-bottom: 100px;
-        }
-      }
-
-      .formContainer {
-        padding: 20px;
-        background-color: #3f2557;
-      }
-
-    .loginTitle{
-      padding-bottom: 20px;
-    }
-
-    .loginText{
-      color: #eee;
-    }
-
-  form{
-    color: #000;
-  }
-
-    .formItem{
-      border-right: 19px transparent solid;
-      margin-bottom: 10px;
-      margin-left: 10px;
-    }
-  
-    input#name,
-    input#password{
-      float: right;
-    }
-
-    .submit{
-      border: none;
-      padding: 20px;
-      margin-top: 40px;
-      float: right;
-      color: #eee;
-      box-shadow: none;
-      background-color: #933;
-      /* future-proofing 
-      -o-transition: background 0.2s ease-in;
-      -ms-transition: background 0.2s ease-in;
-      -moz-transition: background 0.2s ease-in;
-      -webkit-transition: background 0.2s ease-in;
-      /* overridden with proper element 
-      transition: background 0.2s ease-in;
-    }
-
-      .submit:hover{
-        background-color: #822;
-        border-bottom: 2px solid #400;
-        margin-top: 38px;
-        /* future-proofing 
-        -o-transition: background .2s;
-        -ms-transition: background .2s;
-        -moz-transition: background .2s;
-        -webkit-transition: background .2s;
-        /* overridden with proper element 
-        transition: background .2s;
-      }
-
-      .submit:active{
-        background-color: #282;
-        border-bottom: 2px solid #282;
-        margin-top: 38px;
-        /* future-proofing 
-        -o-transition: background 0s;
-        -ms-transition: background 0s;
-        -moz-transition: background 0s;
-        -webkit-transition: background 0s;
-        /* overridden with proper element 
-        transition: background 0s;
-      }
-  */
-
-/* New styling for base */
+﻿/* CSS changes from framework */
 
 body{
   background-color: #eee;
@@ -475,11 +167,16 @@ th{
 }
 
 #searchText{
+  border-bottom-left-radius: 2px;
+  border-top-left-radius: 2px;
   line-height: 1.7em;
 }
 
 .search{
+  margin-left:-5px;
   padding: 8px 20px;
+  border-bottom-left-radius: 0px;
+  border-top-left-radius: 0px;
   top: 2px;
 }
 
@@ -631,12 +328,17 @@ form{
 
     #createPartyName{
       line-height: 1.7em;
+      border-bottom-left-radius: 2px;
+      border-top-left-radius: 2px;
     }
 
   #submitPartyName{
     height: 2.4em;
+    margin-left: -5px;
     padding: 0 1em;
     top: .35em;
+    border-bottom-left-radius: 0px;
+    border-top-left-radius: 0px;
     display: inline-block;
   }
 
@@ -645,7 +347,8 @@ form{
   }
 
 .partyCreateWrapper{
-  padding: 0 36%;
+  width: 250px;
+  margin: 0 auto;
   margin-bottom: 5px;
 }
 
@@ -719,3 +422,7 @@ form{
   .submit:focus{
     outline: none;
   }
+
+#qrcode {
+  display: none;
+}

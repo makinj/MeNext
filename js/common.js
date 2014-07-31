@@ -476,6 +476,15 @@ function submitContentToggle() {
   }
 }
 
+function QRCodeToggle() {
+  if ($('#qrcode').is(':visible')) {
+    $('#qrcode').hide();
+  }
+  else {
+    $('#qrcode').show();
+  }
+}
+
 $(document).ready(function(){
   var currentSubmissionId;
   var player;
@@ -490,7 +499,7 @@ $(document).ready(function(){
   $('#login').submit(login);
   $('#createPartyForm').submit(createParty);
   $('#submitContentToggle').click(submitContentToggle);
-
+  $('#qrcodetoggle').click(QRCodeToggle);
   //$("#searchForm").submit(searchYouTube);
   if ($("#queueList").length > 0){
     listQueue();
