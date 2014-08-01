@@ -355,22 +355,24 @@
             s.submissionId,
             s.submitterId,
             u.username,
-            (
-              SELECT
+            IFNULL(
+              (SELECT
                 sum(voteValue)
               FROM
                 Vote
               WHERE
                 submissionId=s.submissionId
+              ), 0
             ) as rating,
-            (
-              SELECT
+            IFNULL(
+              (SELECT
                 voteValue
               FROM
                 Vote
               WHERE
                 submissionId=s.submissionId AND
                 voterId=:userId
+              ), 0
             ) as userRating
           FROM
             Submission s,
@@ -383,6 +385,7 @@
             s.removed=0 AND
             s.submitterId = u.userId
           ORDER BY
+            rating DESC,
             s.submissionId ASC
         ;');
         $stmt->bindValue(':userId', $userId);
@@ -417,22 +420,24 @@
             v.title,
             s.submissionId,
             u.username,
-            (
-              SELECT
+            IFNULL(
+              (SELECT
                 sum(voteValue)
               FROM
                 Vote
               WHERE
                 submissionId=s.submissionId
+              ), 0
             ) as rating,
-            (
-              SELECT
+            IFNULL(
+              (SELECT
                 voteValue
               FROM
                 Vote
               WHERE
                 submissionId=s.submissionId and
                 voterId=:userId
+              ), 0
             ) as userRating
           FROM
             Submission s,
@@ -445,6 +450,7 @@
             s.removed=0 AND
             s.submitterId = u.userId
           ORDER BY
+            rating DESC,
             s.submissionId ASC
           LIMIT 1
         ;');
