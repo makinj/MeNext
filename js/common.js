@@ -226,6 +226,26 @@ function unVote(submissionId){
   );
 }
 
+function getSubmissionId() {
+  $(document).ready(function () {
+    var submissionId = null;
+    $.get("handler.php?action=getCurrentVideo&partyId=" + partyId,
+      function (data, status) {
+        var result = JSON.parse(data);
+        if (result['status'] == 'success') {
+          var video = result['video'];
+          if (video) {
+            submissionId = video.submissionId;
+          }
+        } else {
+          $("#problem").html(result['errors'][0]);
+        }
+      }
+    );
+    return submissionId;
+  });
+}
+
 function submitVideo(youtubeId){
   $.post("handler.php", {'action':'addVideo', 'partyId':partyId, 'youtubeId':youtubeId},
     function(data){
@@ -500,7 +520,9 @@ $(document).ready(function(){
   $('#createPartyForm').submit(createParty);
   $('#submitContentToggle').click(submitContentToggle);
   $('#qrcodetoggle').click(QRCodeToggle);
-  //$("#searchForm").submit(searchYouTube);
+  $('#thumbUp').click(upVote(getSubmissionId));
+  $('#thumbDown').click(downVote(getSubmissionId));
+
   if ($("#queueList").length > 0){
     listQueue();
   }
