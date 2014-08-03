@@ -3,10 +3,7 @@
   Joshua Makinen
   forget current session data and log out
   */
-  if(session_id() == '') {
-    session_start();
-  }
-  session_destroy();//leave no trace
+  require_once("includes/functions.php");
   header("Location: login.php");//login again
   exit;
 ?>

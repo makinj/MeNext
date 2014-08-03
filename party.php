@@ -42,6 +42,13 @@
 <?php
 
   }
+  $writeParty = 0;
+  $readParty = 0;
+  if($partyId>=0){ // then $partyId must be set from above
+    $writeParty = canWriteParty($db, $partyId);
+    $readParty = canReadParty($db, $partyId);
+  }
+  if($readParty){
 ?>
     <div>
       <div>Song Queue</div>
@@ -79,9 +86,10 @@
   -->
 
   <?php
-    $writeParty = 0;
-    if(isset($_GET['partyId'])){ // then $partyId must be set from above
-      $writeParty = canWriteParty($db, $partyId);
+    }else{
+  ?>
+    <button type='submit' class='joinPartyButton' value="<?php echo $partyId; ?>">Join</button>
+  <?php
     }
     if($writeParty){
       // makes sure user is a member of the party

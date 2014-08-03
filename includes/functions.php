@@ -177,18 +177,52 @@
   /*
   Returns 1 or 0 based on whether the user has permission to write to the party
   */
-  function canWriteParty($db, $partyId, $userId=0){
-    if ($userId==0 && isset($_SESSION['userId'])){
+  function canWriteParty($db, $partyId, $userId=-1){
+    if ($userId==-1 && isset($_SESSION['userId'])){
       $userId = $_SESSION['userId'];
     }
     $stmt = $db->prepare(
       'SELECT
         *
       FROM
-        PartyUser
+        PartyUser pu,
+        Party p
       Where
-        partyId=:partyId AND
-        userId=:userId
+        pu.partyId=p.partyId AND
+        p.partyId=:partyId AND
+        (
+          pu.userId=:userId
+          OR
+          p.privacyId>='.FULLY_PUBLIC.'
+        )
+    ;');
+    $stmt->bindValue(':userId', $userId);
+    $stmt->bindValue(':partyId', $partyId);
+    $stmt->execute();
+    return $stmt->rowCount()>0;
+  }
+
+  /*
+  Returns 1 or 0 based on whether the user has permission to read a party
+  */
+  function canReadParty($db, $partyId, $userId=-1){
+    if ($userId==-1 && isset($_SESSION['userId'])){
+      $userId = $_SESSION['userId'];
+    }
+    $stmt = $db->prepare(
+      'SELECT
+        *
+      FROM
+        PartyUser pu,
+        Party p
+      Where
+        pu.partyId=p.partyId AND
+        p.partyId=:partyId AND
+        (
+          pu.userId=:userId
+          OR
+          p.privacyId>='.VIEW_ONLY.'
+        )
     ;');
     $stmt->bindValue(':userId', $userId);
     $stmt->bindValue(':partyId', $partyId);
@@ -547,9 +581,13 @@
       $name = sanitizeString($args['name']);
       $password = '';
       $passwordProtected = 0;
-      if (array_key_exists("password", $args) && $args['password'] != ''){
-        $password = hash('sha512',PRE_SALT.sanitizeString($args['password']).POST_SALT);
+      if (array_key_exists("passwordProtected", $args) && $args['passwordProtected']){
         $passwordProtected = 1;
+        if (array_key_exists("password", $args) && $args['password'] != ''){
+          $password = hash('sha512',PRE_SALT.sanitizeString($args['password']).POST_SALT);
+        }else{
+          $password = hash('sha512',PRE_SALT.POST_SALT);
+        }
       }
       $privacyId = FULLY_PUBLIC;
       if (array_key_exists("privacy", $args)){
@@ -719,7 +757,8 @@
         'SELECT
           p.partyId,
           p.name,
-          u.username
+          u.username,
+          p.passwordProtected
         FROM
           Party p,
           User u
@@ -794,5 +833,9 @@
       }
     }
     return $results;
+  }
+
+  function logOut(){
+    session_destroy();//leave no trace
   }
 ?>
