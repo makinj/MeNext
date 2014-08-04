@@ -230,6 +230,23 @@
     return $stmt->rowCount()>0;
   }
 
+  /*
+  Returns 1 or 0 based on whether the user must provide a password to join a party
+  */
+  function isPasswordProtected($db, $partyId){
+    $stmt = $db->prepare(
+      'SELECT
+        *
+      FROM
+        Party p
+      Where
+        p.partyId=:partyId AND
+        p.passwordProtected
+    ;');
+    $stmt->bindValue(':partyId', $partyId);
+    $stmt->execute();
+    return $stmt->rowCount()>0;
+  }
   function createAccount($db, $args){//creates account with an array of user information given
     $results = array("errors"=>array());
     if(is_array($args)&&array_key_exists("username", $args)&&array_key_exists("password", $args)){//valid array was given
