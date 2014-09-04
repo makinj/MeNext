@@ -1,4 +1,4 @@
-<?php 
+<?php
   if(session_id() == '') {
     session_start();
   }
@@ -12,16 +12,16 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    
+
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo "MeNext | ".$title;?></title>
 
-    <!-- Bootstrap 
+    <!-- Bootstrap
     <link href="css/bootstrap.min.css" rel="stylesheet" />-->
     <link href="css/jquery-ui.css" type="text/css" rel="stylesheet"/>
-    
+
     <!-- BASE -->
     <link href="css/base.css" type="text/css" rel="stylesheet"/>
 
@@ -47,26 +47,26 @@
     <![endif]-->
   </head>
   <body>
-    
+
       <div class="header dark-blue-row">
         <div class="row clear">
           <div class="col col-2 tablet-col-10 mobile-col-3-4 colHeader">
             <a class="logo left mobile-no-float" href="/"><img src="/images/headerLogoSmall.png" id="headerLogo" /></a>
           </div>
           <div class="col col-10 tablet-col-2 mobile-col-1-4 colHeader">
-          
+
             <?php
               if(isset($_SESSION['logged'])){
             ?>
-            
-            <a class="right mobile-no-float logLink" href="logout.php">Log Out</a>
-            
+
+            <a class="right mobile-no-float logLink" href="handler.php?action=logOut">Log Out</a>
+
             <?php
               }else{
             ?>
-            
+
             <a class="right mobile-no-float logLink" href="login.php">Login/Register</a>
-            
+
             <?php
               }
             ?>
@@ -74,4 +74,4 @@
         </div>
       </div><!-- /.container-fluid -->
     <div class="container row-2">
-    
+

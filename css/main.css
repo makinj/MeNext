@@ -1,4 +1,4 @@
-﻿/* CSS changes from framework */
+/* CSS changes from framework */
 
 body{
   background-color: #eee;
@@ -79,11 +79,18 @@ body{
   z-index: 5;
 }
 
+  @media screen and (max-width: 992px) {
+    .submitContent{
+      width: 100%;
+      background-color: #aaa;
+    }
+  }
+
 .submitContent > .spacer{
   width: 100%;
   padding-top: 65px;
 }
-  
+
 #searchForm{
   width: 100%;
   display: inline-block;
@@ -95,7 +102,7 @@ body{
 }
 
 th{
-  
+
 }
 
 .button{
@@ -316,7 +323,7 @@ form{
     margin-bottom: 10px;
     margin-left: 10px;
   }
-  
+
   input#name,
   input#password{
     float: right;
@@ -410,7 +417,7 @@ form{
     border-bottom: 2px solid #282;
     margin-top: 38px;
     outline: none;
-    /* future-proofing 
+    /* future-proofing
     -o-transition: background 0s;
     -ms-transition: background 0s;
     -moz-transition: background 0s;
@@ -423,6 +430,7 @@ form{
     outline: none;
   }
 
+.col
 #qrcode {
   display: none;
 }

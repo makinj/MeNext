@@ -506,6 +506,8 @@ function QRCodeToggle() {
 }
 
 $(document).ready(function(){
+  var mql = window.matchMedia("screen and (max-width: 992px)"); //mobile if wql.matches evaluates to true
+
   var currentSubmissionId;
   var player;
   if ($("#youtubePlayerParent").length > 0){

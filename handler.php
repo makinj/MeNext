@@ -27,7 +27,11 @@
       $results = array_merge_recursive($results, listJoinedParties($db));
     }else if($_GET['action']=="listUnjoinedParties"){
       $results = array_merge_recursive($results, listUnjoinedParties($db));
+    }else if($_GET['action']=="logOut"){
+      $results = array_merge_recursive($results, logOut());
+      header("Location: login.php");//login again
     }
+
   }else if(isset($_POST['action'])){//handles POST requests ie. login or addVideo
     if($_POST['action']=="register"){//registers new user
       $results = array_merge_recursive($results, createAccount($db, $_POST));//creates an account

@@ -853,6 +853,9 @@
   }
 
   function logOut(){
+    $results = array("errors"=>array());
     session_destroy();//leave no trace
+    $results['status'] = "success";//was successful
+    return $results;
   }
 ?>

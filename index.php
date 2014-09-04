@@ -57,7 +57,6 @@
 <?php
   }
 ?>
-
 <?php
   require_once('footer.php');//bar at the top of the page
 ?>
