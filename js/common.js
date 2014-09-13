@@ -285,7 +285,7 @@ function listParties(){
           var parties= result['parties'];
           $("#unjoinedList").html("");
           for (var i=0;i<parties.length;i++){
-            var row = "<tr><td>" + parties[i].partyId + "</td><td><a href='/party.php?partyId=" + parties[i].partyId + "'>" + parties[i].name + "</a></td><td>" + parties[i].username + "</td><td><button type='submit' class='joinPartyButton' value=" + parties[i].partyId + ">Join</button></td>";
+            var row = "<tr><td>" + parties[i].partyId + "</td><td><a href='/party.php?partyId=" + parties[i].partyId + "'>" + parties[i].name + "</a></td><td>" + parties[i].username + "</td><td><button type='submit' class='btn btn-default btn-sm' value=" + parties[i].partyId + ">Join</button></td>";
             row=row+"</tr>"
             $('#unjoinedList').append(row);
           }
