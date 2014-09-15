@@ -125,6 +125,17 @@
         PRIMARY KEY(voterId, submissionId)
       )
     ;');//stores votes by users to songs
+
+    executeSQL($db,
+      'CREATE TABLE Session(
+        seriesId VARCHAR(128),
+        userId int REFERENCES User(userId),
+        sessionId VARCHAR(128),
+        token VARCHAR(128),
+        dateStarted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY(seriesId, userId)
+      )
+    ;');//stores votes by users to songs
   }
 
   function executeSQL($db, $query){//runs a query with PDO's specific syntax
@@ -303,9 +314,7 @@
 
         if($stmt->rowCount()==1){//if successfully logged in
           $result = $stmt->fetch(PDO::FETCH_OBJ);
-          $_SESSION['username'] = $username;
-          $_SESSION['userId'] = $result->userId;
-          $_SESSION['logged'] = 1;
+          startSeries($db, $result->userId);
           $results['status'] = 'success';
           $results['token'] = session_id();
         }else{
@@ -857,5 +866,111 @@
     session_destroy();//leave no trace
     $results['status'] = "success";//was successful
     return $results;
+  }
+
+  function setSessionData($db, $userId){
+    try{
+      $stmt = $db->prepare(
+        'SELECT
+          *
+        FROM
+          User
+        WHERE
+          userId=:userId
+      ;');//checks for matching row
+      $stmt->bindValue(':userId', $userId);
+      $stmt->execute();
+      $result = $stmt->fetch(PDO::FETCH_OBJ);
+      $_SESSION['username'] = $result->username;
+      $_SESSION['userId'] = $userId;
+      $_SESSION['logged'] = 1;
+    } catch (PDOException $e) {//something went wrong...
+      error_log("Error: " . $e->getMessage());
+    }
+  }
+
+  function startSeries($db, $userId){
+    $seriesId = substr(str_shuffle(md5(time())),0,128);
+    setcookie('seriesId', $seriesId);
+    $seriesIdHash = hash('sha512', $seriesId);
+    $stmt = $db->prepare(
+      'INSERT INTO
+        Session(
+          seriesId,
+          userId
+        )
+      VALUES(
+        :seriesId,
+        :userId
+      );');
+    $stmt->bindValue(':seriesId', $seriesIdHash);
+    $stmt->bindValue(':userId', $userId);
+    $stmt->execute();
+    startSeriesSession($db, $seriesId);
+  }
+
+  function checkSeriesTokenPair($db, $seriesId, $token){
+    $seriesIdHash = hash('sha512', $seriesId);
+    $stmt = $db->prepare(
+      'SELECT
+        token, userId, seriesId
+      FROM
+        Session
+      WHERE
+        seriesId=:seriesId
+    ;');
+    $stmt->bindValue(':seriesId', $seriesIdHash);
+    $stmt->execute();
+    $result = $stmt->fetch(PDO::FETCH_OBJ);
+    if($result->token == md5($token)) {
+      startSeriesSession($db, $seriesId);
+    }elseif($result->sessionId){
+      session_destroy($result->sessionId);
+    }
+  }
+
+  function startSeriesSession($db, $seriesId){
+    try {
+      $seriesId = hash('sha512', $seriesId);
+      $token = substr(str_shuffle(md5(time())),0,128);
+      setcookie('token', $token);
+      $tokenHash = md5($token);
+      if(session_id()!=''){
+        session_destroy();
+      }
+      $stmt = $db->prepare(
+        'SELECT
+          sessionId, userId
+        FROM
+          Session
+        WHERE
+          seriesId=:seriesId
+      ;');
+      $stmt->bindValue(':seriesId', $seriesId);
+      $stmt->execute();
+      $result = $stmt->fetch(PDO::FETCH_OBJ);
+      if($result){
+        if($result->sessionId){
+         session_destroy($result->sessionId);
+        }
+        session_start();
+        setSessionData($db, $result->userId);
+        $stmt = $db->prepare(
+          'UPDATE
+            Session
+          SET
+            sessionId = :sessionId,
+            token = :token,
+          WHERE
+            seriesId=:seriesId
+        ;');
+        $stmt->bindValue(':sessionId', session_id());
+        $stmt->bindValue(':token', $tokenHash);
+        $stmt->bindValue(':seriesId', $seriesId);
+        $stmt->execute();
+      }
+    }catch(PDOException $e){//something went wrong...
+      error_log('Query failed: ' . $e->getMessage());
+    }
   }
 ?>
