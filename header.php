@@ -18,12 +18,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo "MeNext | ".$title;?></title>
 
-    <!-- Bootstrap
-    <link href="css/bootstrap.min.css" rel="stylesheet" />-->
+    <!-- Bootstrap -->
+    <link href="css/sandstone/bootstrap.min.css" rel="stylesheet" />
     <link href="css/jquery-ui.css" type="text/css" rel="stylesheet"/>
 
-    <!-- BASE -->
-    <link href="css/base.css" type="text/css" rel="stylesheet"/>
+    <!-- BASE
+    <link href="css/base.css" type="text/css" rel="stylesheet"/>-->
 
     <!-- Main Stylesheet -->
     <link href="css/main.css" rel="stylesheet" />
@@ -37,7 +37,7 @@
     <script src="js/bootstrap.min.js"></script>
 
     <script src="js/jquery-ui.min.js" type="text/javascript"></script>
-    <script src="/js/common.js" type="text/javascript"></script>
+    <script src="js/common.js" type="text/javascript"></script>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -47,11 +47,36 @@
     <![endif]-->
   </head>
   <body>
-
-      <div class="header dark-blue-row">
+  <div class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container">
+          <div class="navbar-header">
+              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="index.php"><img src="images/headerLogoSmall.png" id="headerLogo" /></a>
+          </div>
+          <div class="navbar-collapse collapse">
+              <ul class="nav navbar-nav">
+                  <li><a href="index.php">Home</a></li>
+                  <li><a href="#about">About</a></li>
+              </ul>
+              <ul class="nav navbar-nav navbar-right">
+                  <?php if(isset($_SESSION['logged'])){ ?>
+                      <li><a href="handler.php?action=logOut">Log Out</a></li>
+                  <?php }else{ ?>
+                    <li><a href="login.php">Login/Register</a></li>
+                  <?php } ?>
+              </ul>
+          </div><!--/.nav-collapse -->
+      </div>
+  </div>
+      <!--<div class="header dark-blue-row">
         <div class="row clear">
           <div class="col col-2 tablet-col-10 mobile-col-3-4 colHeader">
-            <a class="logo left mobile-no-float" href="/"><img src="/images/headerLogoSmall.png" id="headerLogo" /></a>
+            <a class="logo left mobile-no-float" href="/"><img src="images/headerLogoSmall.png" id="headerLogo" /></a>
           </div>
           <div class="col col-10 tablet-col-2 mobile-col-1-4 colHeader">
 
@@ -72,6 +97,6 @@
             ?>
           </div>
         </div>
-      </div><!-- /.container-fluid -->
-    <div class="container row-2">
+      </div>-->
+    <div class="container">
 

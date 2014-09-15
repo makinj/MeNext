@@ -1,57 +1,55 @@
 <?php
-  $title="Login | Register";//to be displayed in tab
-  include("header.php");//open html bar
+$title = "Login | Register"; //to be displayed in tab
+include("header.php"); //open html bar
 ?>
-<table class="loginTable">
-  <tr class="no-border">
-    <td class="registerLoginContainer no-border">
-      <h1 class="loginTitle">Login</h1>
-      <div id="problem"></div>
-      <div class="formContainer">
-        <form id="login">
-          <div class="formItem">
-            <span class="loginText">Username: </span>
-            <input type="text" name="username" id="name">
-          </div>
+<div class="jumbotron">
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Register</h2>
 
-          <div class="formItem">
-            <span class="loginText">Password: </span>
-            <input type="password" name="password" id="password">
-          </div>
+            <div id="problem"></div>
+            <form role="form" id="register">
+                <div class="form-group">
+                    <input type="email" class="form-control" name="email" id="email" placeholder="Email Address">
+                </div>
 
-          <div class="formItem">
-            <input type="submit" name="submit" value="Submit" class="submit">
-          </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="name" name="username" placeholder="Username">
+                </div>
 
-          <input type="hidden" name="action" value='login'>
-        </form>
-      </div>
-    </td>
+                <div class="form-group">
+                    <input type="password" class="form-control" name="password" id="password" placeholder="Password">
+                </div>
 
-    <td class="registerLoginContainer no-border">
-      <h1 class="loginTitle">Register</h1>
-      <div class="formContainer">
-        <form id="register">
-          <div class="formItem">
-            <span class="loginText">Username: </span>
-            <input type="text" name="username" id="name">
-          </div>
+                <div class="form-group">
+                    <input type="password" class="form-control" name="confirm_password" id="confirm_password" placeholder="Confirm Password">
+                </div>
 
-          <div class="formItem">
-            <span class="loginText">Password: </span>
-            <input type="password" name="password" id="password">
-          </div>
+                <button type="submit" name="submit" class="btn btn-primary pull-right">Create Account</button>
 
-          <div class="formItem">
-            <input type="submit" name="submit" value="Submit" class="submit">
-          </div>
+                <input type="hidden" name="action" value='register'>
+            </form>
+        </div>
+        <div class="col-md-6">
+            <h2>Login</h2>
 
-          <input type="hidden" name="action" value='register'>
-        </form>
-      </div>
-    </td>
-  </tr>
-</table>
+            <div id="problem"></div>
+            <form role="form" id="login">
+                <div class="form-group">
+                    <input type="text" class="form-control" id="name" name="username" placeholder="Username">
+                </div>
+
+                <div class="form-group">
+                    <input type="password" class="form-control" name="password" id="password" placeholder="Password">
+                </div>
+
+                <button type="submit" name="submit" class="btn btn-primary pull-right">Login</button>
+
+                <input type="hidden" name="action" value='login'>
+            </form>
+        </div>
+    </div>
+</div>
 <?php
-  require_once("footer.php");//closes html
+require_once("footer.php"); //closes html
 ?>
