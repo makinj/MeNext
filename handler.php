@@ -8,20 +8,8 @@
   or have sensitive info like passwords
 */
   require_once("includes/functions.php");//basic database operations
-  $db = connectDb();//connect to mysql
 
   $results = array();//array to be returned to client
-  if (isset($_GET['token'])){
-    session_id($_GET['token']);
-  }
-  if (isset($_POST['token'])){
-    session_id($_POST['token']);
-  }
-  session_start();
-
-  if(!isset($_SESSION['user Id']) && isset($_COOKIE['series']) && isset($_COOKIE['token'])){
-    startSeriesSession($db);
-  }
 
   if(isset($_GET['action'])){//GETs info ie. list of Videos or list of users
     if($_GET['action']=="listVideos"){
