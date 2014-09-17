@@ -2,8 +2,16 @@
   /*
   Joshua Makinen
   */
-
   require_once("constants.php");//get system-specific variables
+
+  $db = connectDb();//connect to mysql
+
+  if(session_id() == '') {
+    session_start();
+  }
+  if(!isset($_SESSION['userId']) && isset($_COOKIE['seriesId']) && isset($_COOKIE['token'])){
+    checkSeriesTokenPair($db, $_COOKIE['seriesId'], $_COOKIE['token']);
+  }
 
   function sanitizeString($var){//cleans a string up so there are no crazy vulerabilities
     $var = strip_tags($var);
@@ -133,6 +141,7 @@
         sessionId VARCHAR(128),
         token VARCHAR(128),
         dateStarted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        loggedOut BIT(1) DEFAULT 0,
         PRIMARY KEY(seriesId, userId)
       )
     ;');//stores votes by users to songs
@@ -294,6 +303,7 @@
   }
 
   function logIn($db, $args){//sets session data if the user information matches a user's row
+    error_log("loggin in");
     $results = array("errors"=>array());
     if(is_array($args)&&array_key_exists("username", $args)&&array_key_exists("password", $args)){//valid array was given
       $username = sanitizeString($args['username']);
@@ -864,6 +874,7 @@
   function logOut(){
     $results = array("errors"=>array());
     session_destroy();//leave no trace
+
     $results['status'] = "success";//was successful
     return $results;
   }
@@ -911,30 +922,34 @@
 
   function checkSeriesTokenPair($db, $seriesId, $token){
     $seriesIdHash = hash('sha512', $seriesId);
+    $tokenHash = hash('sha512', $token);
     $stmt = $db->prepare(
       'SELECT
-        token, userId, seriesId
+        *
       FROM
         Session
       WHERE
-        seriesId=:seriesId
+        seriesId=:seriesId AND
+        loggedOut=0
     ;');
     $stmt->bindValue(':seriesId', $seriesIdHash);
     $stmt->execute();
     $result = $stmt->fetch(PDO::FETCH_OBJ);
-    if($result->token == md5($token)) {
-      startSeriesSession($db, $seriesId);
-    }elseif($result->sessionId){
-      session_destroy($result->sessionId);
+    if($result){
+      if($result->token == $tokenHash) {
+        startSeriesSession($db, $seriesId);
+      }elseif($result->sessionId){
+        session_destroy($result->sessionId);
+      }
     }
   }
 
   function startSeriesSession($db, $seriesId){
     try {
-      $seriesId = hash('sha512', $seriesId);
+      $seriesIdHash = hash('sha512', $seriesId);
       $token = substr(str_shuffle(md5(time())),0,128);
       setcookie('token', $token);
-      $tokenHash = md5($token);
+      $tokenHash = hash('sha512', $token);
       if(session_id()!=''){
         session_destroy();
       }
@@ -944,31 +959,31 @@
         FROM
           Session
         WHERE
-          seriesId=:seriesId
+          seriesId=:seriesId AND
+          loggedOut=0
       ;');
-      $stmt->bindValue(':seriesId', $seriesId);
+      $stmt->bindValue(':seriesId', $seriesIdHash);
       $stmt->execute();
       $result = $stmt->fetch(PDO::FETCH_OBJ);
-      if($result){
-        if($result->sessionId){
-         session_destroy($result->sessionId);
-        }
-        session_start();
-        setSessionData($db, $result->userId);
-        $stmt = $db->prepare(
-          'UPDATE
-            Session
-          SET
-            sessionId = :sessionId,
-            token = :token,
-          WHERE
-            seriesId=:seriesId
-        ;');
-        $stmt->bindValue(':sessionId', session_id());
-        $stmt->bindValue(':token', $tokenHash);
-        $stmt->bindValue(':seriesId', $seriesId);
-        $stmt->execute();
+      if($result->sessionId){
+       session_destroy($result->sessionId);
       }
+      session_start();
+      setSessionData($db, $result->userId);
+      $stmt = $db->prepare(
+        'UPDATE
+          Session
+        SET
+          sessionId = :sessionId,
+          token = :token
+        WHERE
+          seriesId=:seriesId AND
+          loggedOut=0
+      ;');
+      $stmt->bindValue(':sessionId', session_id());
+      $stmt->bindValue(':token', $tokenHash);
+      $stmt->bindValue(':seriesId', $seriesIdHash);
+      $stmt->execute();
     }catch(PDOException $e){//something went wrong...
       error_log('Query failed: ' . $e->getMessage());
     }

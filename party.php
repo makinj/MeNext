@@ -2,11 +2,6 @@
   $title="index";
   require_once('header.php');//bar at the top of the page
   require_once("includes/functions.php");//basic database operations
-  if(session_id() == '') {
-    session_start();
-  }
-
-  $db = connectDb();//connect to mysql
 
   $partyId = -1;
   $isOwner = 0;
