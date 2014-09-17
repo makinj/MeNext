@@ -1,5 +1,5 @@
 <?php
-$title = "index";
+$title = (isset($_SESSION['logged']) ? "Dashboard" : "Home");
 require_once('header.php'); //bar at the top of the page
 require_once('includes/constants.php');
 if(isset($_SESSION['logged'])){
@@ -36,31 +36,10 @@ if(isset($_SESSION['logged'])){
                     <th>Owner:</th>
                 </tr>
                 </thead>
-                <tbody id="joinedList">
-                <tr>
-                    <td>1</td>
-                    <td>kflskfsa</td>
-                    <td>kflskfsa</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>kflskfsa</td>
-                    <td>kflskfsa</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>kflskfsa</td>
-                    <td>kflskfsa</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>kflskfsa</td>
-                    <td>kflskfsa</td>
-                </tr>
-                </tbody>
+                <tbody id="joinedList"></tbody>
             </table>
         </div>
-        <hr />
+        <hr/>
         <div class="joinedPartiesWrapper">
             <h4>Unjoined Parties</h4>
             <table class="table table-hover table-striped" id="unjoinedPartiesTable">
@@ -72,38 +51,7 @@ if(isset($_SESSION['logged'])){
                     <th></th>
                 </tr>
                 </thead>
-                <tbody id="unjoinedList">
-                <tr>
-                    <td>1</td>
-                    <td>kflskfsa</td>
-                    <td>kflskfsa</td>
-                    <td><button type='submit' class='btn btn-default btn-sm' value="1">Join</button></td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>kflskfsa</td>
-                    <td>kflskfsa</td>
-                    <td><button type='submit' class='btn btn-default btn-sm' value="1">Join</button></td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>kflskfsa</td>
-                    <td>kflskfsa</td>
-                    <td><button type='submit' class='btn btn-default btn-sm' value="1">Join</button></td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>kflskfsa</td>
-                    <td>kflskfsa</td>
-                    <td><button type='submit' class='btn btn-default btn-sm' value="1">Join</button></td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>kflskfsa</td>
-                    <td>kflskfsa</td>
-                    <td><button type='submit' class='btn btn-default btn-sm' value="1">Join</button></td>
-                </tr>
-                </tbody>
+                <tbody id="unjoinedList"></tbody>
             </table>
         </div>
     </div>
@@ -114,12 +62,13 @@ if(isset($_SESSION['logged'])){
 ?>
 
 <div class="jumbotron">
-  <h1>We need a </h1>
+    <h1>MeNext</h1>
+    <h2>A Music Request Service with a Hint of Democracy</h2>
+    <p>Description to be included here</p>
 </div>
 
 <?php
 }
-?>
-<?php
+
 require_once('footer.php'); //bar at the top of the page
 ?>

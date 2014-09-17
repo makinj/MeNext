@@ -5,7 +5,7 @@ function register(){
       if(result['status']=='success'){
         window.location.href = "/";
       }else{
-        $("#problem").html(result['errors'][0]);
+        $("#problem").html('<div class="alert alert-danger" role="alert">' + result['errors'][0] + '</div>');
       }
     }
   );
@@ -116,11 +116,15 @@ function listQueue(){
             var queueRow="<tr><td>"+(i+1).toString()+"</td><td>"+videos[i].title+"</td><td>"+videos[i].username+"</td>";
             if((typeof isAdmin != 'undefined' && isAdmin==1) || userId == videos[i].submitterId){
               queueRow=queueRow+"<td>"+
-                "<button "+
-                  "class='removeVideo button' "+
-                  "value='"+videos[i].submissionId+"'>"+
-                    '<img class="removeVideoIcon" src="/images/close.png" />'+
-                "</button>"+
+                "<button class='songUpvote btn btn-success btn-sm' value='73'>" +
+                  "<span class='glyphicon glyphicon-thumbs-up'>" +
+                "</button>" +
+                "<button class='songDownvote btn btn-danger btn-sm' value='73'>" +
+                  "<span class='glyphicon glyphicon-thumbs-down'>" +
+                "</button>" +
+                "<button class='removeVideo btn btn-default btn-sm' value='"+videos[i].submissionId+"'>" +
+                  "<span class='glyphicon glyphicon-remove'>" +
+                "</button>" +
               "</td>";
 
             }
@@ -362,9 +366,9 @@ function playerStateHandler(state){
     listQueue();
     loadCurrentVideo();
   }else if (state==1){//playing
-    $("#playPause").html('<img class="icon" src="images/pause.png" />');
+    $("#playPause").html('<span class="glyphicon glyphicon-pause">');
   }else if(state==2){//paused
-    $("#playPause").html('<img class="icon" src="images/play.png" />');
+    $("#playPause").html('<span class="glyphicon glyphicon-play">');
   }else if(state==3){//buffering
   }else if(state==5){//video cued
   }
@@ -377,7 +381,7 @@ function setupYouTube(){
   //swfobject.embedSWF("http://www.youtube.com/apiplayer/?enablejsapi=1&version=3&playerapiid=youtubePlayerParent",
 
   swfobject.embedSWF("http://www.youtube.com/v/00000000000?version=3&enablejsapi=1&iv_load_policy=3&autohide=1&showinfo=0",
-  "youtubePlayerParent", "100%", "530", "8", null, null, params, atts);
+  "youtubePlayerParent", "100%", "250", "8", null, null, params, atts);
 
   //add "&modestbranding=1&autohide=1&showinfo=0&controls=0" to remove youtube bars and controls
 
