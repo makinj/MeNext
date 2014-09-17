@@ -1,9 +1,6 @@
 <?php
   require_once("includes/constants.php");
   require_once("includes/functions.php");
-  if(session_id() == '') {
-    session_start();
-  }
 ?>
     <script type="text/javascript">
       var API_KEY =
