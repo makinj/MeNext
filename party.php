@@ -66,7 +66,7 @@ if ($isOwner){
                 </script>
             </div>
             <div class="col-lg-6">
-                <button class="btn btn-default btn-block">Report a Bug</button>
+                <a class="btn btn-default btn-block" data-toggle="modal" data-target="#bugModal" href="https://docs.google.com/forms/d/1fy-vD3ovTfs4iekNbgE3viobHvvusD8ODunL_v2zks8/viewform?entry.1934380623=<?php echo $_SESSION["username"] ?>&entry.1987106882">Report a Bug</button>
             </div>
         </div>
     </div>
