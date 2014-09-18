@@ -15,7 +15,7 @@ if ($isOwner){
 <!-- beginning of youtube player and queuelist -->
 <div class="row">
     <div class="col-md-4">
-        <h2>Party Name <span class="text-muted small">by author</span></h2>
+        <h2>Party Name <span class="text-muted small">by <?php echo $_SESSION["username"] ?></span></h2>
         <!-- SWFObject to Verify Flash Version -->
         <script type='text/javascript' src='js/swfobject.js'></script>
         <script type="text/javascript">

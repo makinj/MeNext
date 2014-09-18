@@ -5,7 +5,7 @@ function register(){
       if(result['status']=='success'){
         window.location.href = "/";
       }else{
-        $("#problem").html('<div class="alert alert-danger" role="alert">' + result['errors'][0] + '</div>');
+        $("#register_problem").html('<div class="alert alert-danger" role="alert">' + result['errors'][0] + '</div>');
       }
     }
   );
@@ -19,7 +19,7 @@ function login(){
       if(result['status']=='success'){
         window.location.href = "/";
       }else{
-        $("#problem").html(result['errors'][0]);
+        $("#login_problem").html('<div class="alert alert-danger" role="alert">' + result['errors'][0] + '</div>');
       }
     }
   );
