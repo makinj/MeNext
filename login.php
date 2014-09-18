@@ -7,7 +7,7 @@ include("header.php"); //open html bar
         <div class="col-md-6">
             <h2>Register</h2>
 
-            <div id="problem"></div>
+            <div id="register_problem"></div>
             <form role="form" id="register">
                 <div class="form-group">
                     <input type="email" class="form-control" name="email" id="email" placeholder="Email Address">
@@ -33,7 +33,7 @@ include("header.php"); //open html bar
         <div class="col-md-6">
             <h2>Login</h2>
 
-            <div id="problem"></div>
+            <div id="login_problem"></div>
             <form role="form" id="login">
                 <div class="form-group">
                     <input type="text" class="form-control" id="name" name="username" placeholder="Username">
