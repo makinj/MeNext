@@ -70,7 +70,7 @@ if ($isOwner){
                 </script>
             </div>
             <div class="col-lg-6">
-                <a class="btn btn-default btn-block" data-toggle="modal" data-target="#bugModal" href="https://docs.google.com/forms/d/1fy-vD3ovTfs4iekNbgE3viobHvvusD8ODunL_v2zks8/viewform?entry.1934380623=<?php echo $_SESSION["username"] ?>&entry.1987106882">Report a Bug</a>
+                <a class="btn btn-default btn-block" target="_blank" href="https://docs.google.com/forms/d/1fy-vD3ovTfs4iekNbgE3viobHvvusD8ODunL_v2zks8/viewform?entry.1934380623=<?php echo $_SESSION["username"] ?>&entry.1987106882">Report a Bug</a>
             </div>
         </div>
     </div>
