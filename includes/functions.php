@@ -8,7 +8,6 @@
 
   if(session_id() == '') {
     session_start();
-    error_log(session_id());
   }
   if(!isset($_SESSION['userId']) && isset($_COOKIE['seriesId']) && isset($_COOKIE['token'])){
     checkSeriesTokenPair($db, $_COOKIE['seriesId'], $_COOKIE['token']);
@@ -304,7 +303,6 @@
   }
 
   function logIn($db, $args){//sets session data if the user information matches a user's row
-    error_log("loggin in");
     $results = array("errors"=>array());
     if(is_array($args)&&array_key_exists("username", $args)&&array_key_exists("password", $args)){//valid array was given
       $username = sanitizeString($args['username']);
@@ -882,13 +880,11 @@
     session_write_close();
     session_id($sessionId);
     session_start();
-    error_log('id 2: '.session_id());
     session_destroy();//leave no trace
     if($sessionId != $oldId){
       session_write_close();
       session_id($oldId);
       session_start();
-      error_log('id 3: '.session_id());
     }
     $stmt = $db->prepare(
       'UPDATE
@@ -963,17 +959,14 @@
     if($result){
       if($result->token == $tokenHash) {
         startSeriesSession($db, $seriesId);
-        error_log('success');
       }elseif($result->sessionId){
         session_write_close();
         session_id($result->sessionId);
         session_start();
-        error_log('id 4: '.session_id());
         session_destroy();
         session_write_close();
         session_start();
         session_regenerate_id();
-        error_log('id 5: '.session_id());
         $stmt = $db->prepare(
           'UPDATE
             Session
@@ -1013,13 +1006,11 @@
         session_write_close();
         session_id($result->sessionId);
         session_start();
-        error_log('id 6: '.session_id());
         session_destroy();
         session_write_close();
       }
       session_start();
       session_regenerate_id();
-      error_log('id 7: '.session_id());
       setSessionData($db, $result->userId);
       $stmt = $db->prepare(
         'UPDATE
