@@ -20,7 +20,6 @@
 
       var userId =
       <?php
-          error_log(json_encode($_SESSION));
         if (isset($_SESSION['userId'])){
           echo"'".$_SESSION['userId']."';\n";
         }

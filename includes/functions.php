@@ -195,6 +195,29 @@
   }
 
   /*
+  Returns party object with partyName, ownerId, and ownerUsername for a party with a given id
+  */
+  function getPartyObject($db, $partyId){
+    $stmt = $db->prepare(
+      'SELECT
+        p.name as partyName,
+        u.username as ownerUsername,
+        u.userid as ownerId
+      FROM Party p,
+      PartyUser pu,
+      User u
+      WHERE
+        p.partyid=:partyId AND
+        pu.partyid=p.partyid AND
+        pu.owner=1 AND
+        u.userid=pu.userid
+    ;');//makes new row with given info
+    $stmt->bindValue(':partyId', $partyId);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_OBJ);
+  }
+
+  /*
   Returns 1 or 0 based on whether the user has permission to write to the party
   */
   function canWriteParty($db, $partyId, $userId=-1){
