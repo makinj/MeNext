@@ -89,7 +89,6 @@ function createParty(){
 }
 
 function joinParty(passedId) {
-  console.log(passedId);
   $.post("handler.php", { 'action': 'joinParty', 'partyId': passedId },
     function (data) {
       var result = JSON.parse(data);
@@ -289,10 +288,13 @@ function listParties(){
           var parties= result['parties'];
           $("#unjoinedList").html("");
           for (var i=0;i<parties.length;i++){
-            var row = "<tr><td>" + parties[i].partyId + "</td><td><a href='/party.php?partyId=" + parties[i].partyId + "'>" + parties[i].name + "</a></td><td>" + parties[i].username + "</td><td><button type='submit' class='btn btn-default btn-sm' value=" + parties[i].partyId + ">Join</button></td>";
+            var row = "<tr><td>" + parties[i].partyId + "</td><td><a href='/party.php?partyId=" + parties[i].partyId + "'>" + parties[i].name + "</a></td><td>" + parties[i].username + "</td><td><button type='submit' class='btn btn-default btn-sm joinPartyButton' value=" + parties[i].partyId + ">Join</button></td>";
             row=row+"</tr>"
             $('#unjoinedList').append(row);
           }
+          $('.joinPartyButton').click(function(){
+            joinParty($(this).attr("value"));
+          });
         }else{
           $("#problem").html(result['errors'][0]);
         }
@@ -526,8 +528,8 @@ $(document).ready(function(){
   $('#createPartyForm').submit(createParty);
   $('#submitContentToggle').click(submitContentToggle);
   $('#qrcodetoggle').click(QRCodeToggle);
-  $('#thumbUp').click(upVote(getSubmissionId));
-  $('#thumbDown').click(downVote(getSubmissionId));
+  $('#thumbUp').click(upVote(currentSubmissionId));
+  $('#thumbDown').click(downVote(currentSubmissionId));
 
   if ($("#queueList").length > 0){
     listQueue();
@@ -536,9 +538,4 @@ $(document).ready(function(){
   if ($("#unjoinedList").length > 0){
     listParties();
   }
-
-  $(document).on("click", ".joinPartyButton", function () {
-    joinParty($(this).attr("value"));
-  });
-
 });

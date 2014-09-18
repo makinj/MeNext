@@ -1,12 +1,11 @@
 <?php
-    if (session_id() == '') {
-        session_start();
-    }
-    header('Access-Control-Allow-Origin: https://www.googleapis.com');
-    if ((!isset($_SESSION['logged'])) && isset($restricted) && $restricted == true) {
-        header("location: /");
-        exit;
-    }
+  require_once("includes/functions.php"); //basic database operations
+
+  header('Access-Control-Allow-Origin: https://www.googleapis.com');
+  if ((!isset($_SESSION['logged'])) && isset($restricted) && $restricted == true) {
+    header("location: /");
+    exit;
+  }
 ?>
 
 <!DOCTYPE html>

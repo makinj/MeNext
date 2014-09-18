@@ -8,6 +8,7 @@
 
   if(session_id() == '') {
     session_start();
+    error_log(session_id());
   }
   if(!isset($_SESSION['userId']) && isset($_COOKIE['seriesId']) && isset($_COOKIE['token'])){
     checkSeriesTokenPair($db, $_COOKIE['seriesId'], $_COOKIE['token']);
@@ -396,6 +397,7 @@
           $stmt->bindValue(':submitterId', $_SESSION['userId']);
           $stmt->bindValue(':partyId', $partyId);
           $stmt->execute();
+          vote($db, array('submissionId'=>$db->lastInsertId(), 'direction'=>1));
           $results['status'] = 'success';
         }catch (PDOException $e) {//something went wrong...
           error_log("Error: " . $e->getMessage());
@@ -871,10 +873,33 @@
     return $results;
   }
 
-  function logOut(){
+  function logOut($db, $sessionId=0){
+    if($sessionId==0){
+      $sessionId=session_id();
+    }
     $results = array("errors"=>array());
+    $oldId=session_id();
+    session_write_close();
+    session_id($sessionId);
+    session_start();
+    error_log('id 2: '.session_id());
     session_destroy();//leave no trace
-
+    if($sessionId != $oldId){
+      session_write_close();
+      session_id($oldId);
+      session_start();
+      error_log('id 3: '.session_id());
+    }
+    $stmt = $db->prepare(
+      'UPDATE
+        Session
+      SET
+        loggedOut = 1
+      WHERE
+        sessionId=:sessionId
+    ;');
+    $stmt->bindValue(':sessionId', $sessionId);
+    $stmt->execute();
     $results['status'] = "success";//was successful
     return $results;
   }
@@ -938,8 +963,27 @@
     if($result){
       if($result->token == $tokenHash) {
         startSeriesSession($db, $seriesId);
+        error_log('success');
       }elseif($result->sessionId){
-        session_destroy($result->sessionId);
+        session_write_close();
+        session_id($result->sessionId);
+        session_start();
+        error_log('id 4: '.session_id());
+        session_destroy();
+        session_write_close();
+        session_start();
+        session_regenerate_id();
+        error_log('id 5: '.session_id());
+        $stmt = $db->prepare(
+          'UPDATE
+            Session
+          SET
+            loggedOut = 1
+          WHERE
+            sessionId=:sessionId
+        ;');
+        $stmt->bindValue(':sessionId', $result->sessionId);
+        $stmt->execute();
       }
     }
   }
@@ -966,9 +1010,16 @@
       $stmt->execute();
       $result = $stmt->fetch(PDO::FETCH_OBJ);
       if($result->sessionId){
-       session_destroy($result->sessionId);
+        session_write_close();
+        session_id($result->sessionId);
+        session_start();
+        error_log('id 6: '.session_id());
+        session_destroy();
+        session_write_close();
       }
       session_start();
+      session_regenerate_id();
+      error_log('id 7: '.session_id());
       setSessionData($db, $result->userId);
       $stmt = $db->prepare(
         'UPDATE

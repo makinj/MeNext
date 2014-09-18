@@ -21,7 +21,7 @@
     }else if($_GET['action']=="listUnjoinedParties"){
       $results = array_merge_recursive($results, listUnjoinedParties($db));
     }else if($_GET['action']=="logOut"){
-      $results = array_merge_recursive($results, logOut());
+      $results = array_merge_recursive($results, logOut($db));
       header("Location: login.php");//login again
     }
 
