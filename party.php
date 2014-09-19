@@ -20,7 +20,7 @@ if (isset($_GET['partyId'])) {
     <div class="col-md-4">
         <h2><?php echo $partyData->partyName; ?> <span
                 class="text-muted small">by <?php echo $partyData->ownerUsername; ?></span></h2>
-        <h5><span class="text-muted small">Playing:</span><br/>Song Title</h5>
+        <h5><span class="text-muted small">Playing:</span><br/><div id='currentTitle'></div></h5>
         <?php
         if ($isOwner) {
             ?>
@@ -54,9 +54,9 @@ if (isset($_GET['partyId'])) {
         <?php
         } else {
             ?>
-            <img src="http://placehold.it/360x250"/>
+            <img id='currentThumbnail' src="http://placehold.it/360x250"/>
             <br />
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum ac suscipit tellus. Sed vitae massa
+            <p id="currentDescription">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum ac suscipit tellus. Sed vitae massa
                 eget est dictum iaculis in eu massa. Donec aliquet leo et ornare feugiat. Duis velit orci, sollicitudin
                 in finibus ut, maximus quis nunc. Duis maximus iaculis dignissim.</p>
 
@@ -100,11 +100,6 @@ if (isset($_GET['partyId'])) {
     </div>
 
     <?php
-    } else {
-        ?>
-
-    <?php
-    }
     $writeParty = 0;
     $readParty = 0;
     if ($partyId >= 0) { // then $partyId must be set from above

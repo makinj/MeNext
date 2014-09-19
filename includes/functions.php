@@ -10,7 +10,7 @@
     session_start();
   }
   if(!isset($_SESSION['userId']) && isset($_COOKIE['seriesId']) && isset($_COOKIE['token'])){
-    checkSeriesTokenPair($db, $_COOKIE['seriesId'], $_COOKIE['token']);
+    checkSeriesTokenPair($db, sanitizeString($_COOKIE['seriesId']), sanitizeString($_COOKIE['token']));
   }
 
   function sanitizeString($var){//cleans a string up so there are no crazy vulerabilities
@@ -68,6 +68,8 @@
         videoId int NOT NULL AUTO_INCREMENT,
         youtubeId VARCHAR(11) UNIQUE,
         title VARCHAR(255),
+        thumbnail VARCHAR(255),
+        description VARCHAR(255),
         played BIT(1) DEFAULT 0,
 
         PRIMARY KEY(videoId),
@@ -374,6 +376,8 @@
       $verify = json_decode(curl_exec($verify));//returned data from youtube
       if($verify->pageInfo->totalResults==1){//verified to be a real video
         $title = sanitizeString($verify->items[0]->snippet->title);
+        $thumbnail = sanitizeString($verify->items[0]->snippet->thumbnails->default->url);
+        $description = sanitizeString($verify->items[0]->snippet->description);
 
         // Want to try to insert, but not change the videoId, and
         //   change LAST_INSERT_ID() to be the videoId of the inserted video
@@ -382,11 +386,15 @@
             'INSERT INTO
               Video(
                 youtubeId,
-                title
+                title,
+                thumbnail,
+                description
               )
             VALUES(
               :youtubeId,
-              :title
+              :title,
+              :thumbnail,
+              :description
             )
             ON
               DUPLICATE KEY
@@ -395,6 +403,8 @@
           ;');
           $stmt->bindValue(':youtubeId', $youtubeId);
           $stmt->bindValue(':title', $title);
+          $stmt->bindValue(':thumbnail', $thumbnail);
+          $stmt->bindValue(':description', $description);
           // TODO: Add error checking for SQL execution:
           $stmt->execute();
 
@@ -511,6 +521,8 @@
           'SELECT
             v.youtubeId,
             v.title,
+            v.thumbnail,
+            v.description,
             s.submissionId,
             u.username,
             IFNULL(

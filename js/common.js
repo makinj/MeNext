@@ -134,9 +134,11 @@ function listQueue(){
             $(this).attr('disabled',1);
             removeVideo($(this).val());
             listQueue();
-            if($(this).val()==currentSubmissionId){
-              player.stopVideo();
-              player.clearVideo();
+            if($(this).val()==window.currentVideo.submissionId){
+              if(typeof window.player != 'undefined'){
+                window.player.stopVideo();
+                window.player.clearVideo();
+              }
               loadCurrentVideo();
             }
           });
@@ -148,34 +150,41 @@ function listQueue(){
 }
 
 function loadCurrentVideo(){
-  if(typeof player != 'undefined' && typeof isAdmin != 'undefined' && isAdmin==1){
-    $(document).ready(function(){
-      $.get("handler.php?action=getCurrentVideo&partyId="+partyId,
-        function(data,status){
-          var result= JSON.parse(data);
-          if(result['status']=='success'){
-            var video = result['video'];
-            if(video){
-              if(typeof currentSubmissionId == 'undefined' || currentSubmissionId != video.submissionId){
+  $(document).ready(function(){
+    $.get("handler.php?action=getCurrentVideo&partyId="+partyId,
+      function(data,status){
+        var result= JSON.parse(data);
+        if(result['status']=='success'){
+          var video = result['video'];
+          if(video){
+            if(typeof window.currentVideo == 'undefined' || window.currentVideo.submissionId != video.submissionId){
+              if(typeof window.player != 'undefined' && typeof isAdmin != 'undefined' && isAdmin==1){
                 $("#youtubePlayerParent").show();
-                currentSubmissionId=video.submissionId;
-                player.loadVideoById(video.youtubeId, 0);
+                window.currentVideo=video;
+                window.player.loadVideoById(video.youtubeId, 0);
+              }else  if(typeof isAdmin == 'undefined' || isAdmin==0){
+                window.currentVideo=video;
               }
-            }else{
-              $("#youtubePlayerParent").hide();
-              //swfobject.removeSWF("youtubePlayerParent");
+              $('#currentThumbnail').attr("src", video.thumbnail);
+              $('#currentTitle').text(video.title);
+
+              $('#currentDescription').text(video.description);
             }
           }else{
-            $("#problem").html(result['errors'][0]);
+            if(typeof window.player != 'undefined'){
+              window.player.stopVideo();
+              window.player.clearVideo();
+            }
           }
+        }else{
+          $("#problem").html(result['errors'][0]);
         }
-      );
+      });
     });
-  }
 }
 
 function markVideoWatched(){
-  $.post("handler.php", {'action':'markVideoWatched', 'submissionId':currentSubmissionId},
+  $.post("handler.php", {'action':'markVideoWatched', 'submissionId':window.currentVideo.submissionId},
     function(data){
       var result= JSON.parse(data);
       if(result['status']!='success'){
@@ -344,18 +353,18 @@ $.fn.googleSuggest = function(opts){
 }
 
 function onYouTubePlayerReady(playerId){
-  player = document.getElementById("youtubePlayer");
-  player.addEventListener("onStateChange", "playerStateHandler");
+  window.player = document.getElementById("youtubePlayer");
+  window.player.addEventListener("onStateChange", "playerStateHandler");
   //$("#youtubePlayerParent").hide();
 }
 
 function playPause() {
   //Make Sure Player Is Initialized
-  if (player) {
-    if (player.getPlayerState() == 1){//Playing
-      player.pauseVideo();
-    }else if (player.getPlayerState() == 0||player.getPlayerState() == 2){//Paused
-      player.playVideo();
+  if (window.player) {
+    if (window.player.getPlayerState() == 1){//Playing
+      window.player.pauseVideo();
+    }else if (window.player.getPlayerState() == 0||window.player.getPlayerState() == 2){//Paused
+      window.player.playVideo();
     }
   }
 }
@@ -399,7 +408,7 @@ function setupYouTube(){
 
 function fullScreenChangeHandler() {
   var elem = document.getElementById("youtubePlayer");
-  if (elem && // if there is a youtube player and the page is in fullscreen mode
+  if (elem && // if there is a youtube window.player and the page is in fullscreen mode
       (document.fullScreen == false) ||
       (document.msFullscreenEnabled == true) ||
       (document.mozFullScreen == false) ||
@@ -462,7 +471,7 @@ function fullScreen() {
     }
 
     if (fullScreenPossible) {
-      // makes the youtube player the screen's size
+      // makes the youtube window.player the screen's size
       elem.style.width = screen.width + "px";
       elem.style.height = screen.height + "px";
 
@@ -514,8 +523,12 @@ function QRCodeToggle() {
 $(document).ready(function(){
   var mql = window.matchMedia("screen and (max-width: 992px)"); //mobile if wql.matches evaluates to true
 
-  var currentSubmissionId;
-  var player;
+  $('#thumbUp').click(function(){
+    upVote(window.currentVideo.submissionId);
+  });
+  $('#thumbDown').click(function(){
+    downVote(window.currentVideo.submissionId);
+  });
   if ($("#youtubePlayerParent").length > 0){
     setupYouTube();
     $("#playPause").click(playPause);
@@ -528,8 +541,6 @@ $(document).ready(function(){
   $('#createPartyForm').submit(createParty);
   $('#submitContentToggle').click(submitContentToggle);
   $('#qrcodetoggle').click(QRCodeToggle);
-  $('#thumbUp').click(upVote(currentSubmissionId));
-  $('#thumbDown').click(downVote(currentSubmissionId));
 
   if ($("#queueList").length > 0){
     listQueue();
