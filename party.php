@@ -10,49 +10,71 @@ if (isset($_GET['partyId'])) {
     $partyId = $_GET['partyId'];
     $isOwner = isPartyOwner($db, $partyId);
 }
-$partyData=[];
-if (isset($_GET['partyId'])){
+$partyData = [];
+if (isset($_GET['partyId'])) {
     $partyData = getPartyObject($db, $_GET['partyId']);
 }
-if ($isOwner){
 ?>
 <!-- beginning of youtube player and queuelist -->
 <div class="row">
     <div class="col-md-4">
-        <h2><?php echo $partyData->partyName; ?> <span class="text-muted small">by <?php echo $partyData->ownerUsername; ?></span></h2>
-        <!-- SWFObject to Verify Flash Version -->
-        <script type='text/javascript' src='js/swfobject.js'></script>
-        <script type="text/javascript">
-            var isAdmin = 1;
-        </script>
+        <h2><?php echo $partyData->partyName; ?> <span
+                class="text-muted small">by <?php echo $partyData->ownerUsername; ?></span></h2>
+        <h5>Playing:<br/>Song Title</h5>
+        <?php
+        if ($isOwner) {
+            ?>
+            <!-- SWFObject to Verify Flash Version -->
+            <script type='text/javascript' src='js/swfobject.js'></script>
+            <script type="text/javascript">
+                var isAdmin = 1;
+            </script>
 
-        <div id='youtubePlayerParent'>
-            You need Flash player 8+ and JavaScript enabled to view this video.
-        </div>
+            <div id='youtubePlayerParent'>
+                You need Flash player 8+ and JavaScript enabled to view this video.
+            </div>
 
-        <!--<div id="disabledFullScreen">HTML5 fullscreen and firefox don't mix well with your operating system. We
-            recommend
-            Google Chrome.
-            <button type="button" id="closeAlert" class="btn"><span class="glyphicon glyphicon-remove"></span></button>
-        </div>-->
+            <div class="btn-group btn-group-justified btn-group-lg" id="controls">
+                <div class="btn-group btn-group-lg">
+                    <button type="button" id="thumbDown" class="btn btn-danger">
+                        <span class="glyphicon glyphicon-thumbs-down"></span>
+                    </button>
+                </div>
+                <div class="btn-group btn-group-lg">
+                    <button type="button" id="playPause" class="btn btn-default">
+                        <span class="glyphicon glyphicon-play"></span>
+                    </button>
+                </div>
+                <div class="btn-group btn-group-lg">
+                    <button type="button" id="thumbUp" class="btn btn-success">
+                        <span class="glyphicon glyphicon-thumbs-up"></span>
+                    </button>
+                </div>
+            </div>
+        <?php
+        } else {
+            ?>
+            <img src="http://placehold.it/360x250"/>
+            <br />
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum ac suscipit tellus. Sed vitae massa
+                eget est dictum iaculis in eu massa. Donec aliquet leo et ornare feugiat. Duis velit orci, sollicitudin
+                in finibus ut, maximus quis nunc. Duis maximus iaculis dignissim.</p>
 
-        <div class="btn-group btn-group-justified btn-group-lg" style="width:100%;" id="controls">
-            <div class="btn-group btn-group-lg">
-                <button type="button" id="thumbDown" class="btn btn-danger">
-                    <span class="glyphicon glyphicon-thumbs-down"></span>
-                </button>
+            <div class="btn-group btn-group-justified btn-group-lg" id="controls">
+                <div class="btn-group btn-group-lg">
+                    <button type="button" id="thumbDown" class="btn btn-danger">
+                        <span class="glyphicon glyphicon-thumbs-down"></span>
+                    </button>
+                </div>
+                <div class="btn-group btn-group-lg">
+                    <button type="button" id="thumbUp" class="btn btn-success">
+                        <span class="glyphicon glyphicon-thumbs-up"></span>
+                    </button>
+                </div>
             </div>
-            <div class="btn-group btn-group-lg">
-                <button type="button" id="playPause" class="btn btn-default">
-                    <span class="glyphicon glyphicon-play"></span>
-                </button>
-            </div>
-            <div class="btn-group btn-group-lg">
-                <button type="button" id="thumbUp" class="btn btn-success">
-                    <span class="glyphicon glyphicon-thumbs-up"></span>
-                </button>
-            </div>
-        </div>
+        <?php
+        }
+        ?>
         <br/>
 
         <div class="row">
@@ -70,13 +92,18 @@ if ($isOwner){
                 </script>
             </div>
             <div class="col-lg-6">
-                <a class="btn btn-default btn-block" target="_blank" href="https://docs.google.com/forms/d/1fy-vD3ovTfs4iekNbgE3viobHvvusD8ODunL_v2zks8/viewform?entry.1934380623=<?php echo $_SESSION["username"] ?>&entry.1987106882">Report a Bug</a>
+                <a class="btn btn-default btn-block" target="_blank"
+                   href="https://docs.google.com/forms/d/1fy-vD3ovTfs4iekNbgE3viobHvvusD8ODunL_v2zks8/viewform?entry.1934380623=<?php echo $_SESSION["username"] ?>&entry.1987106882">Report
+                    a Bug</a>
             </div>
         </div>
     </div>
 
     <?php
+    } else {
+        ?>
 
+    <?php
     }
     $writeParty = 0;
     $readParty = 0;
