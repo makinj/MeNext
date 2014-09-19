@@ -43,10 +43,10 @@ function searchYouTube(){//searches youtube to get a list of
           $("#searchResults").html("Failed :(");
         }
         $('button.addVideo').click(function(){
-          $(this).attr('disabled',1);
+          $(this).attr('disabled',true);
           submitVideo($(this).val());
-          $(this).attr('class',"button button-success");
-          $(this).html("<img class='videoAdded' src='/images/play.png'>");
+          $(this).attr('class',"btn btn-default btn-lg");
+          $(this).html("<span class='glyphicon glyphicon-play'></span>");
           listQueue();
         });
     });
@@ -112,26 +112,24 @@ function listQueue(){
           var videos = result['videos'];
           $("#queueList").html("");
           for (var i=0;i<videos.length;i++){
-            var queueRow="<tr><td>"+(i+1).toString()+"</td><td>"+videos[i].title+"</td><td>"+videos[i].username+"</td>";
+            var queueRow="<tr><td>"+(i+1).toString()+"</td><td>"+videos[i].title+"</td><td>"+videos[i].username+"</td>"+
+                "<td>"+
+                "<button class='songUpvote btn btn-success btn-sm' value='"+videos[i].submissionId+"'>" +
+                    "<span class='glyphicon glyphicon-thumbs-up'>" +
+                "</button>" +
+                "<button class='songDownvote btn btn-danger btn-sm' value='"+videos[i].submissionId+"'>" +
+                    "<span class='glyphicon glyphicon-thumbs-down'>" +
+                "</button>";
             if((typeof isAdmin != 'undefined' && isAdmin==1) || userId == videos[i].submitterId){
-              queueRow=queueRow+"<td>"+
-                "<button class='songUpvote btn btn-success btn-sm' value='73'>" +
-                  "<span class='glyphicon glyphicon-thumbs-up'>" +
-                "</button>" +
-                "<button class='songDownvote btn btn-danger btn-sm' value='73'>" +
-                  "<span class='glyphicon glyphicon-thumbs-down'>" +
-                "</button>" +
-                "<button class='removeVideo btn btn-default btn-sm' value='"+videos[i].submissionId+"'>" +
+              queueRow=queueRow+"<button class='removeVideo btn btn-default btn-sm' value='"+videos[i].submissionId+"'>" +
                   "<span class='glyphicon glyphicon-remove'>" +
-                "</button>" +
-              "</td>";
-
+                "</button>";
             }
-            queueRow=queueRow+"</tr>"
+            queueRow=queueRow+"</td></tr>";
             $('#queueList').append(queueRow);
           }
           $('button.removeVideo').click(function(){
-            $(this).attr('disabled',1);
+            $(this).attr('disabled',true);
             removeVideo($(this).val());
             listQueue();
             if($(this).val()==window.currentVideo.submissionId){
@@ -550,3 +548,11 @@ $(document).ready(function(){
     listParties();
   }
 });
+
+(function($) {
+    $.fn.toggleDisabled = function(){
+        return this.each(function(){
+            this.disabled = !this.disabled;
+        });
+    };
+})(jQuery);

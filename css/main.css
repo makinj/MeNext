@@ -30,6 +30,10 @@
     background-color: rgb(186, 32, 43);
 }
 
+#currentThumbnail {
+    padding-right: 8px;
+}
+
 /* Old CSS */
 
 /*.dark-blue-row {
