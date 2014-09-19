@@ -20,7 +20,7 @@ if (isset($_GET['partyId'])) {
     <div class="col-md-4">
         <h2><?php echo $partyData->partyName; ?> <span
                 class="text-muted small">by <?php echo $partyData->ownerUsername; ?></span></h2>
-        <h5>Playing:<br/>Song Title</h5>
+        <h5><span class="text-muted small">Playing:</span><br/>Song Title</h5>
         <?php
         if ($isOwner) {
             ?>
