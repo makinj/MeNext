@@ -166,9 +166,9 @@ function loadCurrentVideo(){
                 window.currentVideo=video;
               }
               $('#currentThumbnail').attr("src", video.thumbnail);
-              $('#currentTitle').text(video.title);
+              $('#currentTitle').html(video.title);
 
-              $('#currentDescription').text(video.description);
+              $('#currentDescription').html(video.description);
             }
           }else{
             if(typeof window.player != 'undefined'){
