@@ -20,7 +20,7 @@ if (isset($_GET['partyId'])) {
     <div class="col-md-4">
         <h2><?php echo $partyData->partyName; ?> <span
                 class="text-muted small">by <?php echo $partyData->ownerUsername; ?></span></h2>
-        <h5><span class="text-muted small">Playing:</span><br/><div id='currentTitle'></div></h5>
+        <h4><span class="text-muted small">Playing:</span><br/><span id='currentTitle'></span></h4>
         <?php
         if ($isOwner) {
             ?>
@@ -54,11 +54,8 @@ if (isset($_GET['partyId'])) {
         <?php
         } else {
             ?>
-            <img id='currentThumbnail' src="http://placehold.it/360x250"/>
-            <br />
-            <p id="currentDescription">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum ac suscipit tellus. Sed vitae massa
-                eget est dictum iaculis in eu massa. Donec aliquet leo et ornare feugiat. Duis velit orci, sollicitudin
-                in finibus ut, maximus quis nunc. Duis maximus iaculis dignissim.</p>
+            <img id='currentThumbnail' class='pull-left' src=""/>
+            <p id="currentDescription"></p>
 
             <div class="btn-group btn-group-justified btn-group-lg" id="controls">
                 <div class="btn-group btn-group-lg">
@@ -92,6 +89,7 @@ if (isset($_GET['partyId'])) {
                 </script>
             </div>
             <div class="col-lg-6">
+                <a class="btn btn-default btn-block" id="viewOnYoutube" target="_blank" href="">View on YouTube</a>
                 <a class="btn btn-default btn-block" target="_blank"
                    href="https://docs.google.com/forms/d/1fy-vD3ovTfs4iekNbgE3viobHvvusD8ODunL_v2zks8/viewform?entry.1934380623=<?php echo $_SESSION["username"] ?>&entry.1987106882">Report
                     a Bug</a>
