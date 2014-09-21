@@ -163,7 +163,9 @@ function loadCurrentVideo(){
               }else  if(typeof isAdmin == 'undefined' || isAdmin==0){
                 window.currentVideo=video;
               }
+              console.log(data);
               $('#currentThumbnail').attr("src", video.thumbnail);
+              $('#viewOnYoutube').attr("href", "https://www.youtube.com/watch?v="+video.youtubeId);
               $('#currentTitle').html(video.title);
 
               $('#currentDescription').html(video.description);

@@ -667,32 +667,47 @@
 
       try{
         $stmt = $db->prepare(
-          'INSERT INTO
-            Party(
-              name,
-              creatorId,
-              passwordProtected,
-              password,
-              privacyId
-            )
-          VALUES(
-            :name,
-            :creatorId,
-            :passwordProtected,
-            :password,
-            :privacyId
-          )
-        ;');
+          'SELECT
+            *
+          FROM
+            Party
+          WHERE
+            name=:name
+          ;');
         $stmt->bindValue(':name', $name);
-        $stmt->bindValue(':creatorId', $_SESSION['userId']);
-        $stmt->bindValue(':passwordProtected', $passwordProtected, PDO::PARAM_BOOL);
-        $stmt->bindValue(':password', $password);
-        $stmt->bindValue(':privacyId', $privacyId);
         $stmt->execute();
-        $partyId = $db->lastInsertId();
-        $results = array_merge_recursive($results, joinParty($db, array("partyId"=>$partyId, "password"=>$password), 1));
-        $results['status']='success';
-        $results['partyId']=$partyId;
+        if($stmt->rowCount()>0){
+          $results['status']='failed';
+          array_push($results['errors'], "Party name already exists");
+        }else{
+          $stmt = $db->prepare(
+            'INSERT INTO
+              Party(
+                name,
+                creatorId,
+                passwordProtected,
+                password,
+                privacyId
+              )
+            VALUES(
+              :name,
+              :creatorId,
+              :passwordProtected,
+              :password,
+              :privacyId
+            )
+          ;');
+          $stmt->bindValue(':name', $name);
+          $stmt->bindValue(':creatorId', $_SESSION['userId']);
+          $stmt->bindValue(':passwordProtected', $passwordProtected, PDO::PARAM_BOOL);
+          $stmt->bindValue(':password', $password);
+          $stmt->bindValue(':privacyId', $privacyId);
+          $stmt->execute();
+          $partyId = $db->lastInsertId();
+          $results = array_merge_recursive($results, joinParty($db, array("partyId"=>$partyId, "password"=>$password), 1));
+          $results['status']='success';
+          $results['partyId']=$partyId;
+        }
       } catch (PDOException $e) {
         //something went wrong...
         error_log("Error: " . $e->getMessage());
