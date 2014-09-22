@@ -103,6 +103,7 @@ function joinParty(passedId) {
 }
 
 function listQueue(){
+  console.log("updating q");
   $(document).ready(function(){
     loadCurrentVideo();
     $.get("handler.php?action=listVideos&partyId="+partyId,
@@ -163,7 +164,6 @@ function loadCurrentVideo(){
               }else  if(typeof isAdmin == 'undefined' || isAdmin==0){
                 window.currentVideo=video;
               }
-              console.log(data);
               $('#currentThumbnail').attr("src", video.thumbnail);
               $('#viewOnYoutube').attr("href", "https://www.youtube.com/watch?v="+video.youtubeId);
               $('#currentTitle').html(video.title);
@@ -172,11 +172,14 @@ function loadCurrentVideo(){
             }
           }else{
             if(typeof window.player != 'undefined'){
-              window.player.stopVideo();
-              window.player.clearVideo();
+              state = window.player.getPlayerState()
+              if(state!=-1 && state!=0 && state!=5){
+                //window.player.stopVideo();
+                //window.player.clearVideo();
+              }
             }
           }
-        }else{
+        }else if(retult['errors']){
           $("#problem").html(result['errors'][0]);
         }
       });
@@ -187,7 +190,7 @@ function markVideoWatched(){
   $.post("handler.php", {'action':'markVideoWatched', 'submissionId':window.currentVideo.submissionId},
     function(data){
       var result= JSON.parse(data);
-      if(result['status']!='success'){
+      if(result['status']!='success' && result['errors']){
         $("#problem").html(result['errors'][0]);
       }
     }
