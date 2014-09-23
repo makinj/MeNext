@@ -179,7 +179,7 @@ function loadCurrentVideo(){
               }
             }
           }
-        }else if(retult['errors']){
+        }else if(result['errors']){
           $("#problem").html(result['errors'][0]);
         }
       });
