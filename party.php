@@ -35,21 +35,21 @@ if (isset($_GET['partyId'])) {
             </div>
 
             <div class="btn-group btn-group-justified btn-group-lg" id="controls">
-                <div class="btn-group btn-group-lg">
+                <!--<div class="btn-group btn-group-lg">
                     <button type="button" id="thumbDown" class="btn btn-danger">
                         <span class="glyphicon glyphicon-thumbs-down"></span>
                     </button>
-                </div>
+                </div>-->
                 <div class="btn-group btn-group-lg">
                     <button type="button" id="playPause" class="btn btn-default">
                         <span class="glyphicon glyphicon-play"></span>
                     </button>
                 </div>
-                <div class="btn-group btn-group-lg">
+                <!--<div class="btn-group btn-group-lg">
                     <button type="button" id="thumbUp" class="btn btn-success">
                         <span class="glyphicon glyphicon-thumbs-up"></span>
                     </button>
-                </div>
+                </div>-->
             </div>
         <?php
         } else {
@@ -57,7 +57,7 @@ if (isset($_GET['partyId'])) {
             <img id='currentThumbnail' class='pull-left' src=""/>
             <p id="currentDescription"></p>
 
-            <div class="btn-group btn-group-justified btn-group-lg" id="controls">
+            <!--<div class="btn-group btn-group-justified btn-group-lg" id="controls">
                 <div class="btn-group btn-group-lg">
                     <button type="button" id="thumbDown" class="btn btn-danger">
                         <span class="glyphicon glyphicon-thumbs-down"></span>
@@ -68,7 +68,7 @@ if (isset($_GET['partyId'])) {
                         <span class="glyphicon glyphicon-thumbs-up"></span>
                     </button>
                 </div>
-            </div>
+            </div>-->
         <?php
         }
         ?>

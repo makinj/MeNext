@@ -65,7 +65,7 @@ function listSearchResults(data){
   for (var i=0;i<videos.length;i++){
     $('#searchResults').append("<tr>"+
       "<td>"+(i+1).toString()+"</td>"+
-      "<td><button class='addVideo button' value='"+videos[i].id.videoId+"'><img class='addVideoIcon' src='/images/plus.png' /></button></td>"+
+      "<td><button class='addVideo btn btn-default btn-lg' value='"+videos[i].id.videoId+"'><span class='glyphicon glyphicon-plus'></span></button></td>"+
       "<td><img src='"+videos[i].snippet.thumbnails.default.url+"'/></td>"+
       "<td>"+videos[i].snippet.title+"</td>"+
       "<td>"+videos[i].snippet.description+"</td>"+
@@ -114,19 +114,19 @@ function listQueue(){
           $("#queueList").html("");
           for (var i=0;i<videos.length;i++){
             var queueRow="<tr><td>"+(i+1).toString()+"</td><td>"+videos[i].title+"</td><td>"+videos[i].username+"</td>"+
-                "<td>"+
-                "<button class='songUpvote btn btn-success btn-sm' value='"+videos[i].submissionId+"'>" +
-                    "<span class='glyphicon glyphicon-thumbs-up'>" +
-                "</button>" +
-                "<button class='songDownvote btn btn-danger btn-sm' value='"+videos[i].submissionId+"'>" +
-                    "<span class='glyphicon glyphicon-thumbs-down'>" +
-                "</button>";
+                "<td><div class='btn-group btn-group-sm'>"+
+                    "<button class='songUpvote btn btn-success' value='"+videos[i].submissionId+"'>" +
+                        "<span class='glyphicon glyphicon-thumbs-up'>" +
+                    "</button>" +
+                    "<button class='songDownvote btn btn-danger' value='"+videos[i].submissionId+"'>" +
+                        "<span class='glyphicon glyphicon-thumbs-down'>" +
+                    "</button>";
             if((typeof isAdmin != 'undefined' && isAdmin==1) || userId == videos[i].submitterId){
-              queueRow=queueRow+"<button class='removeVideo btn btn-default btn-sm' value='"+videos[i].submissionId+"'>" +
+              queueRow=queueRow+"<button class='removeVideo btn btn-default' value='"+videos[i].submissionId+"'>" +
                   "<span class='glyphicon glyphicon-remove'>" +
                 "</button>";
             }
-            queueRow=queueRow+"</td></tr>";
+            queueRow=queueRow+"</div></td></tr>";
             $('#queueList').append(queueRow);
           }
           $('button.removeVideo').click(function(){
