@@ -101,11 +101,12 @@
         submitterId int REFERENCES User(userId),
         upvotes int DEFAULT 0,
         downvotes int DEFAULT 0,
-        rating int DEFAULT 0,
+        started int DEFAULT 0,
         wasPlayed BIT(1) DEFAULT 0,
         removed BIT(1) DEFAULT 0,
 
-        INDEX(submissionId, wasPlayed, rating),
+
+        INDEX(submissionId, wasPlayed),
 
         PRIMARY KEY(submissionId)
       )
@@ -147,6 +148,7 @@
         PRIMARY KEY(seriesId, userId)
       )
     ;');//stores votes by users to songs
+
   }
 
   function executeSQL($db, $query){//runs a query with PDO's specific syntax
@@ -368,6 +370,10 @@
   function addVideo($db, $args){
     $results = array("errors"=>array());
     if (is_array($args)&&array_key_exists("youtubeId", $args)&&array_key_exists("partyId", $args)){
+      $userId=-1;
+      if (isset($_SESSION['userId'])){
+        $userId=$_SESSION['userId'];
+      }
       $youtubeId = sanitizeString($args['youtubeId']);
       $url= 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id='.$youtubeId.'&key='.API_SERVER_KEY;//url to verify data from youtube
       $verify = curl_init($url);//configures cURL with url
@@ -425,7 +431,7 @@
               :submitterId
             )
           ;');
-          $stmt->bindValue(':submitterId', $_SESSION['userId']);
+          $stmt->bindValue(':submitterId', $userId);
           $stmt->bindValue(':partyId', $partyId);
           $stmt->execute();
           vote($db, array('submissionId'=>$db->lastInsertId(), 'direction'=>1));
@@ -488,6 +494,7 @@
             s.removed=0 AND
             s.submitterId = u.userId
           ORDER BY
+            started DESC,
             rating DESC,
             s.submissionId ASC
         ;');
@@ -555,6 +562,7 @@
             s.removed=0 AND
             s.submitterId = u.userId
           ORDER BY
+            started DESC,
             rating DESC,
             s.submissionId ASC
           LIMIT 1
@@ -563,6 +571,18 @@
         $stmt->bindValue(':partyId', $partyId);
         $stmt->execute();
         $results['video'] = $stmt->fetch(PDO::FETCH_OBJ);
+        if($results['video']){
+          $stmt = $db->prepare(
+            'UPDATE
+              Submission
+            SET
+              started=1
+            WHERE
+              submissionId=:submissionId
+          ;');
+          $stmt->bindValue(':submissionId', $results['video']->submissionId);
+          $stmt->execute();
+        }
         $results['status']='success';
       }catch (PDOException $e) {//something went wrong...
         error_log("Error: " . $e->getMessage());
@@ -973,7 +993,7 @@
 
   function startSeries($db, $userId){
     $seriesId = substr(str_shuffle(md5(time())),0,128);
-    setcookie('seriesId', $seriesId);
+    setcookie('seriesId', $seriesId, time()+60*60*24*365);
     $seriesIdHash = hash('sha512', $seriesId);
     $stmt = $db->prepare(
       'INSERT INTO
@@ -1035,7 +1055,7 @@
     try {
       $seriesIdHash = hash('sha512', $seriesId);
       $token = substr(str_shuffle(md5(time())),0,128);
-      setcookie('token', $token);
+      setcookie('token', $token, time()+60*60*24*365);
       $tokenHash = hash('sha512', $token);
       if(session_id()!=''){
         session_destroy();
