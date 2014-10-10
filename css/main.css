@@ -26,6 +26,9 @@
 #queueTable > thead > tr > th:last-child {
     width: 15%;
 }
+#queueTable > thead > tr > th:nth-child(3) {
+    width: 7%;
+}
 .btn-primary {
     background-color: rgb(235, 39, 53);
 }
