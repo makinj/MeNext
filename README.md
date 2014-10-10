@@ -4,6 +4,6 @@ TO SETUP:
 
 2. Make sure that Mysql, PHP, and cURL is installed and configured on the server
 
-3. Replace the values in /includes/constants.php to the correct values for your database and default admin account.
+3. Copy /includes/constants.template.php to a file named /includes/constants.php and fill in the correct values for your database default admin account and API keys.
 
 4. Have fun and send requests for help to makinj64@gmail.com

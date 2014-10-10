@@ -9,10 +9,11 @@
   if(session_id() == '') {
     session_start();
   }
+  /*
   if(!isset($_SESSION['userId']) && isset($_COOKIE['seriesId']) && isset($_COOKIE['token'])){
     checkSeriesTokenPair($db, sanitizeString($_COOKIE['seriesId']), sanitizeString($_COOKIE['token']));
   }
-
+  */
   function sanitizeString($var){//cleans a string up so there are no crazy vulerabilities
     $var = strip_tags($var);
     $var = htmlentities($var);
@@ -350,9 +351,12 @@
 
         if($stmt->rowCount()==1){//if successfully logged in
           $result = $stmt->fetch(PDO::FETCH_OBJ);
-          startSeries($db, $result->userId);
+          //startSeries($db, $result->userId);
           $results['status'] = 'success';
           $results['token'] = session_id();
+          $_SESSION['username'] = $result->username;
+          $_SESSION['userId'] = $result->userId;
+          $_SESSION['logged'] = 1;
         }else{
           array_push($results['errors'], "bad username/password combination");
         }
@@ -1033,7 +1037,7 @@
         session_write_close();
         session_id($result->sessionId);
         session_start();
-        session_destroy();
+        //session_destroy();
         session_write_close();
         session_start();
         session_regenerate_id();
