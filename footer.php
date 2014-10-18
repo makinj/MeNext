@@ -3,9 +3,9 @@
   require_once("includes/functions.php");
 ?>
     <script type="text/javascript">
-      var API_KEY =
+      var YT_API_KEY =
       <?php
-        echo"'".API_CLIENT_KEY."';\n";
+        echo"'".YT_API_CLIENT_KEY."';\n";
       ?>
 
       var partyId =
@@ -20,8 +20,8 @@
 
       var userId =
       <?php
-        if (isset($_SESSION['userId'])){
-          echo"'".$_SESSION['userId']."';\n";
+        if (isset($GLOBALS['userId'])){
+          echo"'".$GLOBALS['userId']."';\n";
         }
       ?>
     </script>

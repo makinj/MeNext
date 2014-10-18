@@ -1,6 +1,9 @@
 <?php
 $title = "Login | Register"; //to be displayed in tab
 include("header.php"); //open html bar
+if (isset($GLOBALS['logged'])) {
+    header("location:/");
+}
 ?>
 <div class="jumbotron">
     <div class="row">

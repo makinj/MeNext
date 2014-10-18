@@ -34,7 +34,7 @@ function searchYouTube(){//searches youtube to get a list of
       "&type=video"+//only show videos(not channels or playlists)
       "&maxResults=25"+//up to 25 results
       "&q="+$("#searchText").val()+//query with search term
-      "&key="+API_KEY,//Client API key
+      "&key="+YT_API_KEY,//Client API key
 
       function(data,status){
         if (status=="success"){

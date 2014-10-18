@@ -3,14 +3,22 @@
   Joshua Makinen
   */
   require_once("constants.php");//get system-specific variables
+  require 'sdks/facebook.php';//facebook sdk
 
   $db = connectDb();//connect to mysql
+
+  $fb = new Facebook(array(
+    'appId'  => FB_APP_ID,
+    'secret' => FB_APP_SECRET,
+  ));
 
   if(session_id() == '') {
     session_start();
   }
+
+  init($db, $fb);
   /*
-  if(!isset($_SESSION['userId']) && isset($_COOKIE['seriesId']) && isset($_COOKIE['token'])){
+  if(!isset($GLOBALS['userId']) && isset($_COOKIE['seriesId']) && isset($_COOKIE['token'])){
     checkSeriesTokenPair($db, sanitizeString($_COOKIE['seriesId']), sanitizeString($_COOKIE['token']));
   }
   */
@@ -51,7 +59,8 @@
     executeSQL($db,
       'CREATE TABLE User(
         userId int NOT NULL AUTO_INCREMENT,
-        username VARCHAR(16) UNIQUE,
+        fbId BIGINT UNSIGNED UNIQUE,
+        username VARCHAR(50) UNIQUE,
         password VARCHAR(128),
         date_joined TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
@@ -180,8 +189,8 @@
   Returns 1 or 0 based on whether the user owns the party
   */
   function isPartyOwner($db, $partyId, $userId=0){
-    if ($userId==0 && isset($_SESSION['userId'])){
-      $userId = $_SESSION['userId'];
+    if ($userId==0 && isset($GLOBALS['userId'])){
+      $userId = $GLOBALS['userId'];
     }
     $stmt = $db->prepare(
       'SELECT
@@ -226,8 +235,8 @@
   Returns 1 or 0 based on whether the user has permission to write to the party
   */
   function canWriteParty($db, $partyId, $userId=-1){
-    if ($userId==-1 && isset($_SESSION['userId'])){
-      $userId = $_SESSION['userId'];
+    if ($userId==-1 && isset($GLOBALS['userId'])){
+      $userId = $GLOBALS['userId'];
     }
     $stmt = $db->prepare(
       'SELECT
@@ -254,8 +263,8 @@
   Returns 1 or 0 based on whether the user has permission to read a party
   */
   function canReadParty($db, $partyId, $userId=-1){
-    if ($userId==-1 && isset($_SESSION['userId'])){
-      $userId = $_SESSION['userId'];
+    if ($userId==-1 && isset($GLOBALS['userId'])){
+      $userId = $GLOBALS['userId'];
     }
     $stmt = $db->prepare(
       'SELECT
@@ -354,7 +363,7 @@
           //startSeries($db, $result->userId);
           $results['status'] = 'success';
           $results['token'] = session_id();
-          $_SESSION['username'] = $result->username;
+          session_regenerate_id();
           $_SESSION['userId'] = $result->userId;
           $_SESSION['logged'] = 1;
         }else{
@@ -375,11 +384,11 @@
     $results = array("errors"=>array());
     if (is_array($args)&&array_key_exists("youtubeId", $args)&&array_key_exists("partyId", $args)){
       $userId=-1;
-      if (isset($_SESSION['userId'])){
-        $userId=$_SESSION['userId'];
+      if (isset($GLOBALS['userId'])){
+        $userId=$GLOBALS['userId'];
       }
       $youtubeId = sanitizeString($args['youtubeId']);
-      $url= 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id='.$youtubeId.'&key='.API_SERVER_KEY;//url to verify data from youtube
+      $url= 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id='.$youtubeId.'&key='.YT_API_SERVER_KEY;//url to verify data from youtube
       $verify = curl_init($url);//configures cURL with url
       curl_setopt($verify, CURLOPT_SSL_VERIFYPEER, false);
       curl_setopt($verify, CURLOPT_RETURNTRANSFER, 1);//don't echo returned info
@@ -457,7 +466,7 @@
     $results = array("errors"=>array());
     if(is_array($args)&&array_key_exists("partyId", $args)){//valid array was given
       $userId = -1;
-      if(isset($_SESSION['userId'])) $userId=sanitizeString($_SESSION['userId']);
+      if(isset($GLOBALS['userId'])) $userId=sanitizeString($GLOBALS['userId']);
       // Find all videos associated with partyId
       $partyId = sanitizeString($args['partyId']);
       try{
@@ -524,7 +533,7 @@
     $results = array("errors"=>array());
     if(is_array($args)&&array_key_exists("partyId", $args)){//valid array was given
       $userId = -1;
-      if(isset($_SESSION['userId'])) $userId=sanitizeString($_SESSION['userId']);
+      if(isset($GLOBALS['userId'])) $userId=sanitizeString($GLOBALS['userId']);
       // Find all videos associated with partyId
       $partyId = sanitizeString($args['partyId']);
       try{
@@ -600,7 +609,7 @@
 
   function markVideoWatched($db, $args){//takes an array with the submission id of what to mark as watched
     $results = array("errors"=>array());
-    if(isset($_SESSION['userId'])&&is_array($args)&&array_key_exists("submissionId", $args)){
+    if(isset($GLOBALS['userId'])&&is_array($args)&&array_key_exists("submissionId", $args)){
       $submissionId = sanitizeString($args['submissionId']);
       try {
       $stmt = $db->prepare(
@@ -617,7 +626,7 @@
           u.userId=:userId
         ;');
         $stmt->bindValue(':submissionId', $submissionId);
-        $stmt->bindValue(':userId', $_SESSION['userId']);
+        $stmt->bindValue(':userId', $GLOBALS['userId']);
         $stmt->execute();
         $result['status'] = 'success';
       } catch (PDOException $e) {
@@ -633,7 +642,7 @@
 
   function removeVideo($db, $args){//takes an array of or argument with the submission id of what to mark as watched
     $results = array("errors"=>array());
-    if(isset($_SESSION['userId'])&&is_array($args)&&array_key_exists("submissionId", $args)){
+    if(isset($GLOBALS['userId'])&&is_array($args)&&array_key_exists("submissionId", $args)){
       $submissionId = sanitizeString($args['submissionId']);
       try {
       $stmt = $db->prepare(
@@ -653,7 +662,7 @@
           u.userId=:userId
         ;');
         $stmt->bindValue(':submissionId', $submissionId);
-        $stmt->bindValue(':userId', $_SESSION['userId']);
+        $stmt->bindValue(':userId', $GLOBALS['userId']);
         $stmt->execute();
         $results['status'] = 'success';
       } catch (PDOException $e) {
@@ -672,7 +681,7 @@
   */
   function createParty($db, $args){
     $results = array("errors"=>array());
-    if (isset($_SESSION['userId']) && is_array($args) && array_key_exists("name", $args) && $args['name']!=''){
+    if (isset($GLOBALS['userId']) && is_array($args) && array_key_exists("name", $args) && $args['name']!=''){
       $name = sanitizeString($args['name']);
       $password = '';
       $passwordProtected = 0;
@@ -722,7 +731,7 @@
             )
           ;');
           $stmt->bindValue(':name', $name);
-          $stmt->bindValue(':creatorId', $_SESSION['userId']);
+          $stmt->bindValue(':creatorId', $GLOBALS['userId']);
           $stmt->bindValue(':passwordProtected', $passwordProtected, PDO::PARAM_BOOL);
           $stmt->bindValue(':password', $password);
           $stmt->bindValue(':privacyId', $privacyId);
@@ -738,7 +747,7 @@
         array_push($results['errors'], "database error");
       }
     }else{
-      if(!isset($_SESSION['userId'])){
+      if(!isset($GLOBALS['userId'])){
         array_push($results['errors'], "must be logged in");
       }
       if(!array_key_exists("name", $args) || $args['name']==''){
@@ -753,7 +762,7 @@
   */
   function joinParty($db, $args, $owner=0){
     $results = array("errors"=>array());
-    if (isset($_SESSION['userId']) && is_array($args) && array_key_exists("partyId", $args)){
+    if (isset($GLOBALS['userId']) && is_array($args) && array_key_exists("partyId", $args)){
       $partyId = sanitizeString($args['partyId']);
       $password = '';
       if (array_key_exists("password", $args)){
@@ -791,7 +800,7 @@
               :owner
             )
           ;');//makes new row with given info
-          $stmt->bindValue(':userId', $_SESSION['userId']);
+          $stmt->bindValue(':userId', $GLOBALS['userId']);
           $stmt->bindValue(':partyId', $partyId);
           $stmt->bindValue(':owner', $owner, PDO::PARAM_BOOL);
           $stmt->execute();
@@ -805,7 +814,7 @@
         array_push($results['errors'], "database error");
       }
     }else{
-      if(!isset($_SESSION['userId'])){
+      if(!isset($GLOBALS['userId'])){
         array_push($results['errors'], "must be logged in");
       }
       if(!array_key_exists("partyId", $args)){
@@ -820,7 +829,7 @@
   */
   function listJoinedParties($db, $args=0){
     $results = array("errors"=>array());
-    if(isset($_SESSION['userId'])){
+    if(isset($GLOBALS['userId'])){
       try {
         $stmt = $db->prepare(
           'SELECT
@@ -836,7 +845,7 @@
             pu.userId = :userId AND
             p.creatorId = u.userId
         ;');
-        $stmt->bindValue(':userId', $_SESSION['userId']);
+        $stmt->bindValue(':userId', $GLOBALS['userId']);
         $stmt->execute();
         $results['parties'] = array();
         while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {//creates an array of the results to return
@@ -859,8 +868,8 @@
   function listUnjoinedParties($db){
     $results = array("errors"=>array());
     $userId = -1;
-    if(isset($_SESSION['userId'])){
-      $userId = $_SESSION['userId'];
+    if(isset($GLOBALS['userId'])){
+      $userId = $GLOBALS['userId'];
     }
     try {
       $stmt = $db->prepare(
@@ -900,9 +909,9 @@
 
   function vote($db, $args){
     $results = array("errors"=>array());
-    if (is_array($args)&&array_key_exists("submissionId", $args)&&array_key_exists("direction", $args)&&isset($_SESSION['userId'])){
+    if (is_array($args)&&array_key_exists("submissionId", $args)&&array_key_exists("direction", $args)&&isset($GLOBALS['userId'])){
       try {
-        $voterId = sanitizeString($_SESSION['userId']);
+        $voterId = sanitizeString($GLOBALS['userId']);
         $submissionId = sanitizeString($args['submissionId']);
         $voteValue = intval(sanitizeString($args['direction']));
         if($voteValue>0)$voteValue=1;
@@ -932,7 +941,7 @@
         array_push($results['errors'], "database error");
       }
     }else{
-      if(!isset($_SESSION['userId'])){
+      if(!isset($GLOBALS['userId'])){
         array_push($results['errors'], "must be logged in");
       }
       if(!array_key_exists("submissionId", $args)){
@@ -987,9 +996,9 @@
       $stmt->bindValue(':userId', $userId);
       $stmt->execute();
       $result = $stmt->fetch(PDO::FETCH_OBJ);
-      $_SESSION['username'] = $result->username;
-      $_SESSION['userId'] = $userId;
-      $_SESSION['logged'] = 1;
+      $GLOBALS['username'] = $result->username;
+      $GLOBALS['userId'] = $userId;
+      $GLOBALS['logged'] = 1;
     } catch (PDOException $e) {//something went wrong...
       error_log("Error: " . $e->getMessage());
     }
@@ -1103,5 +1112,120 @@
     }catch(PDOException $e){//something went wrong...
       error_log('Query failed: ' . $e->getMessage());
     }
+  }
+  function init($db, $fb){
+    $fbId = $fb->getUser();
+    if ($fbId) {
+      try {
+        // Proceed knowing you have a logged in user who's authenticated.
+        $userProfile = $fb->api('/me');
+      } catch (FacebookApiException $e) {
+        error_log($e);
+        $fbId = null;
+      }
+    }
+
+    // Login or logout url will be needed depending on current user state.
+    if ($fbId) {//logged into facebook
+      error_log("logged into facebook");
+      $fb->setExtendedAccessToken();
+      $GLOBALS['fbId']=$fbId;
+      $stmt = $db->prepare(
+        'SELECT
+          *
+        FROM
+          User
+        WHERE
+          fbId=:fbId
+      ;');
+      $stmt->bindValue(':fbId', $fbId);
+      $stmt->execute();
+      if($stmt->rowCount()<1){//not already in db
+        error_log("account unknown");
+        if(isset($_SESSION['userId'])){//associate facebook with menext
+          error_log("logged in normally, adding to db");
+          $stmt = $db->prepare(
+            'UPDATE
+              User
+            SET
+              fbId=:fbId
+            WHERE
+              userId=:userId
+            ;
+            SELECT
+              *
+            FROM
+              User
+            WHERE
+          ;');
+          $stmt->bindValue(':fbId', $fbId);
+          $stmt->bindValue(':userId', $_SESSION['userId']);
+          $stmt->execute();
+        }else{//add account to facebook
+          error_log("adding fb account as a user");
+          $stmt = $db->prepare(
+            'INSERT INTO
+              User(
+                username,
+                fbId
+              )
+            VALUES(
+              :username,
+              :fbId
+            )
+          ;');
+          $stmt->bindValue(':username', $userProfile['name']);
+          $stmt->bindValue(':fbId', $fbId);
+          $stmt->execute();
+        }
+        $stmt = $db->prepare(
+          'SELECT
+            *
+          FROM
+            User
+          WHERE
+            fbId=:fbId
+        ;');
+        $stmt->bindValue(':fbId', $fbId);
+        $stmt->execute();
+      }
+    }elseif(isset($_SESSION['userId'])){//not logged into facebook but logged in with menext
+      error_log("logged in normally");
+      $stmt = $db->prepare(
+        'SELECT
+          *
+        FROM
+          User
+        WHERE
+          userId=:userId
+      ;');
+      $stmt->bindValue(':userId', $_SESSION['userId']);
+      $stmt->execute();
+    }else{
+      error_log("not logged in");
+      return 0;
+    }
+    if($stmt->rowCount()>0){
+      error_log("successfully logged in");
+      $user = $stmt->fetch(PDO::FETCH_OBJ);
+      $GLOBALS['username'] = $user->username;
+      $GLOBALS['userId'] = $user->userId;
+      $GLOBALS['logged'] = 1;
+      return 1;
+    }
+    return 0;
+    /*
+    if facebook logged in
+      select user in db
+      if not in db
+        if logged in sess
+          update existing row
+        else
+          insert new one
+        select row with fbid
+    else
+      if sess logged
+        select row
+*/
   }
 ?>

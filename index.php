@@ -1,9 +1,9 @@
 <?php
-$title = (isset($_SESSION['logged']) ? "Dashboard" : "Home");
+$title = (isset($GLOBALS['logged']) ? "Dashboard" : "Home");
 require_once('header.php'); //bar at the top of the page
 require_once('includes/constants.php');
 require_once('includes/functions.php');
-if(isset($_SESSION['logged'])){
+if(isset($GLOBALS['logged'])){
 ?>
 <div class="row">
     <div class="col-md-8">
