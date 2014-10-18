@@ -1127,7 +1127,6 @@
 
     // Login or logout url will be needed depending on current user state.
     if ($fbId) {//logged into facebook
-      error_log("logged into facebook");
       $fb->setExtendedAccessToken();
       $GLOBALS['fbId']=$fbId;
       $stmt = $db->prepare(
@@ -1141,9 +1140,7 @@
       $stmt->bindValue(':fbId', $fbId);
       $stmt->execute();
       if($stmt->rowCount()<1){//not already in db
-        error_log("account unknown");
         if(isset($_SESSION['userId'])){//associate facebook with menext
-          error_log("logged in normally, adding to db");
           $stmt = $db->prepare(
             'UPDATE
               User
@@ -1162,7 +1159,6 @@
           $stmt->bindValue(':userId', $_SESSION['userId']);
           $stmt->execute();
         }else{//add account to facebook
-          error_log("adding fb account as a user");
           $stmt = $db->prepare(
             'INSERT INTO
               User(
@@ -1190,7 +1186,6 @@
         $stmt->execute();
       }
     }elseif(isset($_SESSION['userId'])){//not logged into facebook but logged in with menext
-      error_log("logged in normally");
       $stmt = $db->prepare(
         'SELECT
           *
@@ -1202,11 +1197,9 @@
       $stmt->bindValue(':userId', $_SESSION['userId']);
       $stmt->execute();
     }else{
-      error_log("not logged in");
       return 0;
     }
     if($stmt->rowCount()>0){
-      error_log("successfully logged in");
       $user = $stmt->fetch(PDO::FETCH_OBJ);
       $GLOBALS['username'] = $user->username;
       $GLOBALS['userId'] = $user->userId;
