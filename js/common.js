@@ -113,12 +113,20 @@ function listQueue(){
           var videos = result['videos'];
           $("#queueList").html("");
           for (var i=0;i<videos.length;i++){
+            upClass = "songUpvote btn btn-success";
+            downClass = "songDownvote btn btn-danger";
+            if(videos[i].userRating>0){
+              upClass = "songUnvote btn btn-warning"
+            }
+            if(videos[i].userRating<0){
+              downClass = "songUnvote btn btn-warning"
+            }
             var queueRow="<tr><td>"+(i+1).toString()+"</td><td>"+videos[i].title+"</td><td>"+videos[i].username+"</td>"+
                 "<td><div class='btn-group btn-group-sm'>"+
-                    "<button class='songUpvote btn btn-success' value='"+videos[i].submissionId+"'>" +
+                    "<button class='"+upClass+"' value='"+videos[i].submissionId+"'>" +
                         "<span class='glyphicon glyphicon-thumbs-up'>" +
                     "</button>" +
-                    "<button class='songDownvote btn btn-danger' value='"+videos[i].submissionId+"'>" +
+                    "<button class='"+downClass+"' value='"+videos[i].submissionId+"'>" +
                         "<span class='glyphicon glyphicon-thumbs-down'>" +
                     "</button>";
             if((typeof isAdmin != 'undefined' && isAdmin==1) || userId == videos[i].submitterId){
@@ -140,6 +148,21 @@ function listQueue(){
               }
               loadCurrentVideo();
             }
+          });
+          $('button.songUpvote').click(function(){
+            $(this).attr('disabled',true);
+            upVote($(this).val());
+            listQueue();
+          });
+          $('button.songDownvote').click(function(){
+            $(this).attr('disabled',true);
+            downVote($(this).val());
+            listQueue();
+          });
+          $('button.songUnvote').click(function(){
+            $(this).attr('disabled',true);
+            unVote($(this).val());
+            listQueue();
           });
         }else{
           $("#problem").html(result['errors'][0]);
