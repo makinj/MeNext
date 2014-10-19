@@ -49,6 +49,8 @@ if (isset($GLOBALS['logged'])) {
 
                 <input type="hidden" name="action" value='login'>
             </form>
+            <a href= "<?php echo $fbLoginUrl; ?>"><button type="submit" name="submit" class="btn btn-info">Facebook Login</button></a>
+
         </div>
     </div>
 </div>

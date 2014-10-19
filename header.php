@@ -66,7 +66,8 @@
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <?php if (!isset($GLOBALS['fbId'])) {
-                    echo '<li><a href="'.$fb->getLoginUrl().'">Log in with FaceBook</a></li>';
+                    $fbLoginUrl = $fb->getLoginUrl();
+                    echo '<li><a href="'.$fbLoginUrl.'">Log in with FaceBook</a></li>';
                   }
                   if (isset($GLOBALS['logged'])) { ?>
                     <li><a href="handler.php?action=logOut">Log Out</a></li>

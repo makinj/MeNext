@@ -1114,6 +1114,7 @@
     }
   }
   function init($db, $fb){
+    error_log(json_encode($_SESSION));
     $fbId = $fb->getUser();
     if ($fbId) {
       try {

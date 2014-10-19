@@ -479,21 +479,6 @@ function fullScreen() {
   */
 }
 
-function submitContentToggle() {
-  if ($('.submitContent').is(':visible')) {
-    $('.submitContent').hide();
-    $('.container').css('margin-left', 'auto');
-    $('.container').css('width', '100%');
-    $('#submitContentToggle').html('<img class="icon" src="images/search.png" />');
-  }
-  else {
-    $('.submitContent').show();
-    $('.container').css('margin-left', 0);
-    $('.container').css('width', '50%');
-    $('#submitContentToggle').html('<img class="icon" src="images/close.png" />');
-  }
-}
-
 function QRCodeToggle() {
   if ($('#qrcode').is(':visible')) {
     $('#qrcode').hide();
@@ -504,31 +489,23 @@ function QRCodeToggle() {
 }
 
 $(document).ready(function(){
-  var mql = window.matchMedia("screen and (max-width: 992px)"); //mobile if wql.matches evaluates to true
 
-  $('#thumbUp').click(function(){
-    upVote(window.currentVideo.submissionId);
-  });
-  $('#thumbDown').click(function(){
-    downVote(window.currentVideo.submissionId);
-  });
   if ($("#youtubePlayerParent").length > 0){
     setupYouTube();
     $("#playPause").click(playPause);
     $("#fullScreen").click(fullScreen);
+    $("#searchText").googleSuggest({ service: "youtube" });
   }
-  var listQueueTimer=window.setInterval(listQueue, 5000);
-  $("#searchText").googleSuggest({ service: "youtube" });
   $('#register').submit(register);
   $('#login').submit(login);
   $('#createPartyForm').submit(createParty);
-  $('#submitContentToggle').click(submitContentToggle);
   $('#qrcodetoggle').click(QRCodeToggle);
   $('.joinPartyButton').click(function(){
     joinParty($(this).attr("value"));
   });
 
   if ($("#queueList").length > 0){
+    var listQueueTimer=window.setInterval(listQueue, 5000);
     listQueue();
   }
 
