@@ -64,7 +64,7 @@
         password VARCHAR(128),
         date_joined TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-        INDEX(username),
+        INDEX(username, userId, fbId),
 
         PRIMARY KEY(userId)
       )
@@ -865,7 +865,7 @@
   /*
   List parties a user hasn't joined
   */
-  function listUnjoinedParties($db){
+  function listUnjoinedParties($db, $args=0){
     $results = array("errors"=>array());
     $userId = -1;
     if(isset($GLOBALS['userId'])){

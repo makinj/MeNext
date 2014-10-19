@@ -37,7 +37,14 @@ if(isset($GLOBALS['logged'])){
                     <th>Owner:</th>
                 </tr>
                 </thead>
-                <tbody id="joinedList"></tbody>
+                <tbody id="joinedList">
+                    <?php
+                        $joined = listJoinedParties($db)['parties'];
+                        for ($i=0; $i < count($joined); $i++) {
+                            echo "<tr><td>".$joined[$i]->partyId."</td><td><a href='/party.php?partyId=".$joined[$i]->partyId."'>".$joined[$i]->name."</a></td><td>".$joined[$i]->username."</td></tr>";
+                        }
+                    ?>
+                </tbody>
             </table>
         </div>
         <hr/>
@@ -52,7 +59,14 @@ if(isset($GLOBALS['logged'])){
                     <th></th>
                 </tr>
                 </thead>
-                <tbody id="unjoinedList"></tbody>
+                <tbody id="unjoinedList">
+                    <?php
+                        $unjoined = listUnjoinedParties($db)['parties'];
+                        for ($i=0; $i < count($unjoined); $i++) {
+                            echo "<tr><td>".$unjoined[$i]->partyId."</td><td><a href='/party.php?partyId=".$unjoined[$i]->partyId."'>".$unjoined[$i]->name."</a></td><td>".$unjoined[$i]->username."</td><td><button type='submit' class='btn btn-default btn-sm joinPartyButton' value=".$unjoined[$i]->partyId.">Join</button></td></tr>";
+                        }
+                    ?>
+                </tbody>
             </table>
         </div>
     </div>

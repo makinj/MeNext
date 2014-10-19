@@ -81,7 +81,6 @@ function createParty(){
         window.location.href = "/party.php?partyId="+result['partyId'];
       }else{
         $("#problem").html(result['errors'][0]);
-        listParties();
       }
     }
   );
@@ -116,10 +115,10 @@ function listQueue(){
             upClass = "songUpvote btn btn-success";
             downClass = "songDownvote btn btn-danger";
             if(videos[i].userRating>0){
-              upClass = "songUnvote btn btn-warning"
+              upClass = "songUnvote btn btn-default"
             }
             if(videos[i].userRating<0){
-              downClass = "songUnvote btn btn-warning"
+              downClass = "songUnvote btn btn-default"
             }
             var queueRow="<tr><td>"+(i+1).toString()+"</td><td>"+videos[i].title+"</td><td>"+videos[i].username+"</td>"+
                 "<td><div class='btn-group btn-group-sm'>"+
@@ -295,48 +294,6 @@ function submitVideo(youtubeId){
   );
 }
 
-function listParties(){
-  if($("#joinedList").length >0){
-    $.get("handler.php?action=listJoinedParties",
-      function(data,status){
-        var result= JSON.parse(data);
-        if(result['status']=='success'){
-          var parties= result['parties'];
-          $("#joinedList").html("");
-          for (var i=0;i<parties.length;i++){
-            var row="<tr><td>"+parties[i].partyId+"</td><td><a href='/party.php?partyId="+parties[i].partyId+"'>"+parties[i].name+"</a></td><td>"+parties[i].username+"</td>";
-            row=row+"</tr>"
-            $('#joinedList').append(row);
-          }
-        }else{
-          $("#problem").html(result['errors'][0]);
-        }
-      }
-    );
-  }
-
-  if($("#unjoinedList").length >0){
-    $.get("handler.php?action=listUnjoinedParties",
-      function(data,status){
-        var result= JSON.parse(data);
-        if(result['status']=='success'){
-          var parties= result['parties'];
-          $("#unjoinedList").html("");
-          for (var i=0;i<parties.length;i++){
-            var row = "<tr><td>" + parties[i].partyId + "</td><td><a href='/party.php?partyId=" + parties[i].partyId + "'>" + parties[i].name + "</a></td><td>" + parties[i].username + "</td><td><button type='submit' class='btn btn-default btn-sm joinPartyButton' value=" + parties[i].partyId + ">Join</button></td>";
-            row=row+"</tr>"
-            $('#unjoinedList').append(row);
-          }
-          $('.joinPartyButton').click(function(){
-            joinParty($(this).attr("value"));
-          });
-        }else{
-          $("#problem").html(result['errors'][0]);
-        }
-      }
-    );
-  }
-}
 
 /**@license
 This function uses Google Suggest for jQuery plugin (licensed under GPLv3) by Haochi Chen ( http://ihaochi.com )
@@ -567,14 +524,14 @@ $(document).ready(function(){
   $('#createPartyForm').submit(createParty);
   $('#submitContentToggle').click(submitContentToggle);
   $('#qrcodetoggle').click(QRCodeToggle);
+  $('.joinPartyButton').click(function(){
+    joinParty($(this).attr("value"));
+  });
 
   if ($("#queueList").length > 0){
     listQueue();
   }
 
-  if ($("#unjoinedList").length > 0){
-    listParties();
-  }
 });
 
 (function($) {
