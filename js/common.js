@@ -112,13 +112,13 @@ function listQueue(){
           var videos = result['videos'];
           $("#queueList").html("");
           for (var i=0;i<videos.length;i++){
-            upClass = "songUpvote btn btn-success";
-            downClass = "songDownvote btn btn-danger";
+            upClass = "songUpvote btn btn-default";
+            downClass = "songDownvote btn btn-default";
             if(videos[i].userRating>0){
-              upClass = "songUnvote btn btn-default"
+              upClass = "songUnvote btn btn-success"
             }
             if(videos[i].userRating<0){
-              downClass = "songUnvote btn btn-default"
+              downClass = "songUnvote btn btn-danger"
             }
             var queueRow="<tr><td>"+(i+1).toString()+"</td><td>"+videos[i].title+"</td><td>"+videos[i].username+"</td>"+
                 "<td><div class='btn-group btn-group-sm'>"+
