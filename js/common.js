@@ -28,7 +28,7 @@ function login(){
 
 function searchYouTube(){//searches youtube to get a list of
   if($("#searchText").val()!=""){
-    $.get("https://www.googleapis.com/youtube/v3/search"+
+    $.get("//www.googleapis.com/youtube/v3/search"+
       "?part=snippet"+//don't question this part
       "&order=relevance"+//sort by relevance
       "&type=video"+//only show videos(not channels or playlists)
@@ -296,7 +296,7 @@ function submitVideo(youtubeId){
 
 
 /**@license
-This function uses Google Suggest for jQuery plugin (licensed under GPLv3) by Haochi Chen ( http://ihaochi.com )
+This function uses Google Suggest for jQuery plugin (licensed under GPLv3) by Haochi Chen ( //ihaochi.com )
  */
 $.fn.googleSuggest = function(opts){
   opts = $.extend({service: 'web', secure: false}, opts);
@@ -313,7 +313,7 @@ $.fn.googleSuggest = function(opts){
 
   opts.source = function(request, response){
     $.ajax({
-      url: 'http'+(opts.secure?'s':'')+'://clients1.google.com/complete/search',
+      url: '//clients1.google.com/complete/search',
       dataType: 'jsonp',
       data: {
         q: request.term,
@@ -372,9 +372,9 @@ function setupYouTube(){
   var params = { allowScriptAccess: "always" , allowFullscreen: "true"};
   var atts = { id: "youtubePlayer" };
   //"Chromeless" Player
-  //swfobject.embedSWF("http://www.youtube.com/apiplayer/?enablejsapi=1&version=3&playerapiid=youtubePlayerParent",
+  //swfobject.embedSWF("//www.youtube.com/apiplayer/?enablejsapi=1&version=3&playerapiid=youtubePlayerParent",
 
-  swfobject.embedSWF("http://www.youtube.com/v/00000000000?version=3&enablejsapi=1&iv_load_policy=3&autohide=1&showinfo=0",
+  swfobject.embedSWF("//www.youtube.com/v/00000000000?version=3&enablejsapi=1&iv_load_policy=3&autohide=1&showinfo=0",
   "youtubePlayerParent", "100%", "250", "8", null, null, params, atts);
 
   //add "&modestbranding=1&autohide=1&showinfo=0&controls=0" to remove youtube bars and controls
