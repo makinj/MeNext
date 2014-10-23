@@ -8,18 +8,22 @@
   or have sensitive info like passwords
 */
   require_once("includes/functions.php");//basic database operations
+  if(session_id() == '') {
+    session_start();
+  }
 
+  $userData = init($db, $fb);
   $results = array();//array to be returned to client
 
   if(isset($_GET['action'])){//GETs info ie. list of Videos or list of users
     if($_GET['action']=="listVideos"){
-      $results = array_merge_recursive($results, listVideos($db, $_GET));
+      $results = array_merge_recursive($results, listVideos($db, $userData, $_GET));
     }else if($_GET['action']=="getCurrentVideo"){
-      $results = array_merge_recursive($results, getCurrentVideo($db, $_GET));
+      $results = array_merge_recursive($results, getCurrentVideo($db, $userData, $_GET));
     }else if($_GET['action']=="listJoinedParties"){
-      $results = array_merge_recursive($results, listJoinedParties($db));
+      $results = array_merge_recursive($results, listJoinedParties($db, $userData));
     }else if($_GET['action']=="listUnjoinedParties"){
-      $results = array_merge_recursive($results, listUnjoinedParties($db));
+      $results = array_merge_recursive($results, listUnjoinedParties($db, $userData));
     }else if($_GET['action']=="logOut"){
       $results = array_merge_recursive($results, logOut($db));
       header("Location: login.php");//login again
@@ -34,17 +38,17 @@
     }else if($_POST['action']=="login"){//logs into an account
       $results = array_merge_recursive($results, logIn($db, $_POST));//send POST data to log in
     }else if($_POST['action']=="addVideo"){//adds new video to playlist
-      $results = array_merge_recursive($results, addVideo($db, $_POST));
+      $results = array_merge_recursive($results, addVideo($db, $userData, $_POST));
     }else if($_POST['action']=="markVideoWatched"){//marks video as watched
-      $results = array_merge_recursive($results, markVideoWatched($db, $_POST));
+      $results = array_merge_recursive($results, markVideoWatched($db, $userData, $_POST));
     }else if($_POST['action']=="removeVideo"){//removes video
-      $results = array_merge_recursive($results, removeVideo($db, $_POST));
+      $results = array_merge_recursive($results, removeVideo($db, $userData, $_POST));
     }else if($_POST['action']=="createParty"){//creates a party
-      $results = array_merge_recursive($results, createParty($db, $_POST));
+      $results = array_merge_recursive($results, createParty($db, $userData, $_POST));
     }else if($_POST['action']=="joinParty"){//joins current user to party
-      $results = array_merge_recursive($results, joinParty($db, $_POST));
+      $results = array_merge_recursive($results, joinParty($db, $userData, $_POST));
     }else if($_POST['action']=="vote"){//votes on video
-      $results = array_merge_recursive($results, vote($db, $_POST));
+      $results = array_merge_recursive($results, vote($db, $userData, $_POST));
     }else if($_POST['action']=="fbLogin"){//votes on video
       $results = array_merge_recursive($results, fbLogin($_POST));
     }

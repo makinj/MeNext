@@ -1,8 +1,12 @@
 <?php
   require_once("includes/functions.php"); //basic database operations
+  if(session_id() == '') {
+    session_start();
+  }
 
+  $userData = init($db, $fb);
   header('Access-Control-Allow-Origin: //www.googleapis.com');
-  if ((!isset($GLOBALS['logged'])) && isset($restricted) && $restricted == true) {
+  if ((!isset($userData['logged'])) && isset($restricted) && $restricted == true) {
     header("location: /");
     exit;
   }
@@ -57,7 +61,7 @@
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-                <?php if (isset($GLOBALS['logged'])) { ?>
+                <?php if (isset($userData['logged'])) { ?>
                     <li><a href="index.php">Dashboard</a></li>
                 <?php } else { ?>
                     <li><a href="index.php">Home</a></li>
@@ -65,11 +69,11 @@
                 <li><a href="#about">About</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-                <?php if (!isset($GLOBALS['fbId'])) {
+                <?php if (!isset($userData['fbId'])) {
                     $fbLoginUrl = $fb->getLoginUrl();
                     echo '<li><a href="'.$fbLoginUrl.'">Log in with FaceBook</a></li>';
                   }
-                  if (isset($GLOBALS['logged'])) { ?>
+                  if (isset($userData['logged'])) { ?>
                     <li><a href="handler.php?action=logOut">Log Out</a></li>
                 <?php } else { ?>
                     <li><a href="login.php">Login/Register</a></li>

@@ -20,8 +20,8 @@
 
       var userId =
       <?php
-        if (isset($GLOBALS['userId'])){
-          echo"'".$GLOBALS['userId']."';\n";
+        if (isset($userData['userId'])){
+          echo"'".$userData['userId']."';\n";
         }
       ?>
     </script>

@@ -423,6 +423,7 @@ abstract class WebSocketServer {
   }
 
   protected function extractHeaders($message) {
+    $this->stdout(json_encode($message));
     $header = array('fin'     => $message[0] & chr(128),
             'rsv1'    => $message[0] & chr(64),
             'rsv2'    => $message[0] & chr(32),

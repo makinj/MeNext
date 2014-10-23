@@ -8,7 +8,7 @@ $partyId = -1;
 $isOwner = 0;
 if (isset($_GET['partyId'])) {
     $partyId = $_GET['partyId'];
-    $isOwner = isPartyOwner($db, $partyId);
+    $isOwner = isPartyOwner($db, $userData, $partyId);
 }
 $partyData = [];
 if (isset($_GET['partyId'])) {
@@ -91,7 +91,7 @@ if (isset($_GET['partyId'])) {
             <div class="col-lg-6">
                 <a class="btn btn-default btn-block" id="viewOnYoutube" target="_blank" href="">View on YouTube</a>
                 <a class="btn btn-default btn-block" target="_blank"
-                   href="https://docs.google.com/forms/d/1fy-vD3ovTfs4iekNbgE3viobHvvusD8ODunL_v2zks8/viewform?<?php if(isset($GLOBALS["username"])){echo "entry.1934380623=".$GLOBALS["username"]."&";} ?>entry.1987106882">Report
+                   href="https://docs.google.com/forms/d/1fy-vD3ovTfs4iekNbgE3viobHvvusD8ODunL_v2zks8/viewform?<?php if(isset($userData["username"])){echo "entry.1934380623=".$userData["username"]."&";} ?>entry.1987106882">Report
                     a Bug</a>
             </div>
         </div>
@@ -101,8 +101,8 @@ if (isset($_GET['partyId'])) {
     $writeParty = 0;
     $readParty = 0;
     if ($partyId >= 0) { // then $partyId must be set from above
-        $writeParty = canWriteParty($db, $partyId);
-        $readParty = canReadParty($db, $partyId);
+        $writeParty = canWriteParty($db, $userData, $partyId);
+        $readParty = canReadParty($db, $userData, $partyId);
     }
     if ($readParty) {
         ?>

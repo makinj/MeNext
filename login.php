@@ -1,7 +1,7 @@
 <?php
 $title = "Login | Register"; //to be displayed in tab
 include("header.php"); //open html bar
-if (isset($GLOBALS['logged'])) {
+if (isset($userData['logged'])) {
     header("location:/");
     exit();
 }

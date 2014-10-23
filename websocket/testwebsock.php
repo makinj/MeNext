@@ -13,6 +13,7 @@ class echoServer extends WebSocketServer {
   }
 
   protected function connected ($user) {
+    $this->stdout(json_encode($_COOKIE));
     // Do nothing: This is just an echo server, there's no need to track the user.
     // However, if we did care about the users, we would probably have a cookie to
     // parse at this step, would be looking them up in permanent storage, etc.
