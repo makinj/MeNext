@@ -28,7 +28,7 @@ function login(){
 
 function searchYouTube(){//searches youtube to get a list of
   if($("#searchText").val()!=""){
-    $.get("//www.googleapis.com/youtube/v3/search"+
+    $.get("https://www.googleapis.com/youtube/v3/search"+
       "?part=snippet"+//don't question this part
       "&order=relevance"+//sort by relevance
       "&type=video"+//only show videos(not channels or playlists)
