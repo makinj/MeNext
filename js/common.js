@@ -102,7 +102,6 @@ function joinParty(passedId) {
 }
 
 function listQueue(){
-  console.log("updating q");
   $(document).ready(function(){
     loadCurrentVideo();
     $.get("handler.php?action=listVideos&partyId="+partyId,
