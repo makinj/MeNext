@@ -1114,6 +1114,7 @@
     }
   }
   function init($db, $fb){
+    error_log(json_encode($_REQUEST));
     error_log(json_encode($_SESSION));
     $fbId = $fb->getUser();
     if ($fbId) {
@@ -1221,5 +1222,18 @@
       if sess logged
         select row
 */
+  }
+
+  function fbLogin($args){
+    $results = array("errors"=>array());
+    if(is_array($args)&&array_key_exists("userId", $args)&&array_key_exists("accessToken", $args)){//valid array was given
+      $fbId=sanitizeString($args['userId']);
+      $fbToken=sanitizeString($args['accessToken']);
+      $_SESSION["fb_".$fbId."_access_token"]=$fbToken;
+      $results['status']='success';
+    }else{
+      array_push($results['errors'], "must have userId and accessToken");
+    }
+    return $results;
   }
 ?>

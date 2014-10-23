@@ -45,6 +45,8 @@
       $results = array_merge_recursive($results, joinParty($db, $_POST));
     }else if($_POST['action']=="vote"){//votes on video
       $results = array_merge_recursive($results, vote($db, $_POST));
+    }else if($_POST['action']=="fbLogin"){//votes on video
+      $results = array_merge_recursive($results, fbLogin($_POST));
     }
   }
 
