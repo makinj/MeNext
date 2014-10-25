@@ -1,5 +1,9 @@
 <?php
   require_once("includes/functions.php"); //basic database operations
+  if(PRODUCTION){
+    header("Location: https://" . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]);
+    exit();
+  }
   if(session_id() == '') {
     session_start();
   }
