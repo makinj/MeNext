@@ -1,26 +1,36 @@
 #!/usr/bin/env php
 <?php
 
-require_once('./websockets.php');
-require_once('../includes/functions.php');
+require_once('websocket/websockets.php');
+require_once('includes/functions.php');
+ini_set('session.use_cookies', 0);
+session_cache_limiter(false);
+
 class echoServer extends WebSocketServer {
   //protected $maxBufferSize = 1048576; //1MB... overkill for an echo server, but potentially plausible for other applications.
 
   protected function process ($user, $message) {
-    $request = json_decode($message);
-    $result = "must have action selected";;
+    $request = json_decode($message, $assoc=true);
+    $this->stdout(json_encode($request));
+    $result = "must have action selected";
     if (is_array($request) && array_key_exists("action", $request)){
       $result = "could not complete action ".$request['action'];
       if ($request['action']=="setSession"){
-        $result = "invalid session";
+        $result = "must have sessionId";
         if(array_key_exists("sessionId", $request)){
-          session_id($request['sessionId']);
+          $result = "invalid session";
+          if(session_id() != '') {
+            session_write_close();
+          }
+          session_id("gek01js8pibd086bj5jlkvu6a0");
           session_start();
-          $user->userData=init($db, $fb);
+          $this->stdout(json_encode($_SESSION));
+          $user->userData=init($this->db, $this->fb);
           session_write_close();
           if(array_key_exists("logged", $user->userData)&&$user->userData['logged']){
             $result = "logged in";
           }
+          $result = "worked?";
         }
       }
     }
@@ -47,8 +57,7 @@ class echoServer extends WebSocketServer {
   //echo $i;
   //sleep(1);
 //}
-
-$echoserver = new echoServer("0.0.0.0","9000");
+$echoserver = new echoServer("0.0.0.0","9000", $db, $fb);
 
 try {
   $echoserver->run();

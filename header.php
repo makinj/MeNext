@@ -67,6 +67,8 @@
                     <li><a href="index.php">Home</a></li>
                 <?php } ?>
                 <li><a href="#about">About</a></li>
+                <li><a href="privacy.php">Privacy Policy</a></li>
+
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <?php if (!isset($userData['fbId'])) {

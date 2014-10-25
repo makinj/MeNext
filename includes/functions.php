@@ -11,7 +11,6 @@
     'appId'  => FB_APP_ID,
     'secret' => FB_APP_SECRET,
   ));
-
   /*
   if(!isset($userData['userId']) && isset($_COOKIE['seriesId']) && isset($_COOKIE['token'])){
     checkSeriesTokenPair($db, sanitizeString($_COOKIE['seriesId']), sanitizeString($_COOKIE['token']));

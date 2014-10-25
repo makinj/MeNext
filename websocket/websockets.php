@@ -1,7 +1,7 @@
 <?php
 
 //require_once('./daemonize.php');
-require_once('./users.php');
+require_once('websocket/users.php');
 
 abstract class WebSocketServer {
 
@@ -14,8 +14,12 @@ abstract class WebSocketServer {
   protected $headerOriginRequired                 = false;
   protected $headerSecWebSocketProtocolRequired   = false;
   protected $headerSecWebSocketExtensionsRequired = false;
+  protected $db;
+  protected $fb;
 
-  function __construct($addr, $port, $bufferLength = 2048) {
+  function __construct($addr, $port, $db, $fb, $bufferLength = 2048) {
+    $this->db = $db;
+    $this->fb = $fb;
     $this->maxBufferSize = $bufferLength;
     $this->master = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)  or die("Failed: socket_create()");
     socket_set_option($this->master, SOL_SOCKET, SO_REUSEADDR, 1) or die("Failed: socket_option()");
@@ -23,8 +27,6 @@ abstract class WebSocketServer {
     socket_listen($this->master,20)                               or die("Failed: socket_listen()");
     $this->sockets['m'] = $this->master;
     $this->stdout("Server started\nListening on: $addr:$port\nMaster socket: ".$this->master);
-
-
   }
 
   abstract protected function process($user,$message); // Called immediately when the data is recieved.
@@ -118,6 +120,7 @@ abstract class WebSocketServer {
           }
         }
       }
+      /*
       $a+=1;
       if($a%10000==0){
         foreach ($this->users as $alluser) {
@@ -125,6 +128,7 @@ abstract class WebSocketServer {
         }
         sleep(3);
       }
+      */
     }
   }
 
