@@ -30,6 +30,8 @@
     }else if($_GET['action']=="logOut"){
       $results = array_merge_recursive($results, logOut($db));
       header("Location: login.php");//login again
+    }else if($_GET['action']=="loginStatus"){
+      $results = array_merge_recursive($results, loginStatus($userData));
     }
 
   }else if(isset($_POST['action'])){//handles POST requests ie. login or addVideo

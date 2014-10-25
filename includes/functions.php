@@ -1229,4 +1229,22 @@
     }
     return $results;
   }
+
+  function loginStatus($userData){
+    $results = array("errors"=>array());
+    if (isset($userData['logged'])&& $userData['logged']){
+      $results['logged']=1;
+      if (isset($userData['fbId'])){
+        $results['fbId']=$userData['fbId'];
+      }
+      if (isset($userData['userId'])){
+        $results['userId']=$userData['userId'];
+      }
+    }else{
+      $results['logged']=0;
+    }
+    $results['status']="success";
+    return $results;
+
+  }
 ?>
