@@ -4,11 +4,13 @@
     header("Location: https://" . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]);
     exit();
   }
+
   require_once("includes/functions.php"); //basic database operations
   if(session_id() == '') {
     session_start();
   }
 
+  $userData = init($db, $fb);
   if(isset($_GET['code'])||isset($_GET['state'])){
     unset($_GET['code']);
     unset($_GET['state']);
@@ -22,7 +24,6 @@
     exit();
   }
   header('Access-Control-Allow-Origin: //www.googleapis.com');
-  $userData = init($db, $fb);
   if ((!isset($userData['logged'])) && isset($restricted) && $restricted == true) {
     header("location: /");
     exit();
