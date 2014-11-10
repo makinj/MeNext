@@ -507,10 +507,11 @@ function getCookie(cname) {
 }
 
 function socketInit() {
-  var host = "ws://127.0.0.1:9000"; // SET THIS TO YOUR SERVER
+  var host = "ws://"+WSDOMAIN+":9000"; // SET THIS TO YOUR SERVER
   document.socket = new WebSocket(host);
   document.socket.onopen    = function(msg) {
     document.socket.send(JSON.stringify({'action':'setSession','sessionId':getCookie('PHPSESSID')}));
+
   };
   document.socket.onmessage = function(msg) {
     console.log(msg.data);

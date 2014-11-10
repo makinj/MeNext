@@ -7,7 +7,10 @@
       <?php
         echo"'".YT_API_CLIENT_KEY."';\n";
       ?>
-
+      var WSDOMAIN =
+      <?php
+        echo"'".WSDOMAIN."';\n";
+      ?>
       var partyId =
       <?php
         if (isset($_GET['partyId'])){
