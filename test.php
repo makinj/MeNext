@@ -1,7 +1,3 @@
 <?php
-
-$myfile = fopen("/tmp/sess_gek01js8pibd086bj5jlkvu6a0", "r");
-echo unserialize(fread($myfile,filesize("/tmp/sess_gek01js8pibd086bj5jlkvu6a0")));
-fclose($myfile);
-
+echo json_encode(array('sessionId' => "j194gtprgs13lb8f39n09j2ar6", 'action'=>'setSession'));
 ?>

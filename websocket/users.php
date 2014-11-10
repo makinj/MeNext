@@ -12,11 +12,21 @@ class WebSocketUser {
 
   public $sendingContinuous = false;
   public $partialMessage = "";
-  
+
   public $hasSentClose = false;
+  public $userData = array();
+  public $partyId = -1;
 
   function __construct($id, $socket) {
     $this->id = $id;
     $this->socket = $socket;
+  }
+
+  public function setParty($partyId){
+    $this->partyId = $partyId;
+  }
+
+  public function setUserData($userData){
+    $this->userData = $userData;
   }
 }

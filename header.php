@@ -1,18 +1,33 @@
 <?php
-  require_once("includes/functions.php"); //basic database operations
-  if(PRODUCTION && $_SERVER["HTTPS"] != "on"){
+  error_log("1");
+  require_once('includes/constants.php');
+  if(PRODUCTION ==1 && $_SERVER["HTTPS"] != "on"){
     header("Location: https://" . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]);
     exit();
   }
+  require_once("includes/functions.php"); //basic database operations
   if(session_id() == '') {
     session_start();
   }
 
   $userData = init($db, $fb);
+  error_log("3");
+  if(isset($_GET['code'])||isset($_GET['state'])){
+    unset($_GET['code']);
+    unset($_GET['state']);
+    error_log(json_encode($_GET));
+    error_log($_SERVER['REQUEST_URI']);
+    $url=$_SERVER['SCRIPT_NAME'];
+    if(count($_GET)){
+      $url .= "?".http_build_query($_GET);
+    }
+    header("Location: ".$url);
+    exit();
+  }
   header('Access-Control-Allow-Origin: //www.googleapis.com');
   if ((!isset($userData['logged'])) && isset($restricted) && $restricted == true) {
     header("location: /");
-    exit;
+    exit();
   }
 ?>
 

@@ -31,7 +31,6 @@
     }else if($_GET['action']=="loginStatus"){
       $results = array_merge_recursive($results, loginStatus($userData));
     }
-
   }else if(isset($_POST['action'])){//handles POST requests ie. login or addVideo
     if($_POST['action']=="register"){//registers new user
       $results = array_merge_recursive($results, createAccount($db, $_POST));//creates an account

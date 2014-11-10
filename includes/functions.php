@@ -3,7 +3,7 @@
   Joshua Makinen
   */
   require_once("constants.php");//get system-specific variables
-  require 'sdks/facebook.php';//facebook sdk
+  require_once(dirname(__FILE__).'/../sdks/facebook.php');//facebook sdk
 
   $db = connectDb();//connect to mysql
 
@@ -468,9 +468,11 @@
           'SELECT
             v.youtubeId,
             v.title,
+            v.thumbnail,
             s.submissionId,
             s.submitterId,
             u.username,
+            s.started,
             IFNULL(
               (SELECT
                 sum(voteValue)
@@ -622,6 +624,7 @@
         $stmt->bindValue(':submissionId', $submissionId);
         $stmt->bindValue(':userId', $userData['userId']);
         $stmt->execute();
+        sendToWebsocket(json_encode(array('action' =>'updateParty', 'submissionId' => $submissionId)));
         $result['status'] = 'success';
       } catch (PDOException $e) {
         //something went wrong...
@@ -658,6 +661,7 @@
         $stmt->bindValue(':submissionId', $submissionId);
         $stmt->bindValue(':userId', $userData['userId']);
         $stmt->execute();
+        sendToWebsocket(json_encode(array('action' =>'updateParty', 'submissionId' => $submissionId)));
         $results['status'] = 'success';
       } catch (PDOException $e) {
         //something went wrong...
@@ -929,6 +933,7 @@
         $stmt->bindValue(':submissionId', $submissionId);
         $stmt->bindValue(':voteValue', $voteValue);
         $stmt->execute();
+        sendToWebsocket(json_encode(array('action' =>'updateParty', 'submissionId' => $submissionId)));
         $results['status'] = "success";//was successful
       }catch(PDOException $e){//something went wrong...
         error_log('Query failed: ' . $e->getMessage());
@@ -1202,19 +1207,7 @@
       return $userData;
     }
     return $userData;
-    /*
-    if facebook logged in
-      select user in db
-      if not in db
-        if logged in sess
-          update existing row
-        else
-          insert new one
-        select row with fbid
-    else
-      if sess logged
-        select row
-*/
+
   }
 
   function fbLogin($args){
@@ -1245,6 +1238,28 @@
     }
     $results['status']="success";
     return $results;
+  }
 
+  function sendToWebsocket($message){
+    $message.="\n";
+    $socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
+    socket_connect($socket, SOCK_LOC);
+    socket_write($socket, $message, strlen($message));
+    socket_close($socket);
+  }
+
+  function getPartyIdFromSubmission($db, $submissionId){
+    $submissionId=sanitizeString($submissionId);
+    $stmt = $db->prepare(
+      'SELECT
+        partyId
+      FROM
+        Submission
+      WHERE
+        submissionId=:submissionId
+    ;');//makes new row with given info
+    $stmt->bindValue(':submissionId', $submissionId);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_OBJ)->partyId;
   }
 ?>

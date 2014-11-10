@@ -1,37 +1,51 @@
 <?php
 
 //require_once('./daemonize.php');
-require_once('websocket/users.php');
+require_once('users.php');
+require_once('subscriptions.php');
 
 abstract class WebSocketServer {
 
   protected $userClass = 'WebSocketUser'; // redefine this if you want a custom user class.  The custom user class should inherit from WebSocketUser.
+  protected $partyClass = 'WebSocketParty';
   protected $maxBufferSize;
   protected $master;
   protected $sockets                              = array();
   protected $users                                = array();
+  protected $parties                              = array();
   protected $interactive                          = true;
   protected $headerOriginRequired                 = false;
   protected $headerSecWebSocketProtocolRequired   = false;
   protected $headerSecWebSocketExtensionsRequired = false;
   protected $db;
   protected $fb;
-
-  function __construct($addr, $port, $db, $fb, $bufferLength = 2048) {
+  protected $apacheSockName;
+  protected $apache;
+  function __construct($addr, $port, $db, $fb, $apacheSockName, $bufferLength = 2048) {
     $this->db = $db;
     $this->fb = $fb;
     $this->maxBufferSize = $bufferLength;
     $this->master = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)  or die("Failed: socket_create()");
+    $this->apacheSockName = $apacheSockName;
     socket_set_option($this->master, SOL_SOCKET, SO_REUSEADDR, 1) or die("Failed: socket_option()");
     socket_bind($this->master, $addr, $port)                      or die("Failed: socket_bind()");
     socket_listen($this->master,20)                               or die("Failed: socket_listen()");
+    if (file_exists($this->apacheSockName)){
+      unlink($this->apacheSockName);
+    }
+    $this->apache = socket_create(AF_UNIX, SOCK_STREAM, 0);
+    socket_bind($this->apache, $this->apacheSockName);
+    socket_listen($this->apache, 20);
     $this->sockets['m'] = $this->master;
+    $this->sockets['a'] = $this->apache;
     $this->stdout("Server started\nListening on: $addr:$port\nMaster socket: ".$this->master);
   }
 
   abstract protected function process($user,$message); // Called immediately when the data is recieved.
   abstract protected function connected($user);        // Called after the handshake response is sent to the client.
   abstract protected function closed($user);           // Called after the connection is closed.
+
+  abstract protected function handleApache($message);
 
   protected function connecting($user) {
     // Override to handle a connecting user, after the instance of the User is created, but before
@@ -48,11 +62,11 @@ abstract class WebSocketServer {
    * Main processing loop
    */
   public function run() {
-    $a=0;
     while(true) {
 
       if (empty($this->sockets)) {
         $this->sockets['m'] = $this->master;
+        $this->sockets['a'] = $this->apache;
       }
       $read = $this->sockets;
       $write = $except = null;
@@ -69,6 +83,11 @@ abstract class WebSocketServer {
               $this->connect($client);
               $this->stdout("Client connected. " . $client);
             }
+          }elseif ($socket == $this->apache) {
+            $client = socket_accept($this->apache);
+            $message = trim(socket_read($client, 256, PHP_NORMAL_READ));
+            socket_close($client);
+            $this->handleApache($message);
           }
           else {
             $numBytes = @socket_recv($socket,$buffer,$this->maxBufferSize,0);
@@ -120,15 +139,6 @@ abstract class WebSocketServer {
           }
         }
       }
-      /*
-      $a+=1;
-      if($a%10000==0){
-        foreach ($this->users as $alluser) {
-          $this->send($alluser,"asdf");
-        }
-        sleep(3);
-      }
-      */
     }
   }
 
@@ -427,7 +437,6 @@ abstract class WebSocketServer {
   }
 
   protected function extractHeaders($message) {
-    $this->stdout(json_encode($message));
     $header = array('fin'     => $message[0] & chr(128),
             'rsv1'    => $message[0] & chr(64),
             'rsv2'    => $message[0] & chr(32),
