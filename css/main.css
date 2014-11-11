@@ -38,7 +38,7 @@
 .btn-danger {
     background-color: rgb(136, 44, 215);
 }
-.btn-danger:hover, .songUpvote:hover {
+.btn-danger:hover, .songDownvote:hover {
     background-color: rgb(83, 38, 144);
 }
 
