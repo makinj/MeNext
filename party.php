@@ -115,7 +115,7 @@ if (isset($_GET['partyId'])) {
                     <th>Title</th>
                     <th>Submitted by:</th>
                     <th></th>
-                    <th></th>
+                    <th>Votes</th>
                 </tr>
                 </thead>
                 <tbody id="queueList">
