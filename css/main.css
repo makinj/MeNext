@@ -23,11 +23,11 @@
 #unjoinedPartiesTable > thead > tr > th:last-child {
     width: 7%;
 }
-#queueTable > thead > tr > th:last-child {
+#queueTable > thead > tr > th:nth-child(4) {
     width: 15%;
 }
 #queueTable > thead > tr > th:nth-child(3) {
-    width: 7%;
+    width: 10%;
 }
 .btn-primary {
      background-color: rgb(235, 39, 53);
