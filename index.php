@@ -79,7 +79,7 @@ if(isset($userData['logged'])){
 <div class="jumbotron">
     <h1>MeNext</h1>
     <h2>A Music Request Service with a Hint of Democracy</h2>
-    <p>Description to be included here</p>
+    <p>Have you ever been to a social gathering and wanted to share cool music with the group without taking over the music entirely? With MeNext, this is possible! MeNext enables users to submit their own suggestions to a playlist at a party. Other party-goers can then vote to decide what gets played and when.</p>
 </div>
 
 <?php
