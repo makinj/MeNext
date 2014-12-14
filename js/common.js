@@ -47,9 +47,7 @@ function searchYouTube(){//searches youtube to get a list of
           submitVideo($(this).val());
           $(this).attr('class',"btn btn-default btn-lg");
           $(this).html("<span class='glyphicon glyphicon-play'></span>");
-          if(!window.WebSocket){
-            listQueue();
-          }
+          listQueue();
         });
     });
   }else{
@@ -109,79 +107,66 @@ function listQueue(){
     $.get("handler.php?action=listVideos&partyId="+partyId,
       function(data,status){
         var result= JSON.parse(data);
-        drawQueue(result);
-      }
-    );
-  });
-}
-
-function drawQueue(data){
-  if(data['status']=='success'){
-    var videos = data['videos'];
-    $("#queueList").html("");
-    for (var i=0;i<videos.length;i++){
-      upClass = "songUpvote btn btn-default";
-      downClass = "songDownvote btn btn-default";
-      if(videos[i].userRating>0){
-        upClass = "songUnvote btn btn-success"
-      }
-      if(videos[i].userRating<0){
-        downClass = "songUnvote btn btn-danger"
-      }
-      var queueRow="<tr><td>"+(i+1).toString()+"</td><td>"+videos[i].title+"</td><td>"+videos[i].username+"</td>"+
-          "<td><div class='btn-group btn-group-sm'>"+
-              "<button class='"+upClass+"' value='"+videos[i].submissionId+"'>" +
-                  "<span class='glyphicon glyphicon-thumbs-up'>" +
-              "</button>" +
-              "<button class='"+downClass+"' value='"+videos[i].submissionId+"'>" +
-                  "<span class='glyphicon glyphicon-thumbs-down'>" +
-              "</button>";
-      if((typeof isAdmin != 'undefined' && isAdmin==1) || userId == videos[i].submitterId){
-        queueRow=queueRow+"<button class='removeVideo btn btn-default' value='"+videos[i].submissionId+"'>" +
-            "<span class='glyphicon glyphicon-remove'>" +
-          "</button>";
-      }
-      queueRow=queueRow+"</div></td></tr>";
-      $('#queueList').append(queueRow);
-    }
-    $('button.removeVideo').click(function(){
-      $(this).attr('disabled',true);
-      removeVideo($(this).val());
-      if(!window.WebSocket){
-        listQueue();
-      }
-      if($(this).val()==window.currentVideo.submissionId){
-        if(typeof window.player != 'undefined'){
-          window.player.stopVideo();
-          window.player.clearVideo();
+        if(result['status']=='success'){
+          var videos = result['videos'];
+          $("#queueList").html("");
+          for (var i=0;i<videos.length;i++){
+            upClass = "songUpvote btn btn-default";
+            downClass = "songDownvote btn btn-default";
+            if(videos[i].userRating>0){
+              upClass = "songUnvote btn btn-primary"
+            }
+            if(videos[i].userRating<0){
+              downClass = "songUnvote btn btn-danger"
+            }
+            var queueRow="<tr><td>"+(i+1).toString()+"</td><td>"+videos[i].title+"</td><td>"+videos[i].username+"</td>"+
+                "<td><div class='btn-group btn-group-sm'>"+
+                    "<button class='"+upClass+"' value='"+videos[i].submissionId+"'>" +
+                        "<span class='glyphicon glyphicon-thumbs-up'>" +
+                    "</button>" +
+                    "<button class='"+downClass+"' value='"+videos[i].submissionId+"'>" +
+                        "<span class='glyphicon glyphicon-thumbs-down'>" +
+                    "</button>";
+            if((typeof isAdmin != 'undefined' && isAdmin==1) || userId == videos[i].submitterId){
+              queueRow=queueRow+"<button class='removeVideo btn btn-default' value='"+videos[i].submissionId+"'>" +
+                  "<span class='glyphicon glyphicon-remove'>" +
+                "</button>";
+            }
+            queueRow=queueRow+"</div></td><td>"+videos[i].rating+"</td></tr>";
+            $('#queueList').append(queueRow);
+          }
+          $('button.removeVideo').click(function(){
+            $(this).attr('disabled',true);
+            removeVideo($(this).val());
+            listQueue();
+            if($(this).val()==window.currentVideo.submissionId){
+              if(typeof window.player != 'undefined'){
+                window.player.stopVideo();
+                window.player.clearVideo();
+              }
+              loadCurrentVideo();
+            }
+          });
+          $('button.songUpvote').click(function(){
+            $(this).attr('disabled',true);
+            upVote($(this).val());
+            listQueue();
+          });
+          $('button.songDownvote').click(function(){
+            $(this).attr('disabled',true);
+            downVote($(this).val());
+            listQueue();
+          });
+          $('button.songUnvote').click(function(){
+            $(this).attr('disabled',true);
+            unVote($(this).val());
+            listQueue();
+          });
+        }else{
+          $("#problem").html(result['errors'][0]);
         }
-        loadCurrentVideo();
-      }
     });
-    $('button.songUpvote').click(function(){
-      $(this).attr('disabled',true);
-      upVote($(this).val());
-      if(!window.WebSocket){
-        listQueue();
-      }
-    });
-    $('button.songDownvote').click(function(){
-      $(this).attr('disabled',true);
-      downVote($(this).val());
-      if(!window.WebSocket){
-        listQueue();
-      }
-    });
-    $('button.songUnvote').click(function(){
-      $(this).attr('disabled',true);
-      unVote($(this).val());
-      if(!window.WebSocket){
-        listQueue();
-      }
-    });
-  }else{
-    $("#problem").html(data['errors'][0]);
-  }
+  });
 }
 
 function loadCurrentVideo(){
@@ -371,9 +356,7 @@ function playerStateHandler(state){
     loadCurrentVideo();
   }else if (state==0){//ended
     markVideoWatched();
-    if(!window.WebSocket){
-      listQueue();
-    }
+    listQueue();
     loadCurrentVideo();
   }else if (state==1){//playing
     $("#playPause").html('<span class="glyphicon glyphicon-pause">');
@@ -506,29 +489,6 @@ function getCookie(cname) {
     return "";
 }
 
-function socketInit() {
-  var host = "ws://"+WSDOMAIN+":9000"; // SET THIS TO YOUR SERVER
-  document.socket = new WebSocket(host);
-  document.socket.onopen    = function(msg) {
-    document.socket.send(JSON.stringify({'action':'setSession','sessionId':getCookie('PHPSESSID')}));
-
-  };
-  document.socket.onmessage = function(msg) {
-    console.log(msg.data);
-    response = JSON.parse(msg.data);
-    if(response.responseType=='loggedIn'){
-      document.socket.send(JSON.stringify({'action':'subscribeParty','partyId':partyId}));
-    }else if(response.responseType=='videoList' || response.responseType=='subscribed'){
-      drawQueue(response);
-    }
-  };
-  document.socket.onclose   = function(msg) {
-    document.socket=null;
-    var listQueueTimer=window.setInterval(listQueue, 5000);
-    listQueue();
-  };
-}
-
 $(document).ready(function(){
 
   if ($("#youtubePlayerParent").length > 0){
@@ -545,17 +505,11 @@ $(document).ready(function(){
   });
 
   if ($("#queueList").length > 0){
-    if (window.WebSocket){
-      socketInit();
-    }else{
-      var listQueueTimer=window.setInterval(listQueue, 5000);
-      listQueue();
-    }
+    var listQueueTimer=window.setInterval(listQueue, 5000);
+    listQueue();
   }
 });
-$(window).on('beforeunload', function(){
-    document.socket.close();
-});
+
 (function($) {
     $.fn.toggleDisabled = function(){
         return this.each(function(){

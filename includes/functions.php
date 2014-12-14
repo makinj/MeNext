@@ -624,7 +624,7 @@
         $stmt->bindValue(':submissionId', $submissionId);
         $stmt->bindValue(':userId', $userData['userId']);
         $stmt->execute();
-        sendToWebsocket(json_encode(array('action' =>'updateParty', 'submissionId' => $submissionId)));
+        //sendToWebsocket(json_encode(array('action' =>'updateParty', 'submissionId' => $submissionId)));
         $result['status'] = 'success';
       } catch (PDOException $e) {
         //something went wrong...
@@ -661,7 +661,7 @@
         $stmt->bindValue(':submissionId', $submissionId);
         $stmt->bindValue(':userId', $userData['userId']);
         $stmt->execute();
-        sendToWebsocket(json_encode(array('action' =>'updateParty', 'submissionId' => $submissionId)));
+        //sendToWebsocket(json_encode(array('action' =>'updateParty', 'submissionId' => $submissionId)));
         $results['status'] = 'success';
       } catch (PDOException $e) {
         //something went wrong...
@@ -933,7 +933,7 @@
         $stmt->bindValue(':submissionId', $submissionId);
         $stmt->bindValue(':voteValue', $voteValue);
         $stmt->execute();
-        sendToWebsocket(json_encode(array('action' =>'updateParty', 'submissionId' => $submissionId)));
+        //sendToWebsocket(json_encode(array('action' =>'updateParty', 'submissionId' => $submissionId)));
         $results['status'] = "success";//was successful
       }catch(PDOException $e){//something went wrong...
         error_log('Query failed: ' . $e->getMessage());
