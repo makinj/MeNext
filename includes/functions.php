@@ -1218,7 +1218,7 @@
       $_SESSION["fb_".FB_APP_ID."_access_token"]=$fbToken;
       $results['status']='success';
     }else{
-      array_push($results['errors'], "must have userId and accessToken");
+      array_push($results['errors'], "must have accessToken");
     }
     return $results;
   }
