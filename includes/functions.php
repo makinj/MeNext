@@ -492,17 +492,21 @@
                 submissionId=s.submissionId AND
                 voterId=:userId
               ), 0
-            ) as userRating
+            ) as userRating,
+            (p.creatorId=:userId OR
+             s.submitterId=:userId)as canRemove
           FROM
             Submission s,
             Video v,
-            User u
+            User u,
+            Party p
           WHERE
             s.videoId = v.videoId AND
             s.partyId = :partyId AND
             s.wasPlayed=0 AND
             s.removed=0 AND
-            s.submitterId = u.userId
+            s.submitterId = u.userId AND
+            p.partyId=s.partyId
           ORDER BY
             started DESC,
             rating DESC,
@@ -1218,7 +1222,7 @@
       $_SESSION["fb_".FB_APP_ID."_access_token"]=$fbToken;
       $results['status']='success';
     }else{
-      array_push($results['errors'], "must have userId and accessToken");
+      array_push($results['errors'], "must have accessToken");
     }
     return $results;
   }
