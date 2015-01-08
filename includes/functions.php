@@ -1212,8 +1212,7 @@
 
   function fbLogin($args){
     $results = array("errors"=>array());
-    if(is_array($args)&&array_key_exists("userId", $args)&&array_key_exists("accessToken", $args)){//valid array was given
-      $fbId=sanitizeString($args['userId']);
+    if(is_array($args)&&array_key_exists("accessToken", $args)){//valid array was given
       $fbToken=sanitizeString($args['accessToken']);
       $_SESSION["fb_".FB_APP_ID."_access_token"]=$fbToken;
       $results['status']='success';
