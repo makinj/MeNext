@@ -15,7 +15,9 @@
   $userData = init($db, $fb);
   $results = array();//array to be returned to client
 
-
+  //error_log(json_encode($_GET));
+  //error_log(json_encode($_POST));
+  
   if(isset($_GET['action'])){//GETs info ie. list of Videos or list of users
     if($_GET['action']=="listVideos"){
       $results = array_merge_recursive($results, listVideos($db, $userData, $_GET));
@@ -79,6 +81,7 @@
   }
   $results['status'] = $finalStatus;
 
+ // error_log(json_encode($results));
 
   echo json_encode($results);//return info to client
 ?>
