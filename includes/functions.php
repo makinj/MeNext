@@ -1132,7 +1132,7 @@
 
     // Login or logout url will be needed depending on current user state.
     if ($fbId) {//logged into facebook
-      $fb->setExtendedAccessToken();
+
       $userData['fbId']=$fbId;
       $stmt = $db->prepare(
         'SELECT
