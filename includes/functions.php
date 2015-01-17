@@ -91,6 +91,7 @@
         password VARCHAR(255),
         privacyId int DEFAULT 0,
         creatorId int REFERENCES User(userId),
+        removed BIT(1) DEFAULT 0,
 
         PRIMARY KEY(partyId, name)
       )
@@ -124,6 +125,7 @@
         partyId int REFERENCES Party(partyId),
         userId int REFERENCES User(userId),
         owner BIT(1) DEFAULT 0,
+        unjoined BIT(1) DEFAULT 0,
 
         INDEX(partyId, userId),
 
@@ -191,11 +193,15 @@
       'SELECT
         *
       FROM
-        PartyUser
+        PartyUser pu,
+        Party p
       Where
-        partyId=:partyId AND
-        userId=:userId AND
-        owner=1
+        p.partyId=pu.partyId AND
+        p.removed=0 AND
+        pu.partyId=:partyId AND
+        pu.userId=:userId AND
+        pu.unjoined=0 AND
+        pu.owner=1
     ;');//makes new row with given info
     $stmt->bindValue(':userId', $userId);
     $stmt->bindValue(':partyId', $partyId);
@@ -213,14 +219,16 @@
         u.username as ownerUsername,
         u.userid as ownerId
       FROM Party p,
-      PartyUser pu,
-      User u
+        PartyUser pu,
+        User u
       WHERE
-        p.partyid=:partyId AND
+        p.partyid=:partyId  AND
+        p.removed=0 AND
         pu.partyid=p.partyid AND
         pu.owner=1 AND
+        pu.unjoined=0 AND
         u.userid=pu.userid
-    ;');//makes new row with given info
+    ;');
     $stmt->bindValue(':partyId', $partyId);
     $stmt->execute();
     return $stmt->fetch(PDO::FETCH_OBJ);
@@ -241,6 +249,8 @@
         Party p
       Where
         pu.partyId=p.partyId AND
+        pu.unjoined=0 AND
+        p.removed=0 AND
         p.partyId=:partyId AND
         (
           pu.userId=:userId
@@ -269,6 +279,8 @@
         Party p
       Where
         pu.partyId=p.partyId AND
+        pu.unjoined=0 AND
+        p.removed=0 AND
         p.partyId=:partyId AND
         (
           pu.userId=:userId
@@ -293,6 +305,7 @@
         Party p
       Where
         p.partyId=:partyId AND
+        p.removed=0 AND
         p.passwordProtected
     ;');
     $stmt->bindValue(':partyId', $partyId);
@@ -501,6 +514,7 @@
             User u,
             Party p
           WHERE
+            p.removed=0 AND
             s.videoId = v.videoId AND
             s.partyId = :partyId AND
             s.wasPlayed=0 AND
@@ -568,8 +582,11 @@
           FROM
             Submission s,
             Video v,
-            User u
+            User u,
+            Party p
           WHERE
+            p.partyId=:partyId AND
+            p.removed=0 AND
             s.videoId = v.videoId AND
             s.partyId = :partyId AND
             s.wasPlayed=0 AND
@@ -616,15 +633,17 @@
       $stmt = $db->prepare(
         'UPDATE
           Submission s,
-          User u,
-          Party p
+          Party p,
+          PartyUser pu
         SET
           s.wasPlayed = 1
         WHERE
           s.submissionId = :submissionId AND
           s.partyId=p.partyId AND
-          p.creatorId=u.userId AND
-          u.userId=:userId
+          p.removed=0 AND
+          p.partyId=pu.partyId AND
+          pu.unjoined=0 AND
+          pu.userId=:userId
         ;');
         $stmt->bindValue(':submissionId', $submissionId);
         $stmt->bindValue(':userId', $userData['userId']);
@@ -651,14 +670,20 @@
         'UPDATE
           Submission s,
           User u,
-          Party p
+          Party p,
+          PartyUser pu
         SET
           s.removed = 1
         WHERE
           s.submissionId = :submissionId AND
           s.partyId=p.partyId AND
+          p.removed=0 AND
           (
-            p.creatorId=u.userId OR
+            (
+              p.partyId = pu.partyid AND
+              pu.owner=1 AND
+              pu.userId=u.userId
+            ) OR
             s.submitterId=u.userId
           )AND
           u.userId=:userId
@@ -779,16 +804,16 @@
           FROM
             Party
           WHERE
-            partyId=:partyId and
+            partyId=:partyId AND
+            removed=0 AND
             (
-              passwordProtected=0 or
+              passwordProtected=0 OR
               password=:password
             )
         ;');//checks for matching row
         $stmt->bindValue(':partyId', $partyId);
         $stmt->bindValue(':password', $password);
         $stmt->execute();
-
         if($stmt->rowCount()==1){//if successfully logged in
           $stmt = $db->prepare(
             'INSERT INTO
@@ -802,6 +827,10 @@
               :partyId,
               :owner
             )
+            ON
+              DUPLICATE KEY
+            UPDATE
+              unjoined = 0
           ;');//makes new row with given info
           $stmt->bindValue(':userId', $userData['userId']);
           $stmt->bindValue(':partyId', $partyId);
@@ -846,6 +875,8 @@
           WHERE
             p.partyId = pu.partyId AND
             pu.userId = :userId AND
+            p.removed=0 AND
+            pu.unjoined=0 AND
             p.creatorId = u.userId
         ;');
         $stmt->bindValue(':userId', $userData['userId']);
@@ -886,13 +917,15 @@
           User u
         WHERE
           p.creatorId=u.userId AND
+          p.removed=0 AND
           p.partyId NOT IN (
             SELECT
               partyId
             FROM
               PartyUser
             WHERE
-              userId=:userId
+              userId=:userId AND
+              unjoined=0
           )
       ;');
       $stmt->bindValue(':userId', $userId);
@@ -917,29 +950,34 @@
         $voterId = sanitizeString($userData['userId']);
         $submissionId = sanitizeString($args['submissionId']);
         $voteValue = intval(sanitizeString($args['direction']));
-        if($voteValue>0)$voteValue=1;
-        else if($voteValue<0)$voteValue=-1;
-        $stmt = $db->prepare(
-          'INSERT INTO
-            Vote(
-              voterId,
-              submissionId,
-              voteValue
+        if(canWriteParty($db, $userData, getPartyIdFromSubmission($db, $submissionId))){
+          if($voteValue>0)$voteValue=1;
+          else if($voteValue<0)$voteValue=-1;
+
+          $stmt = $db->prepare(
+            'INSERT INTO
+              Vote(
+                voterId,
+                submissionId,
+                voteValue
+              )
+            VALUES(
+              :voterId,
+              :submissionId,
+              :voteValue
             )
-          VALUES(
-            :voterId,
-            :submissionId,
-            :voteValue
-          )
-          ON DUPLICATE KEY UPDATE
-            voteValue = :voteValue
-        ;');
-        $stmt->bindValue(':voterId', $voterId);
-        $stmt->bindValue(':submissionId', $submissionId);
-        $stmt->bindValue(':voteValue', $voteValue);
-        $stmt->execute();
-        //sendToWebsocket(json_encode(array('action' =>'updateParty', 'submissionId' => $submissionId)));
-        $results['status'] = "success";//was successful
+            ON DUPLICATE KEY UPDATE
+              voteValue = :voteValue
+          ;');
+          $stmt->bindValue(':voterId', $voterId);
+          $stmt->bindValue(':submissionId', $submissionId);
+          $stmt->bindValue(':voteValue', $voteValue);
+          $stmt->execute();
+          //sendToWebsocket(json_encode(array('action' =>'updateParty', 'submissionId' => $submissionId)));
+          $results['status'] = "success";//was successful
+        }else{
+          array_push($results['errors'], "must join party");
+        }
       }catch(PDOException $e){//something went wrong...
         error_log('Query failed: ' . $e->getMessage());
         array_push($results['errors'], "database error");
@@ -973,6 +1011,7 @@
       session_id($oldId);
       session_start();
     }
+    /*
     $stmt = $db->prepare(
       'UPDATE
         Session
@@ -983,10 +1022,11 @@
     ;');
     $stmt->bindValue(':sessionId', $sessionId);
     $stmt->execute();
+    */
     $results['status'] = "success";//was successful
     return $results;
   }
-
+/*
   function setSessionData($db, $userId){
     try{
       $stmt = $db->prepare(
@@ -1117,6 +1157,7 @@
       error_log('Query failed: ' . $e->getMessage());
     }
   }
+*/
   function init($db, $fb){
     $userData=array();
     $fbId = $fb->getUser();
