@@ -57,7 +57,13 @@
     <script src="js/qrcode.min.js" type="text/javascript"></script>
 
     <script src="js/jquery-ui.min.js" type="text/javascript"></script>
-    <script src="js/common.js" type="text/javascript"></script>
+    <?php if (PRODUCTION) {
+        # code...
+        echo '<script src="js/common.min.js" type="text/javascript"></script>';
+    }else{
+        echo '<script src="js/common.js" type="text/javascript"></script>';
+    }
+    ?>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
