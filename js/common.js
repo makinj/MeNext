@@ -195,7 +195,7 @@ function loadCurrentVideo(){
             if(typeof window.player != 'undefined'){
               state = window.player.getPlayerState()
               if(state!=-1 && state!=0 && state!=5){
-                //window.player.stopVideo();
+                window.player.pauseVideo();
                 //window.player.clearVideo();
               }
             }
