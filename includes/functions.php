@@ -19,6 +19,7 @@
   function sanitizeString($var){//cleans a string up so there are no crazy vulerabilities
     $var = strip_tags($var);
     $var = htmlentities($var);
+    $var = trim($var);
     return stripslashes($var);
   }
 
