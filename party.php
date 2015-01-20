@@ -93,6 +93,11 @@ if (isset($_GET['partyId'])) {
                 <a class="btn btn-default btn-block" target="_blank"
                    href="https://docs.google.com/forms/d/1fy-vD3ovTfs4iekNbgE3viobHvvusD8ODunL_v2zks8/viewform?<?php if(isset($userData["username"])){echo "entry.1934380623=".$userData["username"]."&";} ?>entry.1987106882">Report
                     a Bug</a>
+                <a href="https://play.google.com/store/apps/details?id=me.menext.me">
+                  <img alt="Get it on Google Play"
+                       src="https://developer.android.com/images/brand/en_generic_rgb_wo_45.png" />
+                </a>
+                <a href="https://itunes.apple.com/us/app/menext/id934530773?mt=8&uo=4" target="itunes_store" style="display:inline-block;overflow:hidden;background:url(https://linkmaker.itunes.apple.com/htmlResources/assets/en_us//images/web/linkmaker/badge_appstore-lrg.png) no-repeat;width:135px;height:40px;@media only screen{background-image:url(https://linkmaker.itunes.apple.com/htmlResources/assets/en_us//images/web/linkmaker/badge_appstore-lrg.svg);}"></a>
             </div>
         </div>
     </div>
