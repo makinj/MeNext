@@ -80,6 +80,15 @@ if(isset($userData['logged'])){
     <h1>MeNext</h1>
     <h2>A Music Request Service with a Hint of Democracy</h2>
     <p>Have you ever been to a social gathering and wanted to share cool music with the group without taking over the music entirely? With MeNext, this is possible! MeNext enables users to submit their own suggestions to a playlist at a party. Other party-goers can then vote to decide what gets played and when.</p>
+    <p>
+        <a href="https://play.google.com/store/apps/details?id=me.menext.me">
+          <img alt="Get it on Google Play"
+               src="https://developer.android.com/images/brand/en_generic_rgb_wo_45.png" />
+    </p>
+    <p>
+        </a>
+        <a href="https://itunes.apple.com/us/app/menext/id934530773?mt=8&uo=4" target="itunes_store" style="display:inline-block;overflow:hidden;background:url(https://linkmaker.itunes.apple.com/htmlResources/assets/en_us//images/web/linkmaker/badge_appstore-lrg.png) no-repeat;width:135px;height:40px;@media only screen{background-image:url(https://linkmaker.itunes.apple.com/htmlResources/assets/en_us//images/web/linkmaker/badge_appstore-lrg.svg);}"></a>
+    </p>
 </div>
 
 <?php

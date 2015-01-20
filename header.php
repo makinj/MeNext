@@ -39,6 +39,9 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A Music Request Service with a Hint of Democracy
+
+Have you ever been to a social gathering and wanted to share cool music with the group without taking over the music entirely? With MeNext, this is possible! MeNext enables users to submit their own suggestions to a playlist at a party. Other party-goers can then vote to decide what gets played and when.">
     <title><?php echo "MeNext | " . $title; ?></title>
 
     <!-- jQuery -->
@@ -83,7 +86,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="index.php"><img src="images/headerLogoSmall.png" id="headerLogo"/></a>
+            <a class="navbar-brand" href="index.php"><img src="images/headerLogoSmall.png" id="headerLogo" alt="MeNext Logo"/></a>
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
