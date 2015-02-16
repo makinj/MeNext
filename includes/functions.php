@@ -1,28 +1,49 @@
 <?php
   /*
-  Joshua Makinen
+  Joshua Makinen(Vmutti)
+  */
+
+  /*
+  This block includes files needed to run the functions and sets up db and fb variables needed by basically everything
+  Sincerely,
+  Vmutti
   */
   require_once("constants.php");//get system-specific variables
   require_once(dirname(__FILE__).'/../sdks/facebook.php');//facebook sdk
 
   $db = connectDb();//connect to mysql
 
-  $fb = new Facebook(array(
+
+  $fb = new Facebook(array(//fb setup
     'appId'  => FB_APP_ID,
     'secret' => FB_APP_SECRET,
   ));
+
   /*
-  if(!isset($userData['userId']) && isset($_COOKIE['seriesId']) && isset($_COOKIE['token'])){
-    checkSeriesTokenPair($db, sanitizeString($_COOKIE['seriesId']), sanitizeString($_COOKIE['token']));
-  }
+  This removes html tags, html entities, slashes, and leading and trailing whitespace
+  The main purpose of this function is to thoroughly clean up user input.
+  There is no excuse at this point to allow users to put html of any sort into our database.
+  This stops stored XSS attacks for the most parts and adds more difficulty to sql injection.
+  If you have any questions about this check out https://www.owasp.org/index.php/Cross-site_Scripting_%28XSS%29
+  NOTE: USE THIS FUNCTION ON ANY USER INPUT
+  ONE MORE TIME: WHEN IN DOUBT USE IT
+  SERIOUSLY: I WILL NOT BE COOL IF YOU INTRODUCE A SECURITY VULNERABILITY TO THIS SYSTEM BY NOT USING THIS
+  Yours truly,
+  Vmutti
   */
-  function sanitizeString($var){//cleans a string up so there are no crazy vulerabilities
-    $var = strip_tags($var);
-    $var = htmlentities($var);
-    $var = trim($var);
-    return stripslashes($var);
+  function sanitizeString($string){
+    $string = strip_tags($string);
+    $string = htmlentities($string);
+    $string = trim($string);
+    return stripslashes($string);
   }
 
+  /*
+  This is a kind of clever function for making setup super easy.
+  It attempts to connect to a db and if it can't it creates the db using the setupDb function.
+  this means that if you are installing this on a new server then all you need to do is call this
+  -Vmutti
+  */
   function connectDb(){
     require_once("constants.php");//get system-specific variables
     $db=0;
@@ -30,12 +51,19 @@
     try{
       $db = new PDO($dsn, DB_USER, DB_PASS);
     }catch(PDOException $e){//connection failed, set up a new database
-      $db = setup();
+      $db = setupDb();
     }
     return $db;
   }
 
-  function setup(){//creates the database needed to run the application
+  /*
+  Creates the database in mysql for MeNext
+  Any changes made here should actually be implemented by hand on any server to prevent errors or loss of data.
+  If you really want to just wipe the server and lose all of the user data(you probably shouldn't in production) you can do that and just run this function again
+  TODO: Make a function that checks whether the database has all of the right tables setup the right way and fixes them if it can.  This would prevent errors and loss of data when this function is changed.  It would be kindof like the schema_sync utility at vmutti's previous job
+  -Vmutti
+  */
+  function setupDb(){//creates the database needed to run the application
     $db=0;
     try {
       $db = new PDO("mysql:host=".DB_HOST, DB_USER, DB_PASS);//connect to host
@@ -50,7 +78,7 @@
       exit;
     }
     $db = new PDO("mysql:host=".DB_HOST.";dbname=".DB_NAME, DB_USER, DB_PASS);//connects to new database
-    // Temporarily not enforcing foreign key constraints, only noting with "References"
+
     executeSQL($db,
       'CREATE TABLE User(
         userId int NOT NULL AUTO_INCREMENT,
@@ -65,7 +93,6 @@
       )
     ;');//stores each user as a row with relevent info
 
-    // Other ideas for attributes include length, and url
     // May remove videoId in the future, as youtubeId is unique to the video already
     // If so, would make Index(youtubeId) instead of videoId
     executeSQL($db,
@@ -95,10 +122,8 @@
 
         PRIMARY KEY(partyId, name)
       )
-    ;');//each party has row right now there is only one
+    ;');//each party has row
 
-    // Index is on partyId, then rating. This will facilitate searching
-    // a certain party for the highest rated video.
     executeSQL($db,
       'CREATE TABLE Submission(
         submissionId int NOT NULL AUTO_INCREMENT,
@@ -111,15 +136,12 @@
         wasPlayed BIT(1) DEFAULT 0,
         removed BIT(1) DEFAULT 0,
 
-
         INDEX(submissionId, wasPlayed),
 
-        PRIMARY KEY(submissionId)
+        PRIMARY KEY(partyId, submissionId)
       )
     ;');//individual actual submission
 
-    // Index is on userId, then partyId. This will facilitate searching
-    // a certain user for the highest rated video.
     executeSQL($db,
       'CREATE TABLE PartyUser(
         partyId int REFERENCES Party(partyId),
@@ -143,21 +165,13 @@
         PRIMARY KEY(voterId, submissionId)
       )
     ;');//stores votes by users to songs
-
-    executeSQL($db,
-      'CREATE TABLE Session(
-        seriesId VARCHAR(128),
-        userId int REFERENCES User(userId),
-        sessionId VARCHAR(128),
-        token VARCHAR(128),
-        dateStarted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        loggedOut BIT(1) DEFAULT 0,
-        PRIMARY KEY(seriesId, userId)
-      )
-    ;');//stores votes by users to songs
-
   }
 
+  /*
+  Executes a mysql query
+  NOTE: Mostly deprecated, only used in setup(due to being a very small function that is only really helpful there)
+  -Vmutti
+  */
   function executeSQL($db, $query){//runs a query with PDO's specific syntax
     try{
       $db->exec($query);
@@ -167,7 +181,12 @@
     }
   }
 
-  function isUser($db, $name){//checks for row in user table corresponding to username provided
+  /*
+  checks for row in user table corresponding to username provided
+  aka. checks to see if username is already taken
+  -Vmutti
+  */
+  function usernameRegistered($db, $name){
     $name = sanitizeString($name);//prevents sql injection attempts
     $result = $db->prepare(
       'SELECT
@@ -183,34 +202,8 @@
   }
 
   /*
-  Returns 1 or 0 based on whether the user owns the party
-  */
-  function isPartyOwner($db, $userData, $partyId, $userId=0){
-    if ($userId==0 && isset($userData['userId'])){
-      $userId = $userData['userId'];
-    }
-    $stmt = $db->prepare(
-      'SELECT
-        *
-      FROM
-        PartyUser pu,
-        Party p
-      Where
-        p.partyId=pu.partyId AND
-        p.removed=0 AND
-        pu.partyId=:partyId AND
-        pu.userId=:userId AND
-        pu.unjoined=0 AND
-        pu.owner=1
-    ;');//makes new row with given info
-    $stmt->bindValue(':userId', $userId);
-    $stmt->bindValue(':partyId', $partyId);
-    $stmt->execute();
-    return $stmt->rowCount()>0;
-  }
-
-  /*
   Returns party object with partyName, ownerId, and ownerUsername for a party with a given id
+  -Vmutti
   */
   function getPartyObject($db, $partyId){
     $stmt = $db->prepare(
@@ -236,6 +229,7 @@
 
   /*
   Returns 1 or 0 based on whether the user has permission to write to the party
+  -Vmutti
   */
   function canWriteParty($db, $userData, $partyId, $userId=-1){
     if ($userId==-1 && isset($userData['userId'])){
@@ -266,6 +260,7 @@
 
   /*
   Returns 1 or 0 based on whether the user has permission to read a party
+  -Vmutti
   */
   function canReadParty($db, $userData, $partyId, $userId=-1){
     if ($userId==-1 && isset($userData['userId'])){
@@ -296,6 +291,7 @@
 
   /*
   Returns 1 or 0 based on whether the user must provide a password to join a party
+  -Vmutti
   */
   function isPasswordProtected($db, $partyId){
     $stmt = $db->prepare(
@@ -311,81 +307,6 @@
     $stmt->bindValue(':partyId', $partyId);
     $stmt->execute();
     return $stmt->rowCount()>0;
-  }
-  function createAccount($db, $args){//creates account with an array of user information given
-    $results = array("errors"=>array());
-    if(is_array($args)&&array_key_exists("username", $args)&&array_key_exists("password", $args)){//valid array was given
-      $username = sanitizeString($args['username']);
-      $password = hash('sha512',PRE_SALT.sanitizeString($args['password']).POST_SALT);
-      if(isUser($db, $username)){//user already exists
-        array_push($results['errors'], "username unavailable");
-      } else {
-        try {
-          $stmt = $db->prepare(
-            'INSERT INTO
-              User(
-                username,
-                password
-              )
-            VALUES(
-              :username,
-              :password
-            )
-          ;');//makes new row with given info
-          $stmt->bindValue(':username', $username);
-          $stmt->bindValue(':password', $password);
-          $stmt->execute();
-          $results['status'] = "success";
-        } catch (PDOException $e) {//something went wrong...
-          error_log("Error: " . $e->getMessage());
-          array_push($results['errors'], "database error");
-        }
-      }
-    }else{
-      array_push($results['errors'], "missing username or password");
-    }
-    return $results;
-  }
-
-  function logIn($db, $args){//sets session data if the user information matches a user's row
-    $results = array("errors"=>array());
-    if(is_array($args)&&array_key_exists("username", $args)&&array_key_exists("password", $args)){//valid array was given
-      $username = sanitizeString($args['username']);
-      $password = hash('sha512',PRE_SALT.sanitizeString($args['password']).POST_SALT);
-      try{
-        $stmt = $db->prepare(
-          'SELECT
-            *
-          FROM
-            User
-          WHERE
-            username=:username and
-            password=:password
-        ;');//checks for matching row
-        $stmt->bindValue(':username', $username);
-        $stmt->bindValue(':password', $password);
-        $stmt->execute();
-
-        if($stmt->rowCount()==1){//if successfully logged in
-          $result = $stmt->fetch(PDO::FETCH_OBJ);
-          //startSeries($db, $result->userId);
-          $results['status'] = 'success';
-          $results['token'] = session_id();
-          session_regenerate_id();
-          $_SESSION['userId'] = $result->userId;
-          $_SESSION['logged'] = 1;
-        }else{
-          array_push($results['errors'], "bad username/password combination");
-        }
-      } catch (PDOException $e) {//something went wrong...
-        error_log("Error: " . $e->getMessage());
-        array_push($results['errors'], "database error");
-      }
-
-    }else{
-      array_push($results['errors'], "missing username or password");
-    }
-    return $results;
   }
 
   function addVideo($db, $userData, $args){
@@ -411,6 +332,7 @@
         try{
           $stmt = $db->prepare(
             'INSERT INTO
+
               Video(
                 youtubeId,
                 title,
