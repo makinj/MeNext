@@ -32,7 +32,6 @@
           $this->fbId = null;
         }
       }
-      $stmt=null;
       // Login or logout url will be needed depending on current user state.
       if ($this->fbId) {//logged into facebook
         $stmt = $this->db->prepare(//check if user exists in MeNext db
@@ -119,46 +118,38 @@
     TODO: make this take username and password as arguments. make a new function called something like handleCreateAccount that takes the http POST data and calls this function and does the error checking.
     -Vmutti
     */
-    public function createAccount($args){//creates account with an array of user information given
-      $results = array("errors"=>array());
-      if(is_array($args)&&array_key_exists("username", $args)&&array_key_exists("password", $args)){//valid array was given
-        $username = sanitizeString($args['username']);
-        $password = hash('sha512',PRE_SALT.sanitizeString($args['password']).POST_SALT);
-        if(usernameRegistered($this->db, $username)){//user already exists
-          array_push($results['errors'], "username unavailable");
-        } else {
-          try {
-            $stmt = $this->db->prepare(
-              'INSERT INTO
-                User(
-                  username,
-                  password
-                )
-              VALUES(
-                :username,
-                :password
+    public function createAccount($username, $password, &$errors){//creates account with an array of user information given
+      $password = hash('sha512',PRE_SALT.$password.POST_SALT);
+      if($username==""||usernameRegistered($this->db, $username)){//user already exists
+        array_push($errors, "username unavailable");
+        return 0;
+      } else {
+        try {
+          $stmt = $this->db->prepare(
+            'INSERT INTO
+              User(
+                username,
+                password
               )
-            ;');//makes new row with given info
-            $stmt->bindValue(':username', $username);
-            $stmt->bindValue(':password', $password);
-            $stmt->execute();
-            $results['status'] = "success";
-          } catch (PDOException $e) {//something went wrong...
-            error_log("Error: " . $e->getMessage());
-            array_push($results['errors'], "database error");
-          }
+            VALUES(
+              :username,
+              :password
+            )
+          ;');//makes new row with given info
+          $stmt->bindValue(':username', $username);
+          $stmt->bindValue(':password', $password);
+          $stmt->execute();
+        } catch (PDOException $e) {//something went wrong...
+          error_log("Error: " . $e->getMessage());
+          array_push($errors, "database error");
+          return 0;
         }
-      }else{
-        array_push($results['errors'], "missing username or password");
       }
-      return $results;
+      return 1;
     }
 
-    public function logIn($args){//sets session data if the user information matches a user's row
-      $results = array("errors"=>array());
-      if(is_array($args)&&array_key_exists("username", $args)&&array_key_exists("password", $args)){//valid array was given
-        $username = sanitizeString($args['username']);
-        $password = hash('sha512',PRE_SALT.sanitizeString($args['password']).POST_SALT);
+    public function logIn($username, $password, &$errors){//sets session data if the user information matches a user's row
+        $password = hash('sha512',PRE_SALT.$password.POST_SALT);
         try{
           $stmt = $this->db->prepare(
             'SELECT
@@ -175,9 +166,6 @@
 
           if($stmt->rowCount()==1){//if successfully logged in
             $result = $stmt->fetch(PDO::FETCH_OBJ);
-            //startSeries($this->db, $result->userId);
-            $results['status'] = 'success';
-            $results['token'] = session_id();
             session_regenerate_id();
             $_SESSION['userId'] = $result->userId;
             $_SESSION['logged'] = 1;
@@ -194,35 +182,6 @@
       }
       return $results;
     }
-
-    /*
-    Returns 1 or 0 based on whether the user owns the party
-    -Vmutti
-    */
-    public function isPartyOwner($partyId, $userId=-1){
-      if ($userId==-1){
-        $userId = $userData['userId'];
-      }
-      $stmt = $this->db->prepare(
-        'SELECT
-          *
-        FROM
-          PartyUser pu,
-          Party p
-        Where
-          p.partyId=pu.partyId AND
-          p.removed=0 AND
-          pu.partyId=:partyId AND
-          pu.userId=:userId AND
-          pu.unjoined=0 AND
-          pu.owner=1
-      ;');//makes new row with given info
-      $stmt->bindValue(':userId', $userId);
-      $stmt->bindValue(':partyId', $partyId);
-      $stmt->execute();
-      return $stmt->rowCount()>0;
-    }
-
   }
 
 ?>
