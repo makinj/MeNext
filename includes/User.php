@@ -18,8 +18,10 @@
     /*
     This checks facebook login state and session state to determine the username, userId, and other data for the session's user.
     Also acts as logging in/creating account with facebook.
+
+    Essentially this logs in the user accessing the site and sets this User object to be that user.
     */
-    public function init($fb){
+    public function initAuth($fb){
       $this->fb=$fb;
 
       $this->fbId = $this->fb->getUser();
@@ -34,17 +36,8 @@
       }
       // Login or logout url will be needed depending on current user state.
       if ($this->fbId) {//logged into facebook
-        $stmt = $this->db->prepare(//check if user exists in MeNext db
-          'SELECT
-            *
-          FROM
-            User
-          WHERE
-            fbId=:fbId
-        ;');
-        $stmt->bindValue(':fbId', $this->fbId);
-        $stmt->execute();
-        if($stmt->rowCount()<1){//not already in db
+        $this->initFb($this->fbId,1);
+        if(!$this->logged){//not already in db
           if(isset($_SESSION['userId'])){//associate facebook with menext
             $stmt = $this->db->prepare(
               'UPDATE
@@ -79,18 +72,49 @@
             $stmt->bindValue(':fbId', $this->fbId);
             $stmt->execute();
           }
-          $stmt = $this->db->prepare(
-            'SELECT
-              *
-            FROM
-              User
-            WHERE
-              fbId=:fbId
-          ;');
-          $stmt->bindValue(':fbId', $this->fbId);
-          $stmt->execute();
+          $this->initFb($this->fbId, 1)
         }
       }elseif(isset($_SESSION['userId'])){//not logged into facebook but logged in with menext
+        $this->initMn($_SESSION['userId'], 1)
+      }
+      return $this->logged;
+    }
+
+    /*
+      this sets the User object to contain the user data associated with a given facebook id
+      set's logged to 1 if set this means that if logged is 1, then it will mark that this user is the one making the call and they are logged in.
+    */
+    public function initFb($fbId, $logged=0){
+        $stmt = $this->db->prepare(
+          'SELECT
+            *
+          FROM
+            User
+          WHERE
+            fbId=:fbId
+        ;');
+        $stmt->bindValue(':fbId', $fbId);
+        $stmt->execute();
+        if($stmt->rowCount()>0){
+          $user = $stmt->fetch(PDO::FETCH_OBJ);
+          $this->username = $user->username;
+          $this->userId = $user->userId;
+          if($logged){
+            $this->logged = 1;
+          }
+        }else{
+          $this->username="";
+          $this->userId=-1;
+          $this->fbId=0;
+          $this->logged=0;
+        }
+    }
+
+    /*
+      this sets the User object to contain the user data associated with a given MeNext user id
+      set's logged to 1 if set this means that if logged is 1, then it will mark that this user is the one making the call and they are logged in.
+    */
+    public function initMn($userId, $logged=0){
         $stmt = $this->db->prepare(
           'SELECT
             *
@@ -99,18 +123,22 @@
           WHERE
             userId=:userId
         ;');
-        $stmt->bindValue(':userId', $_SESSION['userId']);
+        $stmt->bindValue(':userId', $userId);
         $stmt->execute();
-      }else{
-        return 0;
-      }
-      if($stmt->rowCount()>0){
-        $this->user = $stmt->fetch(PDO::FETCH_OBJ);
-        $this->username = $user->username;
-        $this->userId = $user->userId;
-        $this->logged = 1;
-      }
-      return 1;
+        if($stmt->rowCount()>0){
+          $user = $stmt->fetch(PDO::FETCH_OBJ);
+          $this->username = $user->username;
+          $this->userId = $user->userId;
+          $this->fbId = $user->fbId;
+          if($logged){
+            $this->logged = 1;
+          }
+        }else{
+          $this->username="";
+          $this->userId=-1;
+          $this->fbId=0;
+          $this->logged=0;
+        }
     }
 
     /*
@@ -123,65 +151,84 @@
       if($username==""||usernameRegistered($this->db, $username)){//user already exists
         array_push($errors, "username unavailable");
         return 0;
-      } else {
-        try {
-          $stmt = $this->db->prepare(
-            'INSERT INTO
-              User(
-                username,
-                password
-              )
-            VALUES(
-              :username,
-              :password
+      }
+      try {
+        $stmt = $this->db->prepare(
+          'INSERT INTO
+            User(
+              username,
+              password
             )
-          ;');//makes new row with given info
-          $stmt->bindValue(':username', $username);
-          $stmt->bindValue(':password', $password);
-          $stmt->execute();
-        } catch (PDOException $e) {//something went wrong...
-          error_log("Error: " . $e->getMessage());
-          array_push($errors, "database error");
+          VALUES(
+            :username,
+            :password
+          )
+        ;');//makes new row with given info
+        $stmt->bindValue(':username', $username);
+        $stmt->bindValue(':password', $password);
+        $stmt->execute();
+        return 1;
+      } catch (PDOException $e) {//something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($errors, "database error");
+        return 0;
+      }
+    }
+
+    public function logIn($username, $password, &$errors){//sets session data if the user information matches a user's row
+      $password = hash('sha512',PRE_SALT.$password.POST_SALT);
+      try{
+        $stmt = $this->db->prepare(
+          'SELECT
+            *
+          FROM
+            User
+          WHERE
+            username=:username and
+            password=:password
+        ;');//checks for matching row
+        $stmt->bindValue(':username', $username);
+        $stmt->bindValue(':password', $password);
+        $stmt->execute();
+
+        if($stmt->rowCount()!=1){//if successfully logged in
+          array_push($errors, "bad username/password combination");
           return 0;
         }
+
+        $result = $stmt->fetch(PDO::FETCH_OBJ);
+        session_regenerate_id();
+        $_SESSION['userId'] = $result->userId;
+        $_SESSION['logged'] = 1;
+      } catch (PDOException $e) {//something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($errors, "database error");
+        return 0;
       }
       return 1;
     }
 
-    public function logIn($username, $password, &$errors){//sets session data if the user information matches a user's row
-        $password = hash('sha512',PRE_SALT.$password.POST_SALT);
-        try{
-          $stmt = $this->db->prepare(
-            'SELECT
-              *
-            FROM
-              User
-            WHERE
-              username=:username and
-              password=:password
-          ;');//checks for matching row
-          $stmt->bindValue(':username', $username);
-          $stmt->bindValue(':password', $password);
-          $stmt->execute();
-
-          if($stmt->rowCount()==1){//if successfully logged in
-            $result = $stmt->fetch(PDO::FETCH_OBJ);
-            session_regenerate_id();
-            $_SESSION['userId'] = $result->userId;
-            $_SESSION['logged'] = 1;
-          }else{
-            array_push($results['errors'], "bad username/password combination");
-          }
-        } catch (PDOException $e) {//something went wrong...
-          error_log("Error: " . $e->getMessage());
-          array_push($results['errors'], "database error");
-        }
-
-      }else{
-        array_push($results['errors'], "missing username or password");
-      }
-      return $results;
+    /*
+    checks for row in user table corresponding to username provided
+    aka. checks to see if username is already taken
+    -Vmutti
+    */
+    private function usernameRegistered($db, $username){
+      $result = $db->prepare(
+        'SELECT
+          *
+        FROM
+          User
+        WHERE
+          username=:username
+      ;');//performs check
+      $result->bindValue(':username', $username);
+      $result->execute();
+      return ($result->rowCount()>0);//1 if exists
     }
+
+
+
   }
 
 ?>

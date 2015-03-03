@@ -16,7 +16,7 @@
     Returns 1 or 0 based on whether the user owns the party
     -Vmutti
     */
-    public function isPartyOwner($userId){
+    public function isPartyOwner($user){
       $stmt = $this->db->prepare(
         'SELECT
           *
@@ -31,7 +31,7 @@
           pu.unjoined=0 AND
           pu.owner=1
       ;');
-      $stmt->bindValue(':userId', $userId);
+      $stmt->bindValue(':userId', $user->userId);
       $stmt->bindValue(':partyId', $this->partyId);
       $stmt->execute();
       return $stmt->rowCount()>0;
@@ -41,7 +41,7 @@
     Returns 1 or 0 based on whether the user must provide a password to join a party
     -Vmutti
     */
-    function isPasswordProtected(){
+    public function isPasswordProtected(){
       $stmt = $db->prepare(
         'SELECT
           *
@@ -61,7 +61,7 @@
     Returns party object with partyName, ownerId, and ownerUsername for a party with a given id
     -Vmutti
     */
-    function getPartyObject(){
+    public function getPartyObject(){
       $stmt = $db->prepare(
         'SELECT
           p.name as partyName,
@@ -87,7 +87,7 @@
     Returns 1 or 0 based on whether the user has permission to write to the party
     -Vmutti
     */
-    function canWriteParty($userId){
+    public function canWriteParty($user){
       $stmt = $db->prepare(
         'SELECT
           *
@@ -105,7 +105,7 @@
             p.privacyId>='.FULLY_PUBLIC.'
           )
       ;');
-      $stmt->bindValue(':userId', $userId);
+      $stmt->bindValue(':userId', $user->userId);
       $stmt->bindValue(':partyId', $this->partyId);
       $stmt->execute();
       return $stmt->rowCount()>0;
@@ -115,7 +115,7 @@
     Returns 1 or 0 based on whether the user has permission to read a party
     -Vmutti
     */
-    function canReadParty($userId){
+    public function canReadParty($user){
       $stmt = $db->prepare(
         'SELECT
           *
@@ -133,94 +133,223 @@
             p.privacyId>='.VIEW_ONLY.'
           )
       ;');
-      $stmt->bindValue(':userId', $userId);
+      $stmt->bindValue(':userId', $user->userId);
       $stmt->bindValue(':partyId', $this->partyId);
       $stmt->execute();
       return $stmt->rowCount()>0;
     }
 
-    function addVideo($db, $userData, $args){
-      $results = array("errors"=>array());
-      if (is_array($args)&&array_key_exists("youtubeId", $args)&&array_key_exists("partyId", $args)){
-        $userId=-1;
-        if (isset($userData['userId'])){
-          $userId=$userData['userId'];
+    public function addVideo($user, $youtubeId, &$errors){
+      if(!$this->canWriteParty($user)){
+        array_push($errors, "user does not have permissions to perform this task");
+        return 0;
+      }
+
+      $url= 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id='.$youtubeId.'&key='.YT_API_SERVER_KEY;//url to verify data from youtube
+      $verify = curl_init($url);//configures cURL with url
+      curl_setopt($verify, CURLOPT_SSL_VERIFYPEER, false);
+      curl_setopt($verify, CURLOPT_RETURNTRANSFER, 1);//don't echo returned info
+      $verify = json_decode(curl_exec($verify));//returned data from youtube
+
+      if($verify->pageInfo->totalResults!=1){//not verified to be a real video
+        array_push($errors, "could not verify youtubeId");
+        return 0;
+      }
+
+      $title = sanitizeString($verify->items[0]->snippet->title);
+      $thumbnail = sanitizeString($verify->items[0]->snippet->thumbnails->default->url);
+      $description = sanitizeString($verify->items[0]->snippet->description);
+      // Want to try to insert, but not change the videoId, and
+      //   change LAST_INSERT_ID() to be the videoId of the inserted video
+      try{
+        $stmt = $db->prepare(
+          'INSERT INTO
+            Video(
+              youtubeId,
+              title,
+              thumbnail,
+              description
+            )
+          VALUES(
+            :youtubeId,
+            :title,
+            :thumbnail,
+            :description
+          )
+          ON
+            DUPLICATE KEY
+          UPDATE
+            videoId = LAST_INSERT_ID(videoId)
+        ;');
+        $stmt->bindValue(':youtubeId', $youtubeId);
+        $stmt->bindValue(':title', $title);
+        $stmt->bindValue(':thumbnail', $thumbnail);
+        $stmt->bindValue(':description', $description);
+        // TODO: Add error checking for SQL execution:
+        $stmt->execute();
+
+        // Insert into Submissions.
+        // LAST_INSERT_ID() returns id of last insertion's (or replace) auto-increment field
+        //     First we'll get this working with just 1 party, partyId=1
+        $stmt = $db->prepare(
+          'INSERT INTO
+          Submission(
+            videoId,
+            partyId,
+            submitterId
+          )
+          VALUES(
+            LAST_INSERT_ID(),
+            :partyId,
+            :submitterId
+          )
+        ;');
+        $stmt->bindValue(':submitterId', $user->userId);
+        $stmt->bindValue(':partyId', $this->partyId);
+        $stmt->execute();
+        if($this->vote($user, $db->lastInsertId(), 1, $errors)){
+          return 1;
         }
-        $youtubeId = sanitizeString($args['youtubeId']);
-        $url= 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id='.$youtubeId.'&key='.YT_API_SERVER_KEY;//url to verify data from youtube
-        $verify = curl_init($url);//configures cURL with url
-        curl_setopt($verify, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($verify, CURLOPT_RETURNTRANSFER, 1);//don't echo returned info
-        $verify = json_decode(curl_exec($verify));//returned data from youtube
-        if($verify->pageInfo->totalResults==1){//verified to be a real video
-          $title = sanitizeString($verify->items[0]->snippet->title);
-          $thumbnail = sanitizeString($verify->items[0]->snippet->thumbnails->default->url);
-          $description = sanitizeString($verify->items[0]->snippet->description);
+      }catch (PDOException $e) {//something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($errors, "database error");
+        return 0;
+      }
+      return 0;
+    }
 
-          // Want to try to insert, but not change the videoId, and
-          //   change LAST_INSERT_ID() to be the videoId of the inserted video
-          try{
-            $stmt = $db->prepare(
-              'INSERT INTO
+    public function listVideos($user, &$errors){
+      if(!$this->canReadParty($user)){
+        array_push($errors, "user does not have permissions to perform this task");
+        return 0;
+      }
+      try{
+        $stmt = $db->prepare(
+          'SELECT
+            v.youtubeId,
+            v.title,
+            v.thumbnail,
+            s.submissionId,
+            s.submitterId,
+            u.username,
+            s.started,
+            IFNULL(
+              (SELECT
+                sum(voteValue)
+              FROM
+                Vote
+              WHERE
+                submissionId=s.submissionId
+              ), 0
+            ) as rating,
+            IFNULL(
+              (SELECT
+                voteValue
+              FROM
+                Vote
+              WHERE
+                submissionId=s.submissionId AND
+                voterId=:userId
+              ), 0
+            ) as userRating,
+            (p.creatorId=:userId OR
+             s.submitterId=:userId)as canRemove
+          FROM
+            Submission s,
+            Video v,
+            User u,
+            Party p
+          WHERE
+            p.removed=0 AND
+            s.videoId = v.videoId AND
+            s.partyId = :partyId AND
+            s.wasPlayed=0 AND
+            s.removed=0 AND
+            s.submitterId = u.userId AND
+            p.partyId=s.partyId
+          ORDER BY
+            started DESC,
+            rating DESC,
+            s.submissionId ASC
+        ;');
+        $stmt->bindValue(':userId', $userId);
+        $stmt->bindValue(':partyId', $partyId);
+        $stmt->execute();
+        $videos=array();
+        while ($row = $stmt->fetch(PDO::FETCH_OBJ)){//creates an array of the results to return
+          array_push($videos, $row);
+        }
+        return $videos;
+      }catch (PDOException $e) {//something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($errors, "database error");
+        return 0;
+      }
+      return 0;
+    }
 
-                Video(
-                  youtubeId,
-                  title,
-                  thumbnail,
-                  description
-                )
-              VALUES(
-                :youtubeId,
-                :title,
-                :thumbnail,
-                :description
-              )
-              ON
-                DUPLICATE KEY
-              UPDATE
-                videoId = LAST_INSERT_ID(videoId)
-            ;');
-            $stmt->bindValue(':youtubeId', $youtubeId);
-            $stmt->bindValue(':title', $title);
-            $stmt->bindValue(':thumbnail', $thumbnail);
-            $stmt->bindValue(':description', $description);
-            // TODO: Add error checking for SQL execution:
-            $stmt->execute();
 
-            // Insert into Submissions.
-            // LAST_INSERT_ID() returns id of last insertion's (or replace) auto-increment field
-            //     First we'll get this working with just 1 party, partyId=1
-            $partyId = sanitizeString($args['partyId']);
-            $stmt = $db->prepare(
-              'INSERT INTO
-                Submission(
-                  videoId,
-                  partyId,
-                  submitterId
-                )
-              VALUES(
-                LAST_INSERT_ID(),
-                :partyId,
-                :submitterId
-              )
-            ;');
-            $stmt->bindValue(':submitterId', $userId);
-            $stmt->bindValue(':partyId', $partyId);
-            $stmt->execute();
-            vote($db, $userData, array('submissionId'=>$db->lastInsertId(), 'direction'=>1));
-            $results['status'] = 'success';
-          }catch (PDOException $e) {//something went wrong...
-            error_log("Error: " . $e->getMessage());
-            array_push($results['errors'], "database error");
-          }
-        }else{
-          array_push($results['errors'], "could not verify youtubeId");
+    function getCurrentVideo($user, &$errors){
+      $videos = $this->listVideos($user, $errors);
+      if (!$videos){
+        return 0;
+      }
+      if (count($videos)){
+        $video=$videos[0];
+        try{
+          $stmt = $db->prepare(
+            'UPDATE
+              Submission
+            SET
+              started=1
+            WHERE
+              submissionId=:submissionId
+          ;');
+          $stmt->bindValue(':submissionId', $video->submissionId);
+          $stmt->execute();
+          return $video;
+        }catch (PDOException $e) {//something went wrong...
+          error_log("Error: " . $e->getMessage());
+          array_push($errors, "database error");
+          return 0;
         }
       }else{
-        array_push($results['errors'], "missing youtubeId or partyId");
+        return new stdClass();//no video, return empty object
       }
-      return $results;
+      return 0;
     }
+
+
+
+
+    function markVideoWatched($user, $submissionId, &$errors){//takes an array with the submission id of what to mark as watched
+
+      if (!$this->isPartyOwner($user)){
+        array_push($errors, "user does not have permissions to perform this task");
+        return 0;
+      }
+      try {
+        $stmt = $db->prepare(
+          'UPDATE
+            Submission s,
+          SET
+            s.wasPlayed = 1
+          WHERE
+            s.submissionId = :submissionId
+        ;');
+        $stmt->bindValue(':submissionId', $submissionId);
+        $stmt->execute();
+        $result['status'] = 'success';
+      } catch (PDOException $e) {
+        //something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($results['errors'], "database error");
+      }
+    }else{
+      array_push($results['errors'], "missing submissionId or not logged in");
+    }
+    return $results;
+  }
 
   }
 
