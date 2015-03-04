@@ -1,0 +1,26 @@
+.spacer {
+  height: 40%;
+}
+.vcenter {
+  text-align: center;
+  display: inline-block;
+  vertical-align: middle;
+  float: none;
+}
+.intro{
+  height: 90%;
+  font-size: 60px;
+  text-align: center;
+  color: #C8CBBB;
+  background-color: transparent;
+}
+.intro_opposite{
+  height: 100%;
+  font-size: 60px;
+  text-align: center;
+  color: #32332F;
+  background-color: #C8CBBB;
+}
+body {
+  background-color: #32332F;
+}
