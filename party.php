@@ -112,7 +112,12 @@ if (isset($_GET['partyId'])) {
     if ($readParty) {
         ?>
         <div class="col-md-8">
-            <h3>Song Queue</h3>
+            <?php if ($isOwner) { ?><div class="col-md-6"><?php } ?>
+                <h3>Song Queue</h3>
+            <?php if ($isOwner) { ?></div>
+            <div class="col-md-6">
+                <button class='editPartyButton btn btn-lg btn-primary'>Settings</button>
+            </div><?php } ?>
             <table class="table table-striped table-hover" id="queueTable">
                 <thead>
                 <tr id="queueHeader">
