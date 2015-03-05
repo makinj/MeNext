@@ -4,6 +4,8 @@
 
 Have you ever been to a social gathering and wanted to share cool music with the group without taking over the music entirely? With MeNext, this is possible! MeNext enables users to submit their own suggestions to a playlist at a party. Other party-goers can then vote to decide what gets played and when.
 
+A live instance of the MeNext project can be found [here](http://menext.me/)!
+
 #Setup
 
 1. Download the MeNext files and place them in a server location.
