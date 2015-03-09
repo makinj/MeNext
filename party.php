@@ -116,7 +116,7 @@ if (isset($_GET['partyId'])) {
         <div class="col-md-8">
             <?php if ($isOwner) { ?><div class="col-md-6"><?php } ?>
                 <h3>Song Queue</h3>
-            <?php if ($isOwner) { ?></div>
+            <?php if (0&&$isOwner) { ?></div>
             <div class="col-md-6">
                 <button class='editPartyButton btn btn-lg btn-primary'>Settings</button>
             </div><?php } ?>
