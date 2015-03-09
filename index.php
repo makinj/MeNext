@@ -1,9 +1,10 @@
 <?php
-$title = (isset($userData['logged']) ? "Dashboard" : "Home");
-require_once('header.php'); //bar at the top of the page
+$title = "Home";
 require_once('includes/constants.php');
 require_once('includes/functions.php');
-if(isset($userData['logged'])){
+require_once('header.php'); //bar at the top of the page
+
+if($user->logged){
 ?>
 <div class="row">
     <div class="col-md-8">
@@ -39,7 +40,7 @@ if(isset($userData['logged'])){
                 </thead>
                 <tbody id="joinedList">
                     <?php
-                        $joined = listJoinedParties($db, $userData)['parties'];
+                        $joined = $user->listJoinedParties();
                         for ($i=0; $i < count($joined); $i++) {
                             echo "<tr><td>".$joined[$i]->partyId."</td><td><a href='/party.php?partyId=".$joined[$i]->partyId."'>".$joined[$i]->name."</a></td><td>".$joined[$i]->username."</td></tr>";
                         }
@@ -61,7 +62,7 @@ if(isset($userData['logged'])){
                 </thead>
                 <tbody id="unjoinedList">
                     <?php
-                        $unjoined = listUnjoinedParties($db, $userData)['parties'];
+                        $unjoined = $user->listUnjoinedParties();
                         for ($i=0; $i < count($unjoined); $i++) {
                             echo "<tr><td>".$unjoined[$i]->partyId."</td><td><a href='/party.php?partyId=".$unjoined[$i]->partyId."'>".$unjoined[$i]->name."</a></td><td>".$unjoined[$i]->username."</td><td><button type='submit' class='btn btn-default btn-sm joinPartyButton' value=".$unjoined[$i]->partyId.">Join</button></td></tr>";
                         }

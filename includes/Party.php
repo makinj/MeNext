@@ -1,15 +1,31 @@
 <?php
   require_once("constants.php");//get system-specific variables
   require_once("functions.php");//various helpful functions used by most scripts
+  require_once("User.php");//User object
   require_once(dirname(__FILE__).'/../sdks/facebook.php');//facebook sdk
 
-  class User {
+  class Party {
     private $db=null;
     private $partyId=-1;
 
-    public __contruct($db, $partyId=-1){
+    public function __construct($db, $partyId=-1){
       $this->db=$db;
       $this->partyId=$partyId;
+    }
+
+    public function initFromSubmissionId($submissionId){
+      $submissionId=sanitizeString($submissionId);
+      $stmt = $this->db->prepare(
+        'SELECT
+          partyId
+        FROM
+          Submission
+        WHERE
+          submissionId=:submissionId
+      ;');//makes new row with given info
+      $stmt->bindValue(':submissionId', $submissionId);
+      $stmt->execute();
+      $this->partyId= $stmt->fetch(PDO::FETCH_OBJ)->partyId;
     }
 
     /*
@@ -42,7 +58,7 @@
     -Vmutti
     */
     public function isPasswordProtected(){
-      $stmt = $db->prepare(
+      $stmt = $this->db->prepare(
         'SELECT
           *
         FROM
@@ -62,7 +78,7 @@
     -Vmutti
     */
     public function getPartyObject(){
-      $stmt = $db->prepare(
+      $stmt = $this->db->prepare(
         'SELECT
           p.name as partyName,
           u.username as ownerUsername,
@@ -88,7 +104,7 @@
     -Vmutti
     */
     public function canWriteParty($user){
-      $stmt = $db->prepare(
+      $stmt = $this->db->prepare(
         'SELECT
           *
         FROM
@@ -116,7 +132,7 @@
     -Vmutti
     */
     public function canReadParty($user){
-      $stmt = $db->prepare(
+      $stmt = $this->db->prepare(
         'SELECT
           *
         FROM
@@ -139,9 +155,9 @@
       return $stmt->rowCount()>0;
     }
 
-    public function addVideo($user, $youtubeId, &$errors){
+    public function addVideo($user, $youtubeId, &$errors=array()){
       if(!$this->canWriteParty($user)){
-        array_push($errors, "user does not have permissions to perform this task");
+        array_push($errors, ERROR_PERMISSIONS);
         return 0;
       }
 
@@ -162,7 +178,7 @@
       // Want to try to insert, but not change the videoId, and
       //   change LAST_INSERT_ID() to be the videoId of the inserted video
       try{
-        $stmt = $db->prepare(
+        $stmt = $this->db->prepare(
           'INSERT INTO
             Video(
               youtubeId,
@@ -191,7 +207,7 @@
         // Insert into Submissions.
         // LAST_INSERT_ID() returns id of last insertion's (or replace) auto-increment field
         //     First we'll get this working with just 1 party, partyId=1
-        $stmt = $db->prepare(
+        $stmt = $this->db->prepare(
           'INSERT INTO
           Submission(
             videoId,
@@ -207,24 +223,24 @@
         $stmt->bindValue(':submitterId', $user->userId);
         $stmt->bindValue(':partyId', $this->partyId);
         $stmt->execute();
-        if($this->vote($user, $db->lastInsertId(), 1, $errors)){
+        if($this->vote($user, $this->db->lastInsertId(), 1, $errors)){
           return 1;
         }
       }catch (PDOException $e) {//something went wrong...
         error_log("Error: " . $e->getMessage());
-        array_push($errors, "database error");
+        array_push($errors, ERROR_DB);
         return 0;
       }
       return 0;
     }
 
-    public function listVideos($user, &$errors){
+    public function listVideos($user, &$errors=array()){
       if(!$this->canReadParty($user)){
-        array_push($errors, "user does not have permissions to perform this task");
+        array_push($errors, ERROR_PERMISSIONS);
         return 0;
       }
       try{
-        $stmt = $db->prepare(
+        $stmt = $this->db->prepare(
           'SELECT
             v.youtubeId,
             v.title,
@@ -272,8 +288,8 @@
             rating DESC,
             s.submissionId ASC
         ;');
-        $stmt->bindValue(':userId', $userId);
-        $stmt->bindValue(':partyId', $partyId);
+        $stmt->bindValue(':userId', $user->userId);
+        $stmt->bindValue(':partyId', $this->partyId);
         $stmt->execute();
         $videos=array();
         while ($row = $stmt->fetch(PDO::FETCH_OBJ)){//creates an array of the results to return
@@ -282,14 +298,14 @@
         return $videos;
       }catch (PDOException $e) {//something went wrong...
         error_log("Error: " . $e->getMessage());
-        array_push($errors, "database error");
+        array_push($errors, ERROR_DB);
         return 0;
       }
       return 0;
     }
 
 
-    function getCurrentVideo($user, &$errors){
+    function getCurrentVideo($user, &$errors=array()){
       $videos = $this->listVideos($user, $errors);
       if (!$videos){
         return 0;
@@ -297,7 +313,7 @@
       if (count($videos)){
         $video=$videos[0];
         try{
-          $stmt = $db->prepare(
+          $stmt = $this->db->prepare(
             'UPDATE
               Submission
             SET
@@ -310,11 +326,11 @@
           return $video;
         }catch (PDOException $e) {//something went wrong...
           error_log("Error: " . $e->getMessage());
-          array_push($errors, "database error");
+          array_push($errors, ERROR_DB);
           return 0;
         }
       }else{
-        return new stdClass();//no video, return empty object
+        return false;//no video, return false
       }
       return 0;
     }
@@ -322,14 +338,13 @@
 
 
 
-    function markVideoWatched($user, $submissionId, &$errors){//takes an array with the submission id of what to mark as watched
-
+    function markVideoWatched($user, $submissionId, &$errors=array()){//takes an array with the submission id of what to mark as watched
       if (!$this->isPartyOwner($user)){
-        array_push($errors, "user does not have permissions to perform this task");
+        array_push($errors, ERROR_PERMISSIONS);
         return 0;
       }
       try {
-        $stmt = $db->prepare(
+        $stmt = $this->db->prepare(
           'UPDATE
             Submission s,
           SET
@@ -339,17 +354,99 @@
         ;');
         $stmt->bindValue(':submissionId', $submissionId);
         $stmt->execute();
-        $result['status'] = 'success';
+        return $stmt->rowCount()>0;
       } catch (PDOException $e) {
         //something went wrong...
         error_log("Error: " . $e->getMessage());
-        array_push($results['errors'], "database error");
+        array_push($errors, ERROR_DB);
+        return 0;
+
       }
-    }else{
-      array_push($results['errors'], "missing submissionId or not logged in");
     }
-    return $results;
-  }
+
+
+    function removeVideo($user, $submissionId, &$errors=array()){//takes an array of or argument with the submission id of what to mark as watched
+      if (!$this->canWriteParty($user)){
+        array_push($errors, ERROR_PERMISSIONS);
+        return 0;
+      }
+      try {
+        $stmt = $this->db->prepare(
+          'UPDATE
+            Submission s,
+            User u,
+            Party p,
+            PartyUser pu
+          SET
+            s.removed = 1
+          WHERE
+            s.submissionId = :submissionId AND
+            s.partyId=p.partyId AND
+            p.removed=0 AND
+            (
+              (
+                p.partyId = pu.partyid AND
+                pu.owner=1 AND
+                pu.userId=u.userId
+              ) OR
+              s.submitterId=u.userId
+            )AND
+            u.userId=:userId
+        ;');
+        $stmt->bindValue(':submissionId', $submissionId);
+        $stmt->bindValue(':userId', $user->userId);
+        $stmt->execute();
+        return $stmt->rowCount()>0;
+        //sendToWebsocket(json_encode(array('action' =>'updateParty', 'submissionId' => $submissionId)));
+      } catch (PDOException $e) {
+        //something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($errors, "database error");
+        return 0;
+
+      }
+      return 0;
+    }
+
+    function vote($user, $submissionId, $voteValue, &$errors=array()){
+      if (!$this->canWriteParty($user)){
+        array_push($errors, ERROR_PERMISSIONS);
+        return 0;
+      }
+      $voteValue = intval($voteValue);
+      if($voteValue>0){
+        $voteValue=1;
+      }elseif($voteValue<0){
+        $voteValue=-1;
+      }
+      try {
+        $stmt = $this->db->prepare(
+          'INSERT INTO
+            Vote(
+              voterId,
+              submissionId,
+              voteValue
+            )
+          VALUES(
+            :voterId,
+            :submissionId,
+            :voteValue
+          )
+          ON DUPLICATE KEY UPDATE
+            voteValue = :voteValue
+        ;');
+        $stmt->bindValue(':voterId', $user->userId);
+        $stmt->bindValue(':submissionId', $submissionId);
+        $stmt->bindValue(':voteValue', $voteValue);
+        $stmt->execute();
+        return $stmt->rowCount()>0;
+      }catch(PDOException $e){//something went wrong...
+        error_log('Query failed: ' . $e->getMessage());
+        array_push($errors, "database error");
+        return 0;
+      }
+      return 0;
+    }
 
   }
 

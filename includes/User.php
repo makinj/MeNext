@@ -1,18 +1,20 @@
 <?php
   require_once("constants.php");//get system-specific variables
   require_once("functions.php");//various helpful functions used by most scripts
+  require_once("Party.php");//Party Object
   require_once(dirname(__FILE__).'/../sdks/facebook.php');//facebook sdk
 
   class User {
     public $fbid=null;
     public $username=-1;
     public $userId=-1;
-    private $logged=0;
+    public $logged=0;
     private $db=null;
     private $fb=null;
 
-    public __contruct($db, $userId=-1){
+    function __construct($db, $userId=-1){
       $this->db=$db;
+      $this->userId = $userId;
     }
 
     /*
@@ -72,10 +74,10 @@
             $stmt->bindValue(':fbId', $this->fbId);
             $stmt->execute();
           }
-          $this->initFb($this->fbId, 1)
+          $this->initFb($this->fbId, 1);
         }
       }elseif(isset($_SESSION['userId'])){//not logged into facebook but logged in with menext
-        $this->initMn($_SESSION['userId'], 1)
+        $this->initMn($_SESSION['userId'], 1);
       }
       return $this->logged;
     }
@@ -85,29 +87,29 @@
       set's logged to 1 if set this means that if logged is 1, then it will mark that this user is the one making the call and they are logged in.
     */
     public function initFb($fbId, $logged=0){
-        $stmt = $this->db->prepare(
-          'SELECT
-            *
-          FROM
-            User
-          WHERE
-            fbId=:fbId
-        ;');
-        $stmt->bindValue(':fbId', $fbId);
-        $stmt->execute();
-        if($stmt->rowCount()>0){
-          $user = $stmt->fetch(PDO::FETCH_OBJ);
-          $this->username = $user->username;
-          $this->userId = $user->userId;
-          if($logged){
-            $this->logged = 1;
-          }
-        }else{
-          $this->username="";
-          $this->userId=-1;
-          $this->fbId=0;
-          $this->logged=0;
+      $stmt = $this->db->prepare(
+        'SELECT
+          *
+        FROM
+          User
+        WHERE
+          fbId=:fbId
+      ;');
+      $stmt->bindValue(':fbId', $fbId);
+      $stmt->execute();
+      if($stmt->rowCount()>0){
+        $user = $stmt->fetch(PDO::FETCH_OBJ);
+        $this->username = $user->username;
+        $this->userId = $user->userId;
+        if($logged){
+          $this->logged = 1;
         }
+      }else{
+        $this->username="";
+        $this->userId=-1;
+        $this->fbId=0;
+        $this->logged=0;
+      }
     }
 
     /*
@@ -115,120 +117,233 @@
       set's logged to 1 if set this means that if logged is 1, then it will mark that this user is the one making the call and they are logged in.
     */
     public function initMn($userId, $logged=0){
+      $stmt = $this->db->prepare(
+        'SELECT
+          *
+        FROM
+          User
+        WHERE
+          userId=:userId
+      ;');
+      $stmt->bindValue(':userId', $userId);
+      $stmt->execute();
+      if($stmt->rowCount()>0){
+        $user = $stmt->fetch(PDO::FETCH_OBJ);
+        $this->username = $user->username;
+        $this->userId = $user->userId;
+        $this->fbId = $user->fbId;
+        if($logged){
+          $this->logged = 1;
+        }
+      }else{
+        $this->username="";
+        $this->userId=-1;
+        $this->fbId=0;
+        $this->logged=0;
+      }
+    }
+
+    /*
+    Adds party by the username stored in session and title given
+    */
+    public function createParty($name, $password, $privacyId, &$errors=array()){
+      $passwordProtected=0;
+      if ($password!=''){
+        $passwordProtected = 1;
+      }
+      $passwordHash = hash('sha512',PRE_SALT.$password.POST_SALT);
+
+      $privacyId=intval($privacyId);
+
+      if ($privacyId>FULLY_PUBLIC){
+        $privacyId = FULLY_PUBLIC;
+      }elseif ($privacyId<FULLY_PRIVATE) {
+        $privacyId=FULLY_PRIVATE;
+      }
+
+      try{
         $stmt = $this->db->prepare(
           'SELECT
             *
           FROM
-            User
+            Party
           WHERE
-            userId=:userId
-        ;');
-        $stmt->bindValue(':userId', $userId);
+            name=:name
+          ;');
+        $stmt->bindValue(':name', $name);
         $stmt->execute();
         if($stmt->rowCount()>0){
-          $user = $stmt->fetch(PDO::FETCH_OBJ);
-          $this->username = $user->username;
-          $this->userId = $user->userId;
-          $this->fbId = $user->fbId;
-          if($logged){
-            $this->logged = 1;
-          }
-        }else{
-          $this->username="";
-          $this->userId=-1;
-          $this->fbId=0;
-          $this->logged=0;
+          array_push($errors, "Party name already exists");
+          return 0;
         }
+        $stmt = $this->db->prepare(
+          'INSERT INTO
+            Party(
+              name,
+              creatorId,
+              passwordProtected,
+              password,
+              privacyId
+            )
+          VALUES(
+            :name,
+            :creatorId,
+            :passwordProtected,
+            :password,
+            :privacyId
+          )
+        ;');
+        $stmt->bindValue(':name', $name);
+        $stmt->bindValue(':creatorId', $this->userId);
+        $stmt->bindValue(':passwordProtected', $passwordProtected, PDO::PARAM_BOOL);
+        $stmt->bindValue(':password', $passwordHash);
+        $stmt->bindValue(':privacyId', $privacyId);
+        $stmt->execute();
+        $partyId = $this->db->lastInsertId();
+        $this->joinParty($partyId, $password, 1, $errors);
+        return $partyId;
+      } catch (PDOException $e) {
+        //something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($errors, ERROR_DB);
+        return 0;
+      }
     }
 
     /*
-    Takes an associative array with  username and password and creates a new user in the database with that information.
-    TODO: make this take username and password as arguments. make a new function called something like handleCreateAccount that takes the http POST data and calls this function and does the error checking.
-    -Vmutti
+    Add the current user to the party specified
     */
-    public function createAccount($username, $password, &$errors){//creates account with an array of user information given
-      $password = hash('sha512',PRE_SALT.$password.POST_SALT);
-      if($username==""||usernameRegistered($this->db, $username)){//user already exists
-        array_push($errors, "username unavailable");
-        return 0;
-      }
-      try {
-        $stmt = $this->db->prepare(
-          'INSERT INTO
-            User(
-              username,
-              password
-            )
-          VALUES(
-            :username,
-            :password
-          )
-        ;');//makes new row with given info
-        $stmt->bindValue(':username', $username);
-        $stmt->bindValue(':password', $password);
-        $stmt->execute();
-        return 1;
-      } catch (PDOException $e) {//something went wrong...
-        error_log("Error: " . $e->getMessage());
-        array_push($errors, "database error");
-        return 0;
-      }
-    }
-
-    public function logIn($username, $password, &$errors){//sets session data if the user information matches a user's row
+    public function joinParty($partyId, $password, $owner, &$errors=array()){
       $password = hash('sha512',PRE_SALT.$password.POST_SALT);
       try{
         $stmt = $this->db->prepare(
           'SELECT
             *
           FROM
-            User
+            Party
           WHERE
-            username=:username and
-            password=:password
+            partyId=:partyId AND
+            removed=0 AND
+            (
+              passwordProtected=0 OR
+              password=:password
+            )
         ;');//checks for matching row
-        $stmt->bindValue(':username', $username);
+        $stmt->bindValue(':partyId', $partyId);
         $stmt->bindValue(':password', $password);
         $stmt->execute();
-
         if($stmt->rowCount()!=1){//if successfully logged in
-          array_push($errors, "bad username/password combination");
+          array_push($errors, "bad partyId, password combination");
           return 0;
         }
-
-        $result = $stmt->fetch(PDO::FETCH_OBJ);
-        session_regenerate_id();
-        $_SESSION['userId'] = $result->userId;
-        $_SESSION['logged'] = 1;
-      } catch (PDOException $e) {//something went wrong...
+        $stmt = $this->db->prepare(
+          'INSERT INTO
+            PartyUser(
+              userId,
+              partyId,
+              owner
+            )
+          VALUES(
+            :userId,
+            :partyId,
+            :owner
+          )
+          ON
+            DUPLICATE KEY
+          UPDATE
+            unjoined = 0
+        ;');//makes new row with given info
+        $stmt->bindValue(':userId', $this->userId);
+        $stmt->bindValue(':partyId', $partyId);
+        $stmt->bindValue(':owner', $owner, PDO::PARAM_BOOL);
+        $stmt->execute();
+        return $stmt->rowCount()>0;
+      } catch (PDOException $e) {
+        //something went wrong...
         error_log("Error: " . $e->getMessage());
-        array_push($errors, "database error");
+        array_push($errors, ERROR_DB);
         return 0;
       }
-      return 1;
+      return 0;
     }
 
     /*
-    checks for row in user table corresponding to username provided
-    aka. checks to see if username is already taken
-    -Vmutti
+    List the parties a user is in
     */
-    private function usernameRegistered($db, $username){
-      $result = $db->prepare(
-        'SELECT
-          *
-        FROM
-          User
-        WHERE
-          username=:username
-      ;');//performs check
-      $result->bindValue(':username', $username);
-      $result->execute();
-      return ($result->rowCount()>0);//1 if exists
+    public function listJoinedParties(&$errors=array()){
+      try {
+        $stmt = $this->db->prepare(
+          'SELECT
+            p.partyId,
+            p.name,
+            u.username
+          FROM
+            Party p,
+            PartyUser pu,
+            User u
+          WHERE
+            p.partyId = pu.partyId AND
+            pu.userId = :userId AND
+            p.removed=0 AND
+            pu.unjoined=0 AND
+            p.creatorId = u.userId
+        ;');
+        $stmt->bindValue(':userId', $this->userId);
+        $stmt->execute();
+        $parties = array();
+        while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {//creates an array of the results to return
+          array_push($parties, $row);
+        }
+        return $parties;
+      } catch (PDOException $e) {//something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($errors, ERROR_DB);
+        return 0;
+      }
+      return 0;
     }
 
-
-
+    /*
+    List parties a user hasn't joined
+    */
+    public function listUnjoinedParties(&$errors=array()){
+      try {
+        $stmt = $this->db->prepare(
+          'SELECT
+            p.partyId,
+            p.name,
+            u.username,
+            p.passwordProtected
+          FROM
+            Party p,
+            User u
+          WHERE
+            p.creatorId=u.userId AND
+            p.removed=0 AND
+            p.partyId NOT IN (
+              SELECT
+                partyId
+              FROM
+                PartyUser
+              WHERE
+                userId=:userId AND
+                unjoined=0
+            )
+        ;');
+        $stmt->bindValue(':userId', $this->userId);
+        $stmt->execute();
+        $parties = array();
+        while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {//creates an array of the results to return
+          array_push($parties, $row);
+        }
+        return $parties;
+      } catch (PDOException $e) {//something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($errors, ERROR_DB);
+        return 0;
+      }
+      return 0;
+    }
   }
 
 ?>

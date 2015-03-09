@@ -13,7 +13,6 @@
 
   $db = connectDb();//connect to mysql
 
-
   $fb = new Facebook(array(//fb setup
     'appId'  => FB_APP_ID,
     'secret' => FB_APP_SECRET,
@@ -36,6 +35,14 @@
     $string = htmlentities($string);
     $string = trim($string);
     return stripslashes($string);
+  }
+
+  function sanitizeInputs($inputs){
+    $result = array();
+    foreach ($inputs as $key => $value) {
+      $result[sanitizeString($key)]=sanitizeString($value);
+    }
+    return $result;
   }
 
   /*
@@ -95,7 +102,7 @@
 
     // May remove videoId in the future, as youtubeId is unique to the video already
     // If so, would make Index(youtubeId) instead of videoId
-    executeSQL($db,
+    executeSThisQL($db,
       'CREATE TABLE Video(
         videoId int NOT NULL AUTO_INCREMENT,
         youtubeId VARCHAR(11) UNIQUE,
@@ -181,419 +188,127 @@
     }
   }
 
-
-
-
-
-
-
-
-  function removeVideo($db, $userData, $args){//takes an array of or argument with the submission id of what to mark as watched
-    $results = array("errors"=>array());
-    if(isset($userData['userId'])&&is_array($args)&&array_key_exists("submissionId", $args)){
-      $submissionId = sanitizeString($args['submissionId']);
-      try {
-      $stmt = $db->prepare(
-        'UPDATE
-          Submission s,
-          User u,
-          Party p,
-          PartyUser pu
-        SET
-          s.removed = 1
-        WHERE
-          s.submissionId = :submissionId AND
-          s.partyId=p.partyId AND
-          p.removed=0 AND
-          (
-            (
-              p.partyId = pu.partyid AND
-              pu.owner=1 AND
-              pu.userId=u.userId
-            ) OR
-            s.submitterId=u.userId
-          )AND
-          u.userId=:userId
-        ;');
-        $stmt->bindValue(':submissionId', $submissionId);
-        $stmt->bindValue(':userId', $userData['userId']);
-        $stmt->execute();
-        //sendToWebsocket(json_encode(array('action' =>'updateParty', 'submissionId' => $submissionId)));
-        $results['status'] = 'success';
-      } catch (PDOException $e) {
-        //something went wrong...
-        error_log("Error: " . $e->getMessage());
-        array_push($results['errors'], "database error");
-      }
-    }else{
-      array_push($results['errors'], "missing submissionId or not logged in");
-    }
-    return $results;
-  }
-
   /*
-  Adds party by the username stored in session and title given
+  Takes an associative array with  username and password and creates a new user in the database with that information.
+  TODO: make this take username and password as arguments. make a new function called something like handleCreateAccount that takes the http POST data and calls this function and does the error checking.
+  -Vmutti
   */
-  function createParty($db, $userData, $args){
-    $results = array("errors"=>array());
-    if (isset($userData['userId']) && is_array($args) && array_key_exists("name", $args) && $args['name']!=''){
-      $name = sanitizeString($args['name']);
-      $password = '';
-      $passwordProtected = 0;
-      if (array_key_exists("passwordProtected", $args) && $args['passwordProtected']){
-        $passwordProtected = 1;
-        if (array_key_exists("password", $args) && $args['password'] != ''){
-          $password = hash('sha512',PRE_SALT.sanitizeString($args['password']).POST_SALT);
-        }else{
-          $password = hash('sha512',PRE_SALT.POST_SALT);
-        }
-      }
-      $privacyId = FULLY_PUBLIC;
-      if (array_key_exists("privacy", $args)){
-        $privacyId = $args['privacy'];
-      }
-
-      try{
-        $stmt = $db->prepare(
-          'SELECT
-            *
-          FROM
-            Party
-          WHERE
-            name=:name
-          ;');
-        $stmt->bindValue(':name', $name);
-        $stmt->execute();
-        if($stmt->rowCount()>0){
-          $results['status']='failed';
-          array_push($results['errors'], "Party name already exists");
-        }else{
-          $stmt = $db->prepare(
-            'INSERT INTO
-              Party(
-                name,
-                creatorId,
-                passwordProtected,
-                password,
-                privacyId
-              )
-            VALUES(
-              :name,
-              :creatorId,
-              :passwordProtected,
-              :password,
-              :privacyId
-            )
-          ;');
-          $stmt->bindValue(':name', $name);
-          $stmt->bindValue(':creatorId', $userData['userId']);
-          $stmt->bindValue(':passwordProtected', $passwordProtected, PDO::PARAM_BOOL);
-          $stmt->bindValue(':password', $password);
-          $stmt->bindValue(':privacyId', $privacyId);
-          $stmt->execute();
-          $partyId = $db->lastInsertId();
-          $results = array_merge_recursive($results, joinParty($db, $userData, array("partyId"=>$partyId, "password"=>$password), 1));
-          $results['status']='success';
-          $results['partyId']=$partyId;
-        }
-      } catch (PDOException $e) {
-        //something went wrong...
-        error_log("Error: " . $e->getMessage());
-        array_push($results['errors'], "database error");
-      }
-    }else{
-      if(!isset($userData['userId'])){
-        array_push($results['errors'], "must be logged in");
-      }
-      if(!array_key_exists("name", $args) || $args['name']==''){
-        array_push($results['errors'], "party name was not specified");
-      }
-    }
-    return $results;
-  }
-
-  /*
-  Add the current user to the party specified
-  */
-  function joinParty($db, $userData, $args, $owner=0){
-    $results = array("errors"=>array());
-    if (isset($userData['userId']) && is_array($args) && array_key_exists("partyId", $args)){
-      $partyId = sanitizeString($args['partyId']);
-      $password = '';
-      if (array_key_exists("password", $args)){
-        $password = hash('sha512',PRE_SALT.sanitizeString($args['password']).POST_SALT);
-      }
-
-      try{
-        $stmt = $db->prepare(
-          'SELECT
-            *
-          FROM
-            Party
-          WHERE
-            partyId=:partyId AND
-            removed=0 AND
-            (
-              passwordProtected=0 OR
-              password=:password
-            )
-        ;');//checks for matching row
-        $stmt->bindValue(':partyId', $partyId);
-        $stmt->bindValue(':password', $password);
-        $stmt->execute();
-        if($stmt->rowCount()==1){//if successfully logged in
-          $stmt = $db->prepare(
-            'INSERT INTO
-              PartyUser(
-                userId,
-                partyId,
-                owner
-              )
-            VALUES(
-              :userId,
-              :partyId,
-              :owner
-            )
-            ON
-              DUPLICATE KEY
-            UPDATE
-              unjoined = 0
-          ;');//makes new row with given info
-          $stmt->bindValue(':userId', $userData['userId']);
-          $stmt->bindValue(':partyId', $partyId);
-          $stmt->bindValue(':owner', $owner, PDO::PARAM_BOOL);
-          $stmt->execute();
-          $results['status'] = "success";
-        }else{
-          array_push($results['errors'], "bad authentication");
-        }
-      } catch (PDOException $e) {
-        //something went wrong...
-        error_log("Error: " . $e->getMessage());
-        array_push($results['errors'], "database error");
-      }
-    }else{
-      if(!isset($userData['userId'])){
-        array_push($results['errors'], "must be logged in");
-      }
-      if(!array_key_exists("partyId", $args)){
-        array_push($results['errors'], "partyId was not specified");
-      }
-    }
-    return $results;
-  }
-
-  /*
-  List the parties a user is in
-  */
-  function listJoinedParties($db, $userData, $args=0){
-    $results = array("errors"=>array());
-    if(isset($userData['userId'])){
-      try {
-        $stmt = $db->prepare(
-          'SELECT
-            p.partyId,
-            p.name,
-            u.username
-          FROM
-            Party p,
-            PartyUser pu,
-            User u
-          WHERE
-            p.partyId = pu.partyId AND
-            pu.userId = :userId AND
-            p.removed=0 AND
-            pu.unjoined=0 AND
-            p.creatorId = u.userId
-        ;');
-        $stmt->bindValue(':userId', $userData['userId']);
-        $stmt->execute();
-        $results['parties'] = array();
-        while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {//creates an array of the results to return
-          array_push($results['parties'], $row);
-        }
-        $results['status'] = "success";
-      } catch (PDOException $e) {//something went wrong...
-        error_log("Error: " . $e->getMessage());
-        array_push($results['errors'], "database error");
-      }
-    }else{
-      array_push($results['errors'], "must be logged in");
-    }
-    return $results;
-  }
-
-  /*
-  List parties a user hasn't joined
-  */
-  function listUnjoinedParties($db, $userData, $args=0){
-    $results = array("errors"=>array());
-    $userId = -1;
-    if(isset($userData['userId'])){
-      $userId = $userData['userId'];
+  function createAccount($db, $username, $password, &$errors=array()){//creates account with an array of user information given
+    $password = hash('sha512',PRE_SALT.$password.POST_SALT);
+    if($username==""||usernameRegistered($db, $username)){//user already exists
+      array_push($errors, "username unavailable");
+      return 0;
     }
     try {
       $stmt = $db->prepare(
-        'SELECT
-          p.partyId,
-          p.name,
-          u.username,
-          p.passwordProtected
-        FROM
-          Party p,
-          User u
-        WHERE
-          p.creatorId=u.userId AND
-          p.removed=0 AND
-          p.partyId NOT IN (
-            SELECT
-              partyId
-            FROM
-              PartyUser
-            WHERE
-              userId=:userId AND
-              unjoined=0
+        'INSERT INTO
+          User(
+            username,
+            password
           )
-      ;');
-      $stmt->bindValue(':userId', $userId);
+        VALUES(
+          :username,
+          :password
+        )
+      ;');//makes new row with given info
+      $stmt->bindValue(':username', $username);
+      $stmt->bindValue(':password', $password);
       $stmt->execute();
-      $results['parties'] = array();
-      while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {//creates an array of the results to return
-        array_push($results['parties'], $row);
-      }
-      $results['status'] = "success";
+      return 1;
     } catch (PDOException $e) {//something went wrong...
       error_log("Error: " . $e->getMessage());
-      array_push($results['errors'], "database error");
+      array_push($errors, "database error");
+      return 0;
     }
-    return $results;
   }
 
+  function logIn($db, $username, $password, &$errors=array()){//sets session data if the user information matches a user's row
+    $password = hash('sha512',PRE_SALT.$password.POST_SALT);
+    try{
+      $stmt = $db->prepare(
+        'SELECT
+          *
+        FROM
+          User
+        WHERE
+          username=:username and
+          password=:password
+      ;');//checks for matching row
+      $stmt->bindValue(':username', $username);
+      $stmt->bindValue(':password', $password);
+      $stmt->execute();
 
-  function vote($db, $userData, $args){
-    $results = array("errors"=>array());
-    if (is_array($args)&&array_key_exists("submissionId", $args)&&array_key_exists("direction", $args)&&isset($userData['userId'])){
-      try {
-        $voterId = sanitizeString($userData['userId']);
-        $submissionId = sanitizeString($args['submissionId']);
-        $voteValue = intval(sanitizeString($args['direction']));
-        if(canWriteParty($db, $userData, getPartyIdFromSubmission($db, $submissionId))){
-          if($voteValue>0)$voteValue=1;
-          else if($voteValue<0)$voteValue=-1;
+      if($stmt->rowCount()!=1){//if successfully logged in
+        array_push($errors, "bad username/password combination");
+        return 0;
+      }
 
-          $stmt = $db->prepare(
-            'INSERT INTO
-              Vote(
-                voterId,
-                submissionId,
-                voteValue
-              )
-            VALUES(
-              :voterId,
-              :submissionId,
-              :voteValue
-            )
-            ON DUPLICATE KEY UPDATE
-              voteValue = :voteValue
-          ;');
-          $stmt->bindValue(':voterId', $voterId);
-          $stmt->bindValue(':submissionId', $submissionId);
-          $stmt->bindValue(':voteValue', $voteValue);
-          $stmt->execute();
-          //sendToWebsocket(json_encode(array('action' =>'updateParty', 'submissionId' => $submissionId)));
-          $results['status'] = "success";//was successful
-        }else{
-          array_push($results['errors'], "must join party");
-        }
-      }catch(PDOException $e){//something went wrong...
-        error_log('Query failed: ' . $e->getMessage());
-        array_push($results['errors'], "database error");
-      }
-    }else{
-      if(!isset($userData['userId'])){
-        array_push($results['errors'], "must be logged in");
-      }
-      if(!array_key_exists("submissionId", $args)){
-        array_push($results['errors'], "submissionId was not specified");
-      }
-      if(!array_key_exists("direction", $args)){
-        array_push($results['errors'], "direction was not specified");
-      }
+      $result = $stmt->fetch(PDO::FETCH_OBJ);
+      session_regenerate_id();
+      $_SESSION['userId'] = $result->userId;
+      $_SESSION['logged'] = 1;
+    } catch (PDOException $e) {//something went wrong...
+      error_log("Error: " . $e->getMessage());
+      array_push($errors, "database error");
+      return 0;
     }
-    return $results;
+    return 1;
   }
 
-  function logOut($db, $sessionId=0){
-    if($sessionId==0){
-      $sessionId=session_id();
-    }
-    $results = array("errors"=>array());
-    $oldId=session_id();
+  /*
+  checks for row in user table corresponding to username provided
+  aka. checks to see if username is already taken
+  -Vmutti
+  */
+  function usernameRegistered($db, $username){
+    $result = $db->prepare(
+      'SELECT
+        *
+      FROM
+        User
+      WHERE
+        username=:username
+    ;');//performs check
+    $result->bindValue(':username', $username);
+    $result->execute();
+    return ($result->rowCount()>0);//1 if exists
+  }
+
+  function logOut(){
     session_write_close();
-    session_id($sessionId);
     session_start();
     session_destroy();//leave no trace
-    if($sessionId != $oldId){
-      session_write_close();
-      session_id($oldId);
-      session_start();
-    }
-    /*
-    $stmt = $db->prepare(
-      'UPDATE
-        Session
-      SET
-        loggedOut = 1
-      WHERE
-        sessionId=:sessionId
-    ;');
-    $stmt->bindValue(':sessionId', $sessionId);
-    $stmt->execute();
-    */
-    $results['status'] = "success";//was successful
-    return $results;
+    return 1;
   }
-  function fbLogin($args){
-    $results = array("errors"=>array());
-    if(is_array($args)&&array_key_exists("accessToken", $args)){//valid array was given
-      $fbToken=sanitizeString($args['accessToken']);
-      $_SESSION["fb_".FB_APP_ID."_access_token"]=$fbToken;
-      $results['status']='success';
-    }else{
-      array_push($results['errors'], "must have accessToken");
-    }
-    return $results;
+  function fbLogin($accessToken){
+    $_SESSION["fb_".FB_APP_ID."_access_token"]=$accessToken;
+    return 1;
   }
 
-  function loginStatus($userData){
-    $results = array("errors"=>array());
-    if (isset($userData['logged'])&& $userData['logged']){
+  function loginStatus($user){
+    $results = array();
+    if ($user->logged){
       $results['logged']=1;
-      if (isset($userData['fbId'])){
-        $results['fbId']=$userData['fbId'];
+      if ($user->fbId){
+        $results['fbId']=$user->fbId;
       }
-      if (isset($userData['userId'])){
-        $results['userId']=$userData['userId'];
+      if ($user->userId>-1){
+        $results['userId']=$user->userId;
       }
     }else{
       $results['logged']=0;
     }
-    $results['status']="success";
     return $results;
   }
 
-  function getPartyIdFromSubmission($submissionId){
-    $submissionId=sanitizeString($submissionId);
-    $stmt = $db->prepare(
-      'SELECT
-        partyId
-      FROM
-        Submission
-      WHERE
-        submissionId=:submissionId
-    ;');//makes new row with given info
-    $stmt->bindValue(':submissionId', $submissionId);
-    $stmt->execute();
-    return $stmt->fetch(PDO::FETCH_OBJ)->partyId;
+  function checkRequiredParameters($parameters, $required, &$errors=array()){
+    foreach ($required as $parameter){
+      if(!isset($parameters[$parameter])){
+        array_push($errors, "this action requires parameter(s): ".implode(",", $required));
+        return 0;
+      }
+    }
+    return 1;
   }
+
 ?>
