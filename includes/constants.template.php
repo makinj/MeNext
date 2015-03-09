@@ -23,4 +23,34 @@
   define('FULLY_PUBLIC', 2);//unjoined user can do anything
   define('ERROR_PERMISSIONS', 'user does not have permissions to perform this task');//error code for user not having permissions
   define('ERROR_DB', 'database error');//error code for database issue
+
+  $getActions = array(
+    'logOut',
+    'getCurrentVideo',
+    'listJoinedParties',
+    'listUnjoinedParties',
+    'listVideos',
+    'loginStatus'
+  );
+  $postActions = array(
+    'addVideo',
+    'createParty',
+    'fbLogin',
+    'joinParty',
+    'login',
+    'markVideoWatched',
+    'register',
+    'removeVideo',
+    'vote'
+  );
+
+  $unsecuredActions = array(
+    'fbLogin',
+    'getCurrentVideo',
+    'listVideos',
+    'login',
+    'loginStatus',
+    'logOut',
+    'register'
+  );
 ?>
