@@ -22,8 +22,8 @@
   $_GET=sanitizeInputs($_GET);
   $_POST=sanitizeInputs($_POST);
 
-  //error_log(json_encode($_GET));
-  //error_log(json_encode($_POST));
+  error_log(json_encode($_GET));
+  error_log(json_encode($_POST));
 
 
   if (isset($_GET['action'])||isset($_POST['action'])){
@@ -40,7 +40,7 @@
 
     if(($method=="GET" && in_array($action, $getActions))||($method=="POST" && in_array($action, $postActions))){
 
-      if($user->logged||!in_array($action, $unsecuredActions)){
+      if($user->logged||in_array($action, $unsecuredActions)){
 
         switch ($action) {
           case "addVideo":
@@ -107,6 +107,7 @@
             break;
 
           case 'login':
+
             if(checkRequiredParameters($_POST, array("username", "password"), $errors)){
               login($db, $_POST['username'], $_POST['password'], $errors);
             }
@@ -165,7 +166,6 @@
     $response['status']='success';
   }
 
- // error_log(json_encode($results));
-  //error_log(json_encode($response));
+  error_log(json_encode($response));
   echo json_encode($response);//return info to client
 ?>
