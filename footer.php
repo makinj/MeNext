@@ -23,9 +23,7 @@
 
       var userId =
       <?php
-        if (isset($userData['userId'])){
-          echo"'".$userData['userId']."';\n";
-        }
+        echo"'".$user->userId."';\n";
       ?>
     </script>
 

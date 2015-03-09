@@ -5,14 +5,16 @@ require_once('header.php'); //bar at the top of the page
 require_once("includes/functions.php"); //basic database operations
 
 $partyId = -1;
+$party = new Party($db);
 $isOwner = 0;
 if (isset($_GET['partyId'])) {
     $partyId = $_GET['partyId'];
-    $isOwner = isPartyOwner($db, $userData, $partyId);
+    $party = new Party($db, $partyId);
+    $isOwner = $party->isPartyOwner($user);
 }
 $partyData = [];
 if (isset($_GET['partyId'])) {
-    $partyData = getPartyObject($db, $_GET['partyId']);
+    $partyData = $party->getPartyObject();
 }
 ?>
 <!-- beginning of youtube player and queuelist -->
@@ -91,7 +93,7 @@ if (isset($_GET['partyId'])) {
             <div class="col-lg-6">
                 <a class="btn btn-default btn-block" id="viewOnYoutube" target="_blank" href="">View on YouTube</a>
                 <a class="btn btn-default btn-block" target="_blank"
-                   href="https://docs.google.com/forms/d/1fy-vD3ovTfs4iekNbgE3viobHvvusD8ODunL_v2zks8/viewform?<?php if(isset($userData["username"])){echo "entry.1934380623=".$userData["username"]."&";} ?>entry.1987106882">Report
+                   href="https://docs.google.com/forms/d/1fy-vD3ovTfs4iekNbgE3viobHvvusD8ODunL_v2zks8/viewform?<?php if($user->logged){echo "entry.1934380623=".$user->username."&";} ?>entry.1987106882">Report
                     a Bug</a>
                 <a href="https://play.google.com/store/apps/details?id=me.menext.menext">
                   <img alt="Get it on Google Play"
@@ -106,8 +108,8 @@ if (isset($_GET['partyId'])) {
     $writeParty = 0;
     $readParty = 0;
     if ($partyId >= 0) { // then $partyId must be set from above
-        $writeParty = canWriteParty($db, $userData, $partyId);
-        $readParty = canReadParty($db, $userData, $partyId);
+        $writeParty = $party->canWriteParty($user);
+        $readParty = $party->canReadParty($user);
     }
     if ($readParty) {
         ?>

@@ -21,4 +21,6 @@
   define('FULLY_PRIVATE', 0);//unjoined users are not allowed any access
   define('VIEW_ONLY', 1);//unjoined users can view the party
   define('FULLY_PUBLIC', 2);//unjoined user can do anything
+  define('ERROR_PERMISSIONS', 'user does not have permissions to perform this task');//error code for user not having permissions
+  define('ERROR_DB', 'database error');//error code for database issue
 ?>

@@ -7,81 +7,163 @@
   and Post commands make changes
   or have sensitive info like passwords
 */
+  require_once("includes/constants.php");//basic database operations
   require_once("includes/functions.php");//basic database operations
+  require_once("includes/User.php");//basic database operations
+  require_once("includes/Party.php");//basic database operations
   if(session_id() == '') {
     session_start();
   }
 
-  $userData = init($db, $fb);
-  $results = array();//array to be returned to client
+  $user = new User($db);
+  $user->initAuth($fb);
+  $response = array();//array to be returned to client
+  $errors = array();
+  $_GET=sanitizeInputs($_GET);
+  $_POST=sanitizeInputs($_POST);
 
   //error_log(json_encode($_GET));
   //error_log(json_encode($_POST));
-  
-  if(isset($_GET['action'])){//GETs info ie. list of Videos or list of users
-    if($_GET['action']=="listVideos"){
-      $results = array_merge_recursive($results, listVideos($db, $userData, $_GET));
-    }else if($_GET['action']=="getCurrentVideo"){
-      $results = array_merge_recursive($results, getCurrentVideo($db, $userData, $_GET));
-    }else if($_GET['action']=="listJoinedParties"){
-      $results = array_merge_recursive($results, listJoinedParties($db, $userData));
-    }else if($_GET['action']=="listUnjoinedParties"){
-      $results = array_merge_recursive($results, listUnjoinedParties($db, $userData));
-    }else if($_GET['action']=="logOut"){
-      $results = array_merge_recursive($results, logOut($db));
-      header("Location: login.php");//login again
-    }else if($_GET['action']=="loginStatus"){
-      $results = array_merge_recursive($results, loginStatus($userData));
-    }
-  }else if(isset($_POST['action'])){//handles POST requests ie. login or addVideo
-    if($_POST['action']=="register"){//registers new user
-      $results = array_merge_recursive($results, createAccount($db, $_POST));//creates an account
-      if(array_key_exists("status", $results) && $results['status']=='success'){
-        $results = array_merge_recursive($results, logIn($db, $_POST));//logs into created account
-      }
-    }else if($_POST['action']=="login"){//logs into an account
-      $results = array_merge_recursive($results, logIn($db, $_POST));//send POST data to log in
-    }else if($_POST['action']=="addVideo"){//adds new video to playlist
-      $results = array_merge_recursive($results, addVideo($db, $userData, $_POST));
-    }else if($_POST['action']=="markVideoWatched"){//marks video as watched
-      $results = array_merge_recursive($results, markVideoWatched($db, $userData, $_POST));
-    }else if($_POST['action']=="removeVideo"){//removes video
-      $results = array_merge_recursive($results, removeVideo($db, $userData, $_POST));
-    }else if($_POST['action']=="createParty"){//creates a party
-      $results = array_merge_recursive($results, createParty($db, $userData, $_POST));
-    }else if($_POST['action']=="joinParty"){//joins current user to party
-      $results = array_merge_recursive($results, joinParty($db, $userData, $_POST));
-    }else if($_POST['action']=="vote"){//votes on video
-      $results = array_merge_recursive($results, vote($db, $userData, $_POST));
-    }else if($_POST['action']=="fbLogin"){//votes on video
-      $results = array_merge_recursive($results, fbLogin($_POST));
-    }
-  }
 
-  //this block makes the status either success or failed and unsets errors if it doesn't exist
-  $finalStatus = 'failed';
-  if(array_key_exists("status", $results)){
-    if(is_array($results['status'])){
-      $finalStatus = 'success';
-      foreach ($results['status'] as $status){
-        if($status != "success"){
-          $finalStatus = 'failed';
+
+  if (isset($_GET['action'])||isset($_POST['action'])){
+    $method = '';
+    $action = '';
+    if (isset($_GET['action'])){
+      $method = "GET";
+      $action = $_GET['action'];
+    }
+    if(isset($_POST['action'])){
+      $method = "POST";
+      $action = $_POST['action'];
+    }
+
+    if(($method=="GET" && in_array($action, $getActions))||($method=="POST" && in_array($action, $postActions))){
+
+      if($user->logged||!in_array($action, $unsecuredActions)){
+
+        switch ($action) {
+          case "addVideo":
+            if(checkRequiredParameters($_POST, array("youtubeId", "partyId"), $errors)){
+              $party = new Party($db, $_POST['partyId']);
+              $party->addVideo($user, $_POST['youtubeId'], $errors);
+            }
+            break;
+          case 'getCurrentVideo':
+            if(checkRequiredParameters($_GET, array("partyId"), $errors)){
+              $party = new Party($db, $_GET['partyId']);
+              $response['video'] = $party->getCurrentVideo($user, $errors);
+            }
+            break;
+          case 'listJoinedParties':
+            $response['parties'] = $user->listJoinedParties($errors);
+            break;
+          case 'listUnjoinedParties':
+            $response['parties'] = $user->listUnjoinedParties($errors);
+            break;
+          case "listVideos":
+            if(checkRequiredParameters($_GET, array("partyId"), $errors)){
+              $party = new Party($db, $_GET['partyId']);
+              $response['videos'] = $party->listVideos($user, $errors);
+            }
+            break;
+          case 'loginStatus':
+
+            $response = loginStatus($user);
+            break;
+          case 'createParty':
+
+            if(checkRequiredParameters($_POST, array("name"), $errors)){
+              $privacyId=FULLY_PUBLIC;
+              if(isset($_POST['privacyId'])){
+                $privacyId=$_POST['privacyId'];
+              }
+              $password='';
+              if(isset($_POST['password'])){
+                $password=$_POST['password'];
+              }
+              $response['partyId'] = $user->createParty($_POST['name'], $password, $privacyId, $errors);
+            }
+            break;
+          case 'fbLogin':
+
+            if(checkRequiredParameters($_POST, array("accessToken"), $errors)){
+              fbLogin($_POST['accessToken']);
+            }
+            break;
+          case 'joinParty':
+
+            if(checkRequiredParameters($_POST, array("partyId"), $errors)){
+              $password='';
+              if(isset($_POST['password'])){
+                $password=$_POST['password'];
+              }
+              $user->joinParty($_POST['partyId'], $password, 0, $errors);
+            }
+            break;
+          case 'login':
+
+            if(checkRequiredParameters($_POST, array("username", "password"), $errors)){
+              login($db, $_POST['username'], $_POST['password'], $errors);
+            }
+            break;
+          case 'logOut':
+
+            logOut();
+            break;
+          case 'markVideoWatched':
+
+            if(checkRequiredParameters($_POST, array("submissionId"), $errors)){
+              $party = new Party($db);
+              $party->initFromSubmissionId($_POST['submissionId']);
+              $party->markVideoWatched($user, $_POST['submissionId'], $errors);
+            }
+            break;
+          case 'register':
+
+            if(checkRequiredParameters($_POST, array("username", "password"), $errors)){
+              createAccount($db, $_POST['username'], $_POST['password'], $errors);
+            }
+            break;
+          case 'removeVideo':
+
+            if(checkRequiredParameters($_POST, array("submissionId"), $errors)){
+              $party = new Party($db);
+              $party->initFromSubmissionId($_POST['submissionId']);
+              $party->removeVideo($user, $_POST['submissionId'], $errors);
+            }
+            break;
+          case 'vote':
+
+            if(checkRequiredParameters($_POST, array("submissionId", "direction"), $errors)){
+              $party = new Party($db);
+              $party->initFromSubmissionId($_POST['submissionId']);
+              $party->Vote($user, $_POST['submissionId'], $_POST['direction'], $errors);
+            }
+            break;
+          default:
+
           break;
         }
+      }else{
+        array_push($errors, "user must be logged in to perform this action");
       }
-    }elseif($results['status']=='success'){
-      $finalStatus = 'success';
+    }elseif(($method=="POST" && in_array($getActions, $action))||($method=="GET" && in_array($postActions, $action))){
+      array_push($errors, "malformed request: This request was sent using the wrong http method for the action");
+    }else{
+      array_push($errors, "malformed request: this action does not exist");
     }
+  }else{
+    array_push($errors, "malformed request: must have 'action' parameter");
   }
 
-  if(array_key_exists("errors", $results) && count($results['errors'])==0){
-    unset($results['errors']);
+  if(count($errors)>0){
+    $response = array('errors' => $errors, 'status'=>'failed');
   }else{
-    $finalStatus = 'failed';
+    $response['status']='success';
   }
-  $results['status'] = $finalStatus;
 
  // error_log(json_encode($results));
-
-  echo json_encode($results);//return info to client
+  //error_log(json_encode($response));
+  echo json_encode($response);//return info to client
 ?>
