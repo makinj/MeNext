@@ -49,30 +49,34 @@
               $party->addVideo($user, $_POST['youtubeId'], $errors);
             }
             break;
+
           case 'getCurrentVideo':
             if(checkRequiredParameters($_GET, array("partyId"), $errors)){
               $party = new Party($db, $_GET['partyId']);
               $response['video'] = $party->getCurrentVideo($user, $errors);
             }
             break;
+
           case 'listJoinedParties':
             $response['parties'] = $user->listJoinedParties($errors);
             break;
+
           case 'listUnjoinedParties':
             $response['parties'] = $user->listUnjoinedParties($errors);
             break;
+
           case "listVideos":
             if(checkRequiredParameters($_GET, array("partyId"), $errors)){
               $party = new Party($db, $_GET['partyId']);
               $response['videos'] = $party->listVideos($user, $errors);
             }
             break;
-          case 'loginStatus':
 
+          case 'loginStatus':
             $response = loginStatus($user);
             break;
-          case 'createParty':
 
+          case 'createParty':
             if(checkRequiredParameters($_POST, array("name"), $errors)){
               $privacyId=FULLY_PUBLIC;
               if(isset($_POST['privacyId'])){
@@ -85,14 +89,14 @@
               $response['partyId'] = $user->createParty($_POST['name'], $password, $privacyId, $errors);
             }
             break;
-          case 'fbLogin':
 
+          case 'fbLogin':
             if(checkRequiredParameters($_POST, array("accessToken"), $errors)){
               fbLogin($_POST['accessToken']);
             }
             break;
-          case 'joinParty':
 
+          case 'joinParty':
             if(checkRequiredParameters($_POST, array("partyId"), $errors)){
               $password='';
               if(isset($_POST['password'])){
@@ -101,49 +105,47 @@
               $user->joinParty($_POST['partyId'], $password, 0, $errors);
             }
             break;
-          case 'login':
 
+          case 'login':
             if(checkRequiredParameters($_POST, array("username", "password"), $errors)){
               login($db, $_POST['username'], $_POST['password'], $errors);
             }
             break;
+
           case 'logOut':
-
             logOut();
+            header("Location: /");
             break;
-          case 'markVideoWatched':
 
+          case 'markVideoWatched':
             if(checkRequiredParameters($_POST, array("submissionId"), $errors)){
               $party = new Party($db);
               $party->initFromSubmissionId($_POST['submissionId']);
               $party->markVideoWatched($user, $_POST['submissionId'], $errors);
             }
             break;
-          case 'register':
 
+          case 'register':
             if(checkRequiredParameters($_POST, array("username", "password"), $errors)){
               createAccount($db, $_POST['username'], $_POST['password'], $errors);
             }
             break;
-          case 'removeVideo':
 
+          case 'removeVideo':
             if(checkRequiredParameters($_POST, array("submissionId"), $errors)){
               $party = new Party($db);
               $party->initFromSubmissionId($_POST['submissionId']);
               $party->removeVideo($user, $_POST['submissionId'], $errors);
             }
             break;
-          case 'vote':
 
+          case 'vote':
             if(checkRequiredParameters($_POST, array("submissionId", "direction"), $errors)){
               $party = new Party($db);
               $party->initFromSubmissionId($_POST['submissionId']);
               $party->Vote($user, $_POST['submissionId'], $_POST['direction'], $errors);
             }
             break;
-          default:
-
-          break;
         }
       }else{
         array_push($errors, "user must be logged in to perform this action");
