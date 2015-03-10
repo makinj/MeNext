@@ -107,7 +107,6 @@ function listQueue(){
     $.get("handler.php?action=listVideos&partyId="+partyId,
       function(data,status){
         var result= JSON.parse(data);
-        console.log(data);
         if(result['status']=='success'){
           var videos = result['videos'];
           $("#queueList").html("");
@@ -230,6 +229,18 @@ function removeVideo(submissionId){
   );
 }
 
+function deleteParty(passedId){
+  $.post("handler.php", {'action':'deleteParty', 'partyId':passedId},
+    function(data){
+      var result= JSON.parse(data);
+      if(result['status']!='success'){
+        $("#problem").html(result['errors'][0]);
+      }
+      location.reload();
+    }
+  );
+}
+
 function upVote(submissionId){
   $.post("handler.php", {'action':'vote', 'direction':1, 'submissionId':submissionId},
     function(data){
@@ -287,7 +298,6 @@ function submitVideo(youtubeId){
   $.post("handler.php", {'action':'addVideo', 'partyId':partyId, 'youtubeId':youtubeId},
     function(data){
       var result= JSON.parse(data);
-      console.log(data);
       if(result['status']!='success'){
         $("#problem").html(result['errors'][0]);
       }
@@ -496,7 +506,6 @@ $(document).ready(function(){
   if ($("#youtubePlayerParent").length > 0){
     setupYouTube();
     $("#playPause").click(playPause);
-    $("#fullScreen").click(fullScreen);
   }
   $("#searchText").googleSuggest({ service: "youtube" });
   $('#register').submit(register);
@@ -504,6 +513,9 @@ $(document).ready(function(){
   $('#createPartyForm').submit(createParty);
   $('.joinPartyButton').click(function(){
     joinParty($(this).attr("value"));
+  });
+  $('.deletePartyButton').click(function(){
+    deleteParty($(this).attr("value"));
   });
 
   if ($("#queueList").length > 0){

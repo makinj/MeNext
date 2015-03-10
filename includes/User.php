@@ -276,7 +276,8 @@
           'SELECT
             p.partyId,
             p.name,
-            u.username
+            u.username,
+            pu.owner as isOwner
           FROM
             Party p,
             PartyUser pu,

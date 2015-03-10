@@ -114,7 +114,7 @@ if (isset($_GET['partyId'])) {
     if ($readParty) {
         ?>
         <div class="col-md-8">
-            <?php if ($isOwner) { ?><div class="col-md-6"><?php } ?>
+            <?php if (0&&$isOwner) { ?><div class="col-md-6"><?php } ?>
                 <h3>Song Queue</h3>
             <?php if (0&&$isOwner) { ?></div>
             <div class="col-md-6">

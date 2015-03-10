@@ -50,10 +50,47 @@
             }
             break;
 
+          case 'createParty':
+            if(checkRequiredParameters($_POST, array("name"), $errors)){
+              $privacyId=FULLY_PUBLIC;
+              if(isset($_POST['privacyId'])){
+                $privacyId=$_POST['privacyId'];
+              }
+              $password='';
+              if(isset($_POST['password'])){
+                $password=$_POST['password'];
+              }
+              $response['partyId'] = $user->createParty($_POST['name'], $password, $privacyId, $errors);
+            }
+            break;
+
+          case 'deleteParty':
+            if(checkRequiredParameters($_POST, array("partyId"), $errors)){
+              $party = new Party($db, $_POST['partyId']);
+              $party->deleteParty($user, $errors);
+            }
+            break;
+
+          case 'fbLogin':
+            if(checkRequiredParameters($_POST, array("accessToken"), $errors)){
+              fbLogin($_POST['accessToken']);
+            }
+            break;
+
           case 'getCurrentVideo':
             if(checkRequiredParameters($_GET, array("partyId"), $errors)){
               $party = new Party($db, $_GET['partyId']);
               $response['video'] = $party->getCurrentVideo($user, $errors);
+            }
+            break;
+
+          case 'joinParty':
+            if(checkRequiredParameters($_POST, array("partyId"), $errors)){
+              $password='';
+              if(isset($_POST['password'])){
+                $password=$_POST['password'];
+              }
+              $user->joinParty($_POST['partyId'], $password, 0, $errors);
             }
             break;
 
@@ -74,36 +111,6 @@
 
           case 'loginStatus':
             $response = loginStatus($user);
-            break;
-
-          case 'createParty':
-            if(checkRequiredParameters($_POST, array("name"), $errors)){
-              $privacyId=FULLY_PUBLIC;
-              if(isset($_POST['privacyId'])){
-                $privacyId=$_POST['privacyId'];
-              }
-              $password='';
-              if(isset($_POST['password'])){
-                $password=$_POST['password'];
-              }
-              $response['partyId'] = $user->createParty($_POST['name'], $password, $privacyId, $errors);
-            }
-            break;
-
-          case 'fbLogin':
-            if(checkRequiredParameters($_POST, array("accessToken"), $errors)){
-              fbLogin($_POST['accessToken']);
-            }
-            break;
-
-          case 'joinParty':
-            if(checkRequiredParameters($_POST, array("partyId"), $errors)){
-              $password='';
-              if(isset($_POST['password'])){
-                $password=$_POST['password'];
-              }
-              $user->joinParty($_POST['partyId'], $password, 0, $errors);
-            }
             break;
 
           case 'login':
@@ -151,7 +158,7 @@
       }else{
         array_push($errors, "user must be logged in to perform this action");
       }
-    }elseif(($method=="POST" && in_array($getActions, $action))||($method=="GET" && in_array($postActions, $action))){
+    }elseif(($method=="POST" && in_array($actions, $getAction))||($method=="GET" && in_array($actions, $postAction))){
       array_push($errors, "malformed request: This request was sent using the wrong http method for the action");
     }else{
       array_push($errors, "malformed request: this action does not exist");
