@@ -515,7 +515,10 @@ $(document).ready(function(){
     joinParty($(this).attr("value"));
   });
   $('.deletePartyButton').click(function(){
-    deleteParty($(this).attr("value"));
+    var ret = confirm("Are you sure you want to delete this party forever?");
+    if (ret == true) {
+      deleteParty($(this).attr("value"));
+    }
   });
 
   if ($("#queueList").length > 0){
