@@ -25,12 +25,12 @@
   define('ERROR_DB', 'database error');//error code for database issue
 
   $getActions = array(
-    'logOut',
     'getCurrentVideo',
     'listJoinedParties',
     'listUnjoinedParties',
     'listVideos',
-    'loginStatus'
+    'loginStatus',
+    'logOut'
   );
   $postActions = array(
     'addVideo',
