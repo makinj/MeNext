@@ -447,6 +447,31 @@
       }
       return 0;
     }
+    function deleteParty($user, &$errors=array()){
+      if (!$this->isPartyOwner($user)){
+        array_push($errors, ERROR_PERMISSIONS);
+        return 0;
+      }
+      try {
+        $stmt = $this->db->prepare(
+          'UPDATE
+            Party
+          SET
+            removed = 1
+          WHERE
+            partyId = :partyId
+        ;');
+        $stmt->bindValue(':partyId', $this->partyId);
+        $stmt->execute();
+        return $stmt->rowCount()>0;
+      } catch (PDOException $e) {
+        //something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($errors, ERROR_DB);
+        return 0;
+
+      }
+    }
 
   }
 

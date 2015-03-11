@@ -35,12 +35,14 @@
   $postActions = array(
     'addVideo',
     'createParty',
+    'deleteParty',
     'fbLogin',
     'joinParty',
     'login',
     'markVideoWatched',
     'register',
     'removeVideo',
+    'unjoinParty',
     'vote'
   );
 

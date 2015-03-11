@@ -267,6 +267,30 @@
       return 0;
     }
 
+    function unjoinParty($partyId, &$errors=array()){
+      try {
+        $stmt = $this->db->prepare(
+          'UPDATE
+            PartyUser
+          SET
+            unjoined = 1
+          WHERE
+            partyId = :partyId AND
+            userId = :userId
+        ;');
+        $stmt->bindValue(':partyId', $partyId);
+        $stmt->bindValue(':userId', $this->userId);
+        $stmt->execute();
+        return $stmt->rowCount()>0;
+      } catch (PDOException $e) {
+        //something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($errors, ERROR_DB);
+        return 0;
+
+      }
+    }
+
     /*
     List the parties a user is in
     */
@@ -276,7 +300,8 @@
           'SELECT
             p.partyId,
             p.name,
-            u.username
+            u.username,
+            pu.owner as isOwner
           FROM
             Party p,
             PartyUser pu,
