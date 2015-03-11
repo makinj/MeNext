@@ -269,7 +269,7 @@
 
     function unjoinParty($partyId, &$errors=array()){
       $party = new Party($this->db, $partyId);
-      if ($party->isOwner($this)){
+      if ($party->isPartyOwner($this)){
         array_push($errors, "party owner cannot unjoin.  Please delete the party instead.");
         return 0;
       }
