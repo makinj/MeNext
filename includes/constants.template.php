@@ -42,6 +42,7 @@
     'markVideoWatched',
     'register',
     'removeVideo',
+    'unjoinParty',
     'vote'
   );
 

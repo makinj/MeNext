@@ -22,8 +22,8 @@
   $_GET=sanitizeInputs($_GET);
   $_POST=sanitizeInputs($_POST);
 
-  error_log(json_encode($_GET));
-  error_log(json_encode($_POST));
+  //error_log(json_encode($_GET));
+  //error_log(json_encode($_POST));
 
 
   if (isset($_GET['action'])||isset($_POST['action'])){
@@ -147,6 +147,12 @@
             }
             break;
 
+          case 'unjoinParty':
+            if(checkRequiredParameters($_POST, array("partyId"), $errors)){
+              $user->unjoinParty($_POST['partyId'], $errors);
+            }
+            break;
+
           case 'vote':
             if(checkRequiredParameters($_POST, array("submissionId", "direction"), $errors)){
               $party = new Party($db);
@@ -173,6 +179,6 @@
     $response['status']='success';
   }
 
-  error_log(json_encode($response));
+  //error_log(json_encode($response));
   echo json_encode($response);//return info to client
 ?>

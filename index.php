@@ -46,6 +46,8 @@ if($user->logged){
                             echo "<tr><td>".$joined[$i]->partyId."</td><td><a href='/party.php?partyId=".$joined[$i]->partyId."'>".$joined[$i]->name."</a></td><td>".$joined[$i]->username."</td><td>";
                             if ($joined[$i]->isOwner){
                                 echo "<button type='submit' class='btn btn-default btn-sm deletePartyButton' value=".$joined[$i]->partyId.">Delete</button>";
+                            }else{
+                                echo "<button type='submit' class='btn btn-default btn-sm unjoinPartyButton' value=".$joined[$i]->partyId.">Unjoin</button>";
                             }
                             echo "</td></tr>";
                         }

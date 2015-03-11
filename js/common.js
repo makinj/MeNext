@@ -241,6 +241,18 @@ function deleteParty(passedId){
   );
 }
 
+function unjoinParty(passedId){
+  $.post("handler.php", {'action':'unjoinParty', 'partyId':passedId},
+    function(data){
+      var result= JSON.parse(data);
+      if(result['status']!='success'){
+        $("#problem").html(result['errors'][0]);
+      }
+      location.reload();
+    }
+  );
+}
+
 function upVote(submissionId){
   $.post("handler.php", {'action':'vote', 'direction':1, 'submissionId':submissionId},
     function(data){
@@ -518,6 +530,12 @@ $(document).ready(function(){
     var ret = confirm("Are you sure you want to delete this party forever?");
     if (ret == true) {
       deleteParty($(this).attr("value"));
+    }
+  });
+  $('.unjoinPartyButton').click(function(){
+    var ret = confirm("Are you sure you want to unjoin this party?");
+    if (ret == true) {
+      unjoinParty($(this).attr("value"));
     }
   });
 
