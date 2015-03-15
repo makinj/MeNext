@@ -5,7 +5,7 @@
   require_once(dirname(__FILE__).'/../sdks/facebook.php');//facebook sdk
 
   class User {
-    public $fbid=null;
+    public $fbid=0;
     public $username=-1;
     public $userId=-1;
     public $logged=0;
@@ -26,19 +26,19 @@
     public function initAuth($fb){
       $this->fb=$fb;
 
-      $this->fbId = $this->fb->getUser();
-      if ($this->fbId) {
+      $fbId = $this->fb->getUser();
+      if ($fbId) {
         try {
           // Proceed knowing you have a logged in user who's authenticated.
           $userProfile = $this->fb->api('/me');
         } catch (FacebookApiException $e) {
           error_log($e);
-          $this->fbId = null;
+          $fbId = null;
         }
       }
       // Login or logout url will be needed depending on current user state.
-      if ($this->fbId) {//logged into facebook
-        $this->initFb($this->fbId,1);
+      if ($fbId) {//logged into facebook
+        $this->initFb($fbId,1);
         if(!$this->logged){//not already in db
           if(isset($_SESSION['userId'])){//associate facebook with menext
             $stmt = $this->db->prepare(
@@ -55,7 +55,7 @@
                 User
               WHERE
             ;');
-            $stmt->bindValue(':fbId', $this->fbId);
+            $stmt->bindValue(':fbId', $fbId);
             $stmt->bindValue(':userId', $_SESSION['userId']);
             $stmt->execute();
           }else{//add account to facebook
@@ -71,10 +71,10 @@
               )
             ;');
             $stmt->bindValue(':username', $userProfile['name']);
-            $stmt->bindValue(':fbId', $this->fbId);
+            $stmt->bindValue(':fbId', $fbId);
             $stmt->execute();
           }
-          $this->initFb($this->fbId, 1);
+          $this->initFb($fbId, 1);
         }
       }elseif(isset($_SESSION['userId'])){//not logged into facebook but logged in with menext
         $this->initMn($_SESSION['userId'], 1);
@@ -101,6 +101,7 @@
         $user = $stmt->fetch(PDO::FETCH_OBJ);
         $this->username = $user->username;
         $this->userId = $user->userId;
+        $this->fbId = $fbId;
         if($logged){
           $this->logged = 1;
         }
@@ -168,7 +169,8 @@
           FROM
             Party
           WHERE
-            name=:name
+            name=:name AND
+            removed=0
           ;');
         $stmt->bindValue(':name', $name);
         $stmt->execute();
@@ -302,10 +304,11 @@
     public function listJoinedParties(&$errors=array()){
       try {
         $stmt = $this->db->prepare(
-          'SELECT
+          "SELECT
             p.partyId,
             p.name,
             u.username,
+            concat('#',p.color) as color
             pu.owner as isOwner
           FROM
             Party p,
@@ -317,7 +320,7 @@
             p.removed=0 AND
             pu.unjoined=0 AND
             p.creatorId = u.userId
-        ;');
+        ;");
         $stmt->bindValue(':userId', $this->userId);
         $stmt->execute();
         $parties = array();
@@ -339,11 +342,13 @@
     public function listUnjoinedParties(&$errors=array()){
       try {
         $stmt = $this->db->prepare(
-          'SELECT
+          "SELECT
             p.partyId,
             p.name,
             u.username,
-            p.passwordProtected
+            p.passwordProtected,
+            concat('#',p.color) as color
+
           FROM
             Party p,
             User u
@@ -359,7 +364,7 @@
                 userId=:userId AND
                 unjoined=0
             )
-        ;');
+        ;");
         $stmt->bindValue(':userId', $this->userId);
         $stmt->execute();
         $parties = array();

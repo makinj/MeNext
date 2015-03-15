@@ -79,10 +79,11 @@
     */
     public function getPartyObject(){
       $stmt = $this->db->prepare(
-        'SELECT
+        "SELECT
           p.name as partyName,
           u.username as ownerUsername,
-          u.userid as ownerId
+          u.userid as ownerId,
+          concat('#',p.color) as color
         FROM Party p,
           PartyUser pu,
           User u
@@ -93,7 +94,7 @@
           pu.owner=1 AND
           pu.unjoined=0 AND
           u.userid=pu.userid
-      ;');
+      ;");
       $stmt->bindValue(':partyId', $this->partyId);
       $stmt->execute();
       return $stmt->fetch(PDO::FETCH_OBJ);

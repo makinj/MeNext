@@ -102,7 +102,7 @@
 
     // May remove videoId in the future, as youtubeId is unique to the video already
     // If so, would make Index(youtubeId) instead of videoId
-    executeSThisQL($db,
+    executeSQL($db,
       'CREATE TABLE Video(
         videoId int NOT NULL AUTO_INCREMENT,
         youtubeId VARCHAR(11) UNIQUE,
@@ -118,7 +118,7 @@
     ;');//specific video, avoids popular selections bloating database
 
     executeSQL($db,
-      'CREATE TABLE Party(
+      "CREATE TABLE Party(
         partyId int NOT NULL AUTO_INCREMENT,
         name VARCHAR(255),
         passwordProtected BIT(1) DEFAULT 0,
@@ -126,10 +126,12 @@
         privacyId int DEFAULT 0,
         creatorId int REFERENCES User(userId),
         removed BIT(1) DEFAULT 0,
+        date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        color CHAR(6) DEFAULT 'EB2735',
 
         PRIMARY KEY(partyId, name)
       )
-    ;');//each party has row
+    ;");//each party has row
 
     executeSQL($db,
       'CREATE TABLE Submission(
@@ -142,6 +144,7 @@
         started int DEFAULT 0,
         wasPlayed BIT(1) DEFAULT 0,
         removed BIT(1) DEFAULT 0,
+        date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
         INDEX(submissionId, wasPlayed),
 
@@ -155,6 +158,7 @@
         userId int REFERENCES User(userId),
         owner BIT(1) DEFAULT 0,
         unjoined BIT(1) DEFAULT 0,
+        date_joined TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
         INDEX(partyId, userId),
 
