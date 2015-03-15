@@ -5,7 +5,7 @@
   require_once(dirname(__FILE__).'/../sdks/facebook.php');//facebook sdk
 
   class User {
-    public $fbid=0;
+    public $fbId=0;
     public $username=-1;
     public $userId=-1;
     public $logged=0;
@@ -308,7 +308,7 @@
             p.partyId,
             p.name,
             u.username,
-            concat('#',p.color) as color
+            concat('#',p.color) as color,
             pu.owner as isOwner
           FROM
             Party p,
