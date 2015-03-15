@@ -347,7 +347,7 @@
       try {
         $stmt = $this->db->prepare(
           'UPDATE
-            Submission s,
+            Submission s
           SET
             s.wasPlayed = 1
           WHERE
