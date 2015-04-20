@@ -77,14 +77,16 @@
     Returns party object with partyName, ownerId, and ownerUsername for a party with a given id
     -Vmutti
     */
-    public function getPartyObject(){
+    public function getPartyObject($userId=-1){
       $stmt = $this->db->prepare(
         "SELECT
           p.name as partyName,
           u.username as ownerUsername,
           u.userid as ownerId,
-          concat('#',p.color) as color
-        FROM Party p,
+          concat('#',p.color) as color,
+          pu.userId=:userId as isOwner
+        FROM
+          Party p,
           PartyUser pu,
           User u
         WHERE
@@ -96,6 +98,7 @@
           u.userid=pu.userid
       ;");
       $stmt->bindValue(':partyId', $this->partyId);
+      $stmt->bindValue(':userId', $userId);
       $stmt->execute();
       return $stmt->fetch(PDO::FETCH_OBJ);
     }
@@ -340,6 +343,8 @@
 
 
     function markVideoWatched($user, $submissionId, &$errors=array()){//takes an array with the submission id of what to mark as watched
+      error_log($submissionId);
+      error_log($this->partyId);
       if (!$this->isPartyOwner($user)){
         array_push($errors, ERROR_PERMISSIONS);
         return 0;
@@ -347,7 +352,7 @@
       try {
         $stmt = $this->db->prepare(
           'UPDATE
-            Submission s,
+            Submission s
           SET
             s.wasPlayed = 1
           WHERE

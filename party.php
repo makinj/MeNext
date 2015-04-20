@@ -25,17 +25,19 @@ if (isset($_GET['partyId'])) {
         <h4><span class="text-muted small">Playing:</span><br/><span id='currentTitle'></span></h4>
         <?php
         if ($isOwner) {
+            $origin = "";
+            if(PRODUCTION==1){
+                $origin="https://menext.me";
+            }else{
+                $origin="http://localhost";
+            }
             ?>
-            <!-- SWFObject to Verify Flash Version -->
-            <script type='text/javascript' src='js/swfobject.js'></script>
+
             <script type="text/javascript">
                 var isAdmin = 1;
+                var origin = <?php echo '"'.$origin.'"';?>;
             </script>
-
-            <div id='youtubePlayerParent'>
-                You need Flash player 8+ and JavaScript enabled to view this video.
-            </div>
-
+            <div id="youtubePlayerParent"></div>
             <div class="btn-group btn-group-justified btn-group-lg" id="controls">
                 <!--<div class="btn-group btn-group-lg">
                     <button type="button" id="thumbDown" class="btn btn-danger">
