@@ -181,7 +181,9 @@ function loadCurrentVideo(){
               if(typeof window.player != 'undefined' && typeof isAdmin != 'undefined' && isAdmin==1){
                 $("#youtubePlayerParent").show();
                 window.currentVideo=video;
-                window.player.loadVideoById(video.youtubeId, 0);
+                if(typeof window.playerReady != 'undefined'){
+                  window.player.loadVideoById(video.youtubeId, 0, "large");
+                }
               }else  if(typeof isAdmin == 'undefined' || isAdmin==0){
                 window.currentVideo=video;
               }
@@ -211,6 +213,7 @@ function markVideoWatched(){
   $.post("handler.php", {'action':'markVideoWatched', 'submissionId':window.currentVideo.submissionId},
     function(data){
       var result= JSON.parse(data);
+      console.log(data);
       if(result['status']!='success' && result['errors']){
         $("#problem").html(result['errors'][0]);
       }
@@ -358,10 +361,25 @@ $.fn.googleSuggest = function(opts){
   });
 }
 
-function onYouTubePlayerReady(playerId){
-  window.player = document.getElementById("youtubePlayer");
-  window.player.addEventListener("onStateChange", "playerStateHandler");
-  //$("#youtubePlayerParent").hide();
+function onYouTubeIframeAPIReady() {
+  window.player = new YT.Player('youtubePlayerParent', {
+    width:360,
+    height:210,
+    videoId:'00000000',
+    events: {
+      'onReady': onPlayerReady,
+      'onStateChange': onPlayerStateChange
+    }
+  });
+
+}
+
+function onPlayerReady(event) {
+  window.playerReady=1;
+  event.target.playVideo();
+  if(typeof window.currentVideo!='undefined'){
+    window.player.loadVideoById(window.currentVideo.youtubeId, 0, "large");
+  }
 }
 
 function playPause() {
@@ -375,7 +393,8 @@ function playPause() {
   }
 }
 
-function playerStateHandler(state){
+function onPlayerStateChange(event){
+  state = event.data;
   if (state==-1) {//unstarted
     loadCurrentVideo();
   }else if (state==0){//ended
@@ -392,6 +411,15 @@ function playerStateHandler(state){
 }
 
 function setupYouTube(){
+  var tag = document.createElement('script');
+
+  tag.src = "https://www.youtube.com/iframe_api";
+  var firstScriptTag = document.getElementsByTagName('script')[0];
+  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+
+
+  /*
   var params = { allowScriptAccess: "always" , allowFullscreen: "true"};
   var atts = { id: "youtubePlayer" };
   //"Chromeless" Player
@@ -399,7 +427,7 @@ function setupYouTube(){
 
   swfobject.embedSWF("//www.youtube.com/v/00000000000?version=3&enablejsapi=1&iv_load_policy=3&autohide=1&showinfo=0",
   "youtubePlayerParent", "100%", "250", "8", null, null, params, atts);
-
+    */
   //add "&modestbranding=1&autohide=1&showinfo=0&controls=0" to remove youtube bars and controls
 
   /* -- youtube flash object url addition explanations --
