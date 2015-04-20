@@ -181,7 +181,9 @@ function loadCurrentVideo(){
               if(typeof window.player != 'undefined' && typeof isAdmin != 'undefined' && isAdmin==1){
                 $("#youtubePlayerParent").show();
                 window.currentVideo=video;
-                window.player.loadVideoById(video.youtubeId, 0, "large");
+                if(typeof window.playerReady != 'undefined'){
+                  window.player.loadVideoById(video.youtubeId, 0, "large");
+                }
               }else  if(typeof isAdmin == 'undefined' || isAdmin==0){
                 window.currentVideo=video;
               }
@@ -360,7 +362,6 @@ $.fn.googleSuggest = function(opts){
 }
 
 function onYouTubeIframeAPIReady() {
-
   window.player = new YT.Player('youtubePlayerParent', {
     width:360,
     height:210,
@@ -374,8 +375,11 @@ function onYouTubeIframeAPIReady() {
 }
 
 function onPlayerReady(event) {
-
+  window.playerReady=1;
   event.target.playVideo();
+  if(typeof window.currentVideo!='undefined'){
+    window.player.loadVideoById(window.currentVideo.youtubeId, 0, "large");
+  }
 }
 
 function playPause() {
