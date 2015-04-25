@@ -194,7 +194,7 @@ function loadCurrentVideo(){
               $('#currentDescription').html(video.description);
             }
           }else{
-            if(typeof window.player != 'undefined'){
+            if(typeof window.player != 'undefined' && typeof window.playerReady != 'undefined'){
               state = window.player.getPlayerState()
               if(state!=-1 && state!=0 && state!=5){
                 window.player.pauseVideo();
