@@ -132,6 +132,31 @@
     }
 
     /*
+    Returns 1 or 0 based on whether the video has already been submitted
+    -Vmutti
+    */
+    public function isQueued($youtubeId){
+      $stmt = $this->db->prepare(
+        'SELECT
+          *
+        FROM
+          Video v,
+          Submission s
+        Where
+          v.youtubeId=:youtubeId AND
+          s.videoId=v.videoId AND
+          s.partyId=:partyId AND
+          s.wasPlayed=0 AND
+          s.removed=0
+      ;');
+      $stmt->bindValue(':youtubeId', $youtubeId);
+      $stmt->bindValue(':partyId', $this->partyId);
+      $stmt->execute();
+      error_log($stmt->rowCount()>0);
+      return $stmt->rowCount()>0;
+    }
+
+    /*
     Returns 1 or 0 based on whether the user has permission to read a party
     -Vmutti
     */
@@ -162,6 +187,11 @@
     public function addVideo($user, $youtubeId, &$errors=array()){
       if(!$this->canWriteParty($user)){
         array_push($errors, ERROR_PERMISSIONS);
+        return 0;
+      }
+
+      if($this->isQueued($youtubeId)){
+        array_push($errors, "Video is already queued");
         return 0;
       }
 
@@ -343,8 +373,6 @@
 
 
     function markVideoWatched($user, $submissionId, &$errors=array()){//takes an array with the submission id of what to mark as watched
-      error_log($submissionId);
-      error_log($this->partyId);
       if (!$this->isPartyOwner($user)){
         array_push($errors, ERROR_PERMISSIONS);
         return 0;
