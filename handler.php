@@ -153,6 +153,13 @@
             }
             break;
 
+          case 'updateParty':
+            if(checkRequiredParameters($_POST, array("partyId"), $errors)){
+              $party = new Party($db, $_POST['partyId']);
+              $response['updated'] = $party->updateParty($user, $_POST, $errors);
+            }
+            break;
+
           case 'vote':
             if(checkRequiredParameters($_POST, array("submissionId", "direction"), $errors)){
               $party = new Party($db);
