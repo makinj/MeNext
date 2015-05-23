@@ -116,12 +116,25 @@ if (isset($_GET['partyId'])) {
     if ($readParty) {
         ?>
         <div class="col-md-8">
-            <?php if (0&&$isOwner) { ?><div class="col-md-6"><?php } ?>
+            <?php if ($isOwner) { ?><div class="col-md-6"><?php } ?>
                 <h3>Song Queue</h3>
-            <?php if (0&&$isOwner) { ?></div>
+            <?php if ($isOwner) { ?></div>
             <div class="col-md-6">
-                <button class='editPartyButton btn btn-lg btn-primary'>Settings</button>
-            </div><?php } ?>
+                <button class='editPartyButton btn btn-lg btn-primary' id='settingsButton'>Settings</button>
+                <form id="updatePartyForm" style='display:none'>
+                    <div class="input-group form-group" id="updatePartyNameWrapper">
+                        <input type="text" id="updatePartyName" class="form-control" name="name" placeholder="Party Name">
+                        <span class="input-group-btn">
+                            <button type="submit" class="btn btn-primary" id="submitUpdateParty">
+                                Update
+                            </button>
+                        </span>
+                    </div>
+                    <input type="hidden" name="action" value='updateParty'>
+                    <input type="hidden" name="partyId" value=<?php echo "'".$partyId."'" ?>>
+                </form>
+            </div>
+            <?php } ?>
             <table class="table table-striped table-hover" id="queueTable">
                 <thead>
                 <tr id="queueHeader">
