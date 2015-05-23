@@ -152,7 +152,6 @@
       $stmt->bindValue(':youtubeId', $youtubeId);
       $stmt->bindValue(':partyId', $this->partyId);
       $stmt->execute();
-      error_log($stmt->rowCount()>0);
       return $stmt->rowCount()>0;
     }
 
@@ -503,8 +502,79 @@
         error_log("Error: " . $e->getMessage());
         array_push($errors, ERROR_DB);
         return 0;
-
       }
+    }
+
+    function updateName($user, $partyName, &$errors=array()){
+      if (!$this->isPartyOwner($user)){
+        array_push($errors, ERROR_PERMISSIONS);
+        return 0;
+      }
+      try {
+        $stmt = $this->db->prepare(
+          'SELECT
+            *
+          FROM
+            Party
+          WHERE
+            name=:partyName AND
+            removed=0
+          ;');
+        $stmt->bindValue(':partyName', $partyName);
+        $stmt->execute();
+        if($stmt->rowCount()>0){
+          array_push($errors, "Party name already exists");
+          return 0;
+        }
+        $stmt = $this->db->prepare(
+          'UPDATE
+            Party
+          SET
+            name = :partyName
+          WHERE
+            partyId = :partyId
+        ;');
+        $stmt->bindValue(':partyId', $this->partyId);
+        $stmt->bindValue(':partyName', $partyName);
+        $stmt->execute();
+        return $stmt->rowCount()>0;
+      } catch (PDOException $e) {
+        //something went wrong...
+        error_log("Error: " . $e->getMessage());
+        array_push($errors, ERROR_DB);
+        return 0;
+      }
+    }
+
+    function updateParty($user, $changes, &$errors=array()){
+      error_log(json_encode($changes));
+      $updated = array();
+      if(!$this->isPartyOwner($user)){
+        array_push($errors, ERROR_PERMISSIONS);
+        return $updated;
+      }
+      if(!is_array($changes)){
+        array_push($errors, "Server error while updating party");
+        return $updated;
+      }
+
+      foreach ($changes as $property => $propertyValue) {
+        if($propertyValue!=''){
+          array_push($updated, $property);
+          switch ($property) {
+            case 'name':
+              if(!$this->updateName($user, $propertyValue, $errors)){
+                array_pop($updated);
+              }
+              break;
+
+            default:
+              array_pop($updated);
+              break;
+          }
+        }
+      }
+      return $updated;
     }
 
   }

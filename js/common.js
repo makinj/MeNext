@@ -87,6 +87,20 @@ function createParty(){
   return false;
 }
 
+function updateParty(){
+  $.post("handler.php", $("#updatePartyForm").serialize(),
+    function(data){
+      var result= JSON.parse(data);
+      if(result['status']=='success'){
+        location.reload();
+      }else{
+        $("#problem").html(result['errors'][0]);
+      }
+    }
+  );
+  return false;
+}
+
 function joinParty(passedId) {
   $.post("handler.php", { 'action': 'joinParty', 'partyId': passedId },
     function (data) {
@@ -551,6 +565,10 @@ $(document).ready(function(){
   $('#register').submit(register);
   $('#login').submit(login);
   $('#createPartyForm').submit(createParty);
+  $('#updatePartyForm').submit(updateParty);
+  $('#settingsButton').click(function(){
+    $('#updatePartyForm').toggle();
+  });
   $('.joinPartyButton').click(function(){
     joinParty($(this).attr("value"));
   });

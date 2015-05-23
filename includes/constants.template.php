@@ -43,6 +43,7 @@
     'register',
     'removeVideo',
     'unjoinParty',
+    'updateParty',
     'vote'
   );
 
