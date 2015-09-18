@@ -8,7 +8,7 @@
     private $db=null;
     private $partyId=-1;
 
-    public function __construct($db, $partyId=-1){
+    public function __construct(PDO $db, $partyId=-1){
       $this->db=$db;
       $this->partyId=$partyId;
     }
@@ -32,7 +32,7 @@
     Returns 1 or 0 based on whether the user owns the party
     -Vmutti
     */
-    public function isPartyOwner($user){
+    public function isPartyOwner(User $user){
       $stmt = $this->db->prepare(
         'SELECT
           *
@@ -107,7 +107,7 @@
     Returns 1 or 0 based on whether the user has permission to write to the party
     -Vmutti
     */
-    public function canWriteParty($user){
+    public function canWriteParty(User $user){
       $stmt = $this->db->prepare(
         'SELECT
           *
@@ -159,7 +159,7 @@
     Returns 1 or 0 based on whether the user has permission to read a party
     -Vmutti
     */
-    public function canReadParty($user){
+    public function canReadParty(User $user){
       $stmt = $this->db->prepare(
         'SELECT
           *
@@ -183,7 +183,7 @@
       return $stmt->rowCount()>0;
     }
 
-    public function addVideo($user, $youtubeId, &$errors=array()){
+    public function addVideo(User $user, $youtubeId, array &$errors=array()){
       if(!$this->canWriteParty($user)){
         array_push($errors, ERROR_PERMISSIONS);
         return 0;
@@ -267,7 +267,7 @@
       return 0;
     }
 
-    public function listVideos($user, &$errors=array()){
+    public function listVideos(User $user, array &$errors=array()){
       if(!$this->canReadParty($user)){
         array_push($errors, ERROR_PERMISSIONS);
         return 0;
@@ -338,7 +338,7 @@
     }
 
 
-    function getCurrentVideo($user, &$errors=array()){
+    function getCurrentVideo(User $user, array &$errors=array()){
       $videos = $this->listVideos($user, $errors);
       if (!$videos){
         return 0;
@@ -371,7 +371,7 @@
 
 
 
-    function markVideoWatched($user, $submissionId, &$errors=array()){//takes an array with the submission id of what to mark as watched
+    function markVideoWatched(User $user, $submissionId, array &$errors=array()){//takes an array with the submission id of what to mark as watched
       if (!$this->isPartyOwner($user)){
         array_push($errors, ERROR_PERMISSIONS);
         return 0;
@@ -398,7 +398,7 @@
     }
 
 
-    function removeVideo($user, $submissionId, &$errors=array()){//takes an array of or argument with the submission id of what to mark as watched
+    function removeVideo(User $user, $submissionId, array &$errors=array()){//takes an array of or argument with the submission id of what to mark as watched
       if (!$this->canWriteParty($user)){
         array_push($errors, ERROR_PERMISSIONS);
         return 0;
@@ -441,12 +441,11 @@
       return 0;
     }
 
-    function vote($user, $submissionId, $voteValue, &$errors=array()){
+    function vote(User $user, $submissionId, $voteValue, array &$errors=array()){
       if (!$this->canWriteParty($user)){
         array_push($errors, ERROR_PERMISSIONS);
         return 0;
       }
-      $voteValue = intval($voteValue);
       if($voteValue>0){
         $voteValue=1;
       }elseif($voteValue<0){
@@ -480,7 +479,7 @@
       }
       return 0;
     }
-    function deleteParty($user, &$errors=array()){
+    function deleteParty(User $user, array &$errors=array()){
       if (!$this->isPartyOwner($user)){
         array_push($errors, ERROR_PERMISSIONS);
         return 0;
@@ -505,7 +504,7 @@
       }
     }
 
-    function updateName($user, $partyName, &$errors=array()){
+    function updateName(User $user, $partyName, array &$errors=array()){
       if (!$this->isPartyOwner($user)){
         array_push($errors, ERROR_PERMISSIONS);
         return 0;
@@ -546,8 +545,7 @@
       }
     }
 
-    function updateParty($user, $changes, &$errors=array()){
-      error_log(json_encode($changes));
+    function updateParty(User $user, array$changes, array &$errors=array()){
       $updated = array();
       if(!$this->isPartyOwner($user)){
         array_push($errors, ERROR_PERMISSIONS);
