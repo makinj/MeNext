@@ -24,8 +24,9 @@
   $_GET=sanitizeInputs($_GET);
   $_POST=sanitizeInputs($_POST);
 
-  //error_log(json_encode($_GET));
+  error_log(json_encode($_GET));
   //error_log(json_encode($_POST));
+  //error_log(json_encode($_SESSION));
 
   if (isset($_GET['v'])||isset($_POST['v'])){
     if (isset($_GET['v'])){
@@ -161,7 +162,9 @@
 
           case 'register':
             if(checkRequiredParameters($_POST, array("username", "password"), $errors)){
-              createAccount($db, $_POST['username'], $_POST['password'], $errors);
+              if(createAccount($db, $_POST['username'], $_POST['password'], $errors)){
+                login($db, $_POST['username'], $_POST['password'], $errors);
+              }
             }
             break;
 
@@ -212,6 +215,7 @@
   }else{
     $response['status']='success';
   }
+  //error_log(json_encode($_SESSION));
 
   //error_log(json_encode($response));
   echo json_encode($response);//return info to client

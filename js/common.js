@@ -151,8 +151,7 @@ function listQueue(){
           }
           $('button.removeVideo').click(function(){
             $(this).attr('disabled',true);
-            removeVideo($(this).val());
-            listQueue();
+            removeVideo($(this).val(), listQueue);
             if($(this).val()==window.currentVideo.submissionId){
               if(typeof window.player != 'undefined'){
                 window.player.stopVideo();
@@ -227,7 +226,6 @@ function markVideoWatched(){
   $.post("handler.php", {'action':'markVideoWatched', 'submissionId':window.currentVideo.submissionId},
     function(data){
       var result= JSON.parse(data);
-      console.log(data);
       if(result['status']!='success' && result['errors']){
         $("#problem").html(result['errors'][0]);
       }
@@ -235,13 +233,14 @@ function markVideoWatched(){
   );
 }
 
-function removeVideo(submissionId){
+function removeVideo(submissionId, callback){
   $.post("handler.php", {'action':'removeVideo', 'submissionId':submissionId},
     function(data){
       var result= JSON.parse(data);
       if(result['status']!='success'){
         $("#problem").html(result['errors'][0]);
       }
+      callback();
     }
   );
 }
