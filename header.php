@@ -60,6 +60,9 @@ Have you ever been to a social gathering and wanted to share cool music with the
     <!-- QR Code generation from github user davidshimjs -->
     <script src="js/qrcode.min.js" type="text/javascript"></script>
 
+    <script src="js/soundcloudApi.js" type="text/javascript"></script>
+    <script src="//connect.soundcloud.com/sdk-2.0.0.js"></script>
+
     <script src="js/jquery-ui.min.js" type="text/javascript"></script>
     <?php if (PRODUCTION) {
         # code...

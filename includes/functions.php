@@ -105,7 +105,8 @@
     executeSQL($db,
       'CREATE TABLE Video(
         videoId int NOT NULL AUTO_INCREMENT,
-        youtubeId VARCHAR(11) UNIQUE,
+        contentType VARCHAR(2),
+        contentId VARCHAR(11),
         title VARCHAR(255),
         thumbnail VARCHAR(255),
         description VARCHAR(255),
@@ -116,6 +117,13 @@
         INDEX(videoId)
       )
     ;');//specific video, avoids popular selections bloating database
+    executeSQL($db,
+      'CREATE UNIQUE INDEX unique_content ON
+        Video (
+          contentType,
+          contentId
+        )
+    ;');
 
     executeSQL($db,
       "CREATE TABLE Party(
@@ -313,6 +321,36 @@
       }
     }
     return 1;
+  }
+
+  /*
+  Takes a $GET or $POST request and determines any content info from it.
+  in the form of an array of:
+  [<contentType>, <contentId>]
+  */
+  function contentInfoFromRequest($request, &$errors=array()){
+    $contentType='';
+    $contentId='';
+    if (isset($request['contentType']) && isset($request['contentId'])){
+      if($request['contentType']=='yt'||$request['contentType']=='youtube'){
+        $contentType='yt';
+        $contentId=$request['contentId'];
+      }elseif ($request['contentType']=='sc'||$request['contentType']=='soundcloud') {
+        $contentType='sc';
+        $contentId=$request['contentId'];
+      }else{
+        array_push($errors, "invalid contentType");
+      }
+    }elseif (isset($request['youtubeId'])) {
+      $contentType='yt';
+      $contentId=$request['youtubeId'];
+    }elseif (isset($request['soundcloudId'])) {
+      $contentType='sc';
+      $contentId=$request['soundcloudId'];
+    }else{
+      array_push($errors, "must have contentType and contentId");
+    }
+    return array($contentType, $contentId);
   }
 
 ?>

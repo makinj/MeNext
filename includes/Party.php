@@ -135,7 +135,7 @@
     Returns 1 or 0 based on whether the video has already been submitted
     -Vmutti
     */
-    public function isQueued($youtubeId){
+    public function isQueued($contentType, $contentId){
       $stmt = $this->db->prepare(
         'SELECT
           *
@@ -143,13 +143,15 @@
           Video v,
           Submission s
         Where
-          v.youtubeId=:youtubeId AND
+          v.contentType=:contentType AND
+          v.contentId=:contentId AND
           s.videoId=v.videoId AND
           s.partyId=:partyId AND
           s.wasPlayed=0 AND
           s.removed=0
       ;');
-      $stmt->bindValue(':youtubeId', $youtubeId);
+      $stmt->bindValue(':contentType', $contentType);
+      $stmt->bindValue(':contentId', $contentId);
       $stmt->bindValue(':partyId', $this->partyId);
       $stmt->execute();
       return $stmt->rowCount()>0;
@@ -183,44 +185,65 @@
       return $stmt->rowCount()>0;
     }
 
-    public function addVideo(User $user, $youtubeId, array &$errors=array()){
+    public function addVideo(User $user, $contentType, $contentId, array &$errors=array()){
       if(!$this->canWriteParty($user)){
         array_push($errors, ERROR_PERMISSIONS);
         return 0;
       }
 
-      if($this->isQueued($youtubeId)){
+      if($this->isQueued($contentType, $contentId)){
         array_push($errors, "Video is already queued");
         return 0;
       }
+      $title = '';
+      $thumbnail = '';
+      $description = '';
 
-      $url= 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id='.$youtubeId.'&key='.YT_API_SERVER_KEY;//url to verify data from youtube
-      $verify = curl_init($url);//configures cURL with url
-      curl_setopt($verify, CURLOPT_SSL_VERIFYPEER, false);
-      curl_setopt($verify, CURLOPT_RETURNTRANSFER, 1);//don't echo returned info
-      $verify = json_decode(curl_exec($verify));//returned data from youtube
+      if($contentType=='yt'){
+        $url= 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id='.$contentId.'&key='.YT_API_SERVER_KEY;//url to verify data from youtube
+        $verify = curl_init($url);//configures cURL with url
+        curl_setopt($verify, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($verify, CURLOPT_RETURNTRANSFER, 1);//don't echo returned info
+        $verify = json_decode(curl_exec($verify));//returned data from youtube
 
-      if($verify->pageInfo->totalResults!=1){//not verified to be a real video
-        array_push($errors, "could not verify youtubeId");
-        return 0;
+        if($verify->pageInfo->totalResults!=1){//not verified to be a real video
+          array_push($errors, "could not verify youtubeId");
+          return 0;
+        }
+        $title = sanitizeString($verify->items[0]->snippet->title);
+        $thumbnail = sanitizeString($verify->items[0]->snippet->thumbnails->default->url);
+        $description = sanitizeString($verify->items[0]->snippet->description);
+      }elseif ($contentType=='sc') {
+        $url= 'https://api.soundcloud.com/tracks/'.intval($contentId).'&client_id='.SC_APP_ID;//url to verify data from soundcloud
+        $verify = curl_init($url);//configures cURL with url
+        curl_setopt($verify, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($verify, CURLOPT_RETURNTRANSFER, 1);//don't echo returned info
+        $verify = json_decode(curl_exec($verify));//returned data from youtube
+
+        if($verify->id!=$contentId){//not verified to be a real video
+          array_push($errors, "could not verify soundcloudId");
+          return 0;
+        }
+        $title = sanitizeString($verify->title);
+        $thumbnail = sanitizeString($verify->artwork_url);
+        $description = sanitizeString($verify->description);
       }
 
-      $title = sanitizeString($verify->items[0]->snippet->title);
-      $thumbnail = sanitizeString($verify->items[0]->snippet->thumbnails->default->url);
-      $description = sanitizeString($verify->items[0]->snippet->description);
       // Want to try to insert, but not change the videoId, and
       //   change LAST_INSERT_ID() to be the videoId of the inserted video
       try{
         $stmt = $this->db->prepare(
           'INSERT INTO
             Video(
-              youtubeId,
+              contentType,
+              contentId,
               title,
               thumbnail,
               description
             )
           VALUES(
-            :youtubeId,
+            :contentType,
+            :contentId,
             :title,
             :thumbnail,
             :description
@@ -230,7 +253,8 @@
           UPDATE
             videoId = LAST_INSERT_ID(videoId)
         ;');
-        $stmt->bindValue(':youtubeId', $youtubeId);
+        $stmt->bindValue(':contentType', $contentType);
+        $stmt->bindValue(':contentId', $contentId);
         $stmt->bindValue(':title', $title);
         $stmt->bindValue(':thumbnail', $thumbnail);
         $stmt->bindValue(':description', $description);
@@ -267,15 +291,22 @@
       return 0;
     }
 
-    public function listVideos(User $user, array &$errors=array()){
+    public function listVideos(User $user, $version=0, array &$errors=array()){
       if(!$this->canReadParty($user)){
         array_push($errors, ERROR_PERMISSIONS);
         return 0;
       }
       try{
+        $contentIdQuery = 'v.contentId as youtubeId,';
+        $contentFilter = 'v.contentType="yt" AND';
+
+        if($version>0){
+          $contentIdQuery = 'v.contentType, v.contentId,';
+          $contentFilter = '';
+        }
         $stmt = $this->db->prepare(
-          'SELECT
-            v.youtubeId,
+          "SELECT
+            $contentIdQuery
             v.title,
             v.thumbnail,
             s.submissionId,
@@ -309,6 +340,7 @@
             User u,
             Party p
           WHERE
+            $contentFilter
             p.removed=0 AND
             s.videoId = v.videoId AND
             s.partyId = :partyId AND
@@ -320,7 +352,8 @@
             started DESC,
             rating DESC,
             s.submissionId ASC
-        ;');
+        ;");
+
         $stmt->bindValue(':userId', $user->userId);
         $stmt->bindValue(':partyId', $this->partyId);
         $stmt->execute();
@@ -338,8 +371,8 @@
     }
 
 
-    function getCurrentVideo(User $user, array &$errors=array()){
-      $videos = $this->listVideos($user, $errors);
+    function getCurrentVideo(User $user, $version, array &$errors=array()){
+      $videos = $this->listVideos($user, $version, $errors);
       if (!$videos){
         return 0;
       }
