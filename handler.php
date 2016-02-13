@@ -19,12 +19,22 @@
   $user->initAuth($fb);
   $response = array();//array to be returned to client
   $errors = array();
+  $version = 0;
+
   $_GET=sanitizeInputs($_GET);
   $_POST=sanitizeInputs($_POST);
 
-  //error_log(json_encode($_GET));
+  error_log(json_encode($_GET));
   //error_log(json_encode($_POST));
+  //error_log(json_encode($_SESSION));
 
+  if (isset($_GET['v'])||isset($_POST['v'])){
+    if (isset($_GET['v'])){
+      $version= intval($_GET['v']);
+    }else{
+      $version = intval($_POST['v']);
+    }
+  }
 
   if (isset($_GET['action'])||isset($_POST['action'])){
     $method = '';
@@ -44,9 +54,14 @@
 
         switch ($action) {
           case "addVideo":
-            if(checkRequiredParameters($_POST, array("youtubeId", "partyId"), $errors)){
+          case "addTrack":
+            list($contentType, $contentId) = contentInfoFromRequest($_POST, $errors);
+            if($contentType==''){
+              break;
+            }
+            if(checkRequiredParameters($_POST, array("partyId"), $errors)){
               $party = new Party($db, $_POST['partyId']);
-              $party->addVideo($user, $_POST['youtubeId'], $errors);
+              $party->addVideo($user, $contentType, $contentId, $errors);
             }
             break;
 
@@ -78,9 +93,15 @@
             break;
 
           case 'getCurrentVideo':
+          case 'getCurrentTrack':
             if(checkRequiredParameters($_GET, array("partyId"), $errors)){
               $party = new Party($db, $_GET['partyId']);
-              $response['video'] = $party->getCurrentVideo($user, $errors);
+              $video = $party->getCurrentVideo($user, $version, $errors);
+              if ($action == "getCurrentVideo"){
+                $response['video']=$video;
+              }else{
+                $response['track']=$video;
+              }
             }
             break;
 
@@ -103,9 +124,15 @@
             break;
 
           case "listVideos":
+          case "listTracks":
             if(checkRequiredParameters($_GET, array("partyId"), $errors)){
               $party = new Party($db, $_GET['partyId']);
-              $response['videos'] = $party->listVideos($user, $errors);
+              $videos = $party->listVideos($user, $version, $errors);
+              if ($action == "listVideos"){
+                $response['videos']=$videos;
+              }else{
+                $response['tracks']=$videos;
+              }
             }
             break;
 
@@ -135,11 +162,14 @@
 
           case 'register':
             if(checkRequiredParameters($_POST, array("username", "password"), $errors)){
-              createAccount($db, $_POST['username'], $_POST['password'], $errors);
+              if(createAccount($db, $_POST['username'], $_POST['password'], $errors)){
+                login($db, $_POST['username'], $_POST['password'], $errors);
+              }
             }
             break;
 
           case 'removeVideo':
+          case 'removeTrack':
             if(checkRequiredParameters($_POST, array("submissionId"), $errors)){
               $party = new Party($db);
               $party->initFromSubmissionId($_POST['submissionId']);
@@ -185,6 +215,7 @@
   }else{
     $response['status']='success';
   }
+  //error_log(json_encode($_SESSION));
 
   //error_log(json_encode($response));
   echo json_encode($response);//return info to client

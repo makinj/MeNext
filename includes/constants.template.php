@@ -13,6 +13,8 @@
   define('YT_API_SERVER_KEY', "");//youtube API key linked to MeNext for servers goes here
   define('FB_APP_ID', "");//facebook app id linked to MeNext goes here
   define('FB_APP_SECRET', "");//facebook app secret linked to MeNext goes here
+  define('SC_APP_ID', "");//soundcloud app id linked to MeNext goes here
+  define('SC_APP_SECRET', "");//soundcloud app secret linked to MeNext goes here
   define('PRODUCTION', 0);//1 if production server 0 if not
   define('SOCK_LOC', '');//location of the socket file for communicating between apache and the websocket
   define('WSDOMAIN', '');//domain of the websocket server 127.0.0.1 if local menext.me if prod.

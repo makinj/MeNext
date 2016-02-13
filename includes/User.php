@@ -12,7 +12,7 @@
     private $db=null;
     private $fb=null;
 
-    function __construct($db, $userId=-1){
+    function __construct(PDO $db, $userId=-1){
       $this->db=$db;
       $this->userId = $userId;
     }
@@ -23,7 +23,7 @@
 
     Essentially this logs in the user accessing the site and sets this User object to be that user.
     */
-    public function initAuth($fb){
+    public function initAuth(Facebook $fb){
       $this->fb=$fb;
 
       $fbId = $this->fb->getUser();
@@ -147,7 +147,7 @@
     /*
     Adds party by the username stored in session and title given
     */
-    public function createParty($name, $password, $privacyId, &$errors=array()){
+    public function createParty($name, $password, $privacyId, array &$errors=array()){
       $passwordProtected=0;
       if ($password!=''){
         $passwordProtected = 1;
@@ -215,7 +215,7 @@
     /*
     Add the current user to the party specified
     */
-    public function joinParty($partyId, $password, $owner, &$errors=array()){
+    public function joinParty($partyId, $password, $owner, array &$errors=array()){
       $password = hash('sha512',PRE_SALT.$password.POST_SALT);
       try{
         $stmt = $this->db->prepare(
@@ -269,7 +269,7 @@
       return 0;
     }
 
-    function unjoinParty($partyId, &$errors=array()){
+    function unjoinParty($partyId, array &$errors=array()){
       $party = new Party($this->db, $partyId);
       if ($party->isPartyOwner($this)){
         array_push($errors, "party owner cannot unjoin.  Please delete the party instead.");
@@ -301,7 +301,7 @@
     /*
     List the parties a user is in
     */
-    public function listJoinedParties(&$errors=array()){
+    public function listJoinedParties(array &$errors=array()){
       try {
         $stmt = $this->db->prepare(
           "SELECT
@@ -339,7 +339,7 @@
     /*
     List parties a user hasn't joined
     */
-    public function listUnjoinedParties(&$errors=array()){
+    public function listUnjoinedParties(array &$errors=array()){
       try {
         $stmt = $this->db->prepare(
           "SELECT
