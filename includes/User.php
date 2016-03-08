@@ -235,7 +235,7 @@
           return 0;
         }
         $party = $stmt->fetch(PDO::FETCH_OBJ);
-        if($party->passwordProtected==1 and $party->password==$password){
+        if($party->passwordProtected==1 and $party->password!=$password){
           array_push($errors, "bad party password");
           return 0;
         }
