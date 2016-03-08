@@ -110,7 +110,6 @@
         title VARCHAR(255),
         thumbnail VARCHAR(255),
         description VARCHAR(255),
-        played BIT(1) DEFAULT 0,
 
         PRIMARY KEY(videoId),
 
@@ -129,11 +128,11 @@
       "CREATE TABLE Party(
         partyId int NOT NULL AUTO_INCREMENT,
         name VARCHAR(255),
-        passwordProtected BIT(1) DEFAULT 0,
+        passwordProtected TINYINT(1) DEFAULT 0,
         password VARCHAR(255),
         privacyId int DEFAULT 0,
         creatorId int REFERENCES User(userId),
-        removed BIT(1) DEFAULT 0,
+        removed TINYINT(1) DEFAULT 0,
         date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         color CHAR(6) DEFAULT 'EB2735',
 
@@ -150,8 +149,8 @@
         upvotes int DEFAULT 0,
         downvotes int DEFAULT 0,
         started int DEFAULT 0,
-        wasPlayed BIT(1) DEFAULT 0,
-        removed BIT(1) DEFAULT 0,
+        wasPlayed TINYINT(1) DEFAULT 0,
+        removed TINYINT(1) DEFAULT 0,
         date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
         INDEX(submissionId, wasPlayed),
@@ -164,8 +163,8 @@
       'CREATE TABLE PartyUser(
         partyId int REFERENCES Party(partyId),
         userId int REFERENCES User(userId),
-        owner BIT(1) DEFAULT 0,
-        unjoined BIT(1) DEFAULT 0,
+        owner TINYINT(1) DEFAULT 0,
+        unjoined TINYINT(1) DEFAULT 0,
         date_joined TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
         INDEX(partyId, userId),
