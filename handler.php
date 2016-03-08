@@ -24,7 +24,7 @@
   $_GET=sanitizeInputs($_GET);
   $_POST=sanitizeInputs($_POST);
 
-  error_log(json_encode($_GET));
+  //error_log(json_encode($_GET));
   //error_log(json_encode($_POST));
   //error_log(json_encode($_SESSION));
 
