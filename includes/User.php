@@ -197,11 +197,12 @@
         ;');
         $stmt->bindValue(':name', $name);
         $stmt->bindValue(':creatorId', $this->userId);
-        $stmt->bindValue(':passwordProtected', $passwordProtected, PDO::PARAM_BOOL);
+        $stmt->bindValue(':passwordProtected', $passwordProtected);
         $stmt->bindValue(':password', $passwordHash);
         $stmt->bindValue(':privacyId', $privacyId);
         $stmt->execute();
         $partyId = $this->db->lastInsertId();
+        error_log($partyId);
         $this->joinParty($partyId, $password, 1, $errors);
         return $partyId;
       } catch (PDOException $e) {
@@ -259,7 +260,7 @@
         ;');//makes new row with given info
         $stmt->bindValue(':userId', $this->userId);
         $stmt->bindValue(':partyId', $partyId);
-        $stmt->bindValue(':owner', $owner, PDO::PARAM_BOOL);
+        $stmt->bindValue(':owner', $owner);
         $stmt->execute();
         return $stmt->rowCount()>0;
       } catch (PDOException $e) {
