@@ -220,24 +220,26 @@
       try{
         $stmt = $this->db->prepare(
           'SELECT
-            *
+            passwordProtected,
+            password
           FROM
             Party
           WHERE
             partyId=:partyId AND
-            removed=0 AND
-            (
-              passwordProtected=0 OR
-              password=:password
-            )
+            removed=0
         ;');//checks for matching row
         $stmt->bindValue(':partyId', $partyId);
-        $stmt->bindValue(':password', $password);
         $stmt->execute();
         if($stmt->rowCount()!=1){//if successfully logged in
-          array_push($errors, "bad partyId, password combination");
+          array_push($errors, "bad partyId");
           return 0;
         }
+        $party = $stmt->fetch(PDO::FETCH_OBJ);
+        if($party->passwordProtected==1 and $party->password==$password){
+          array_push($errors, "bad party password");
+          return 0;
+        }
+
         $stmt = $this->db->prepare(
           'INSERT INTO
             PartyUser(
