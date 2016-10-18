@@ -16,16 +16,7 @@
 
   $user = new User($db);
   $user->initAuth($fb);
-  if(isset($_GET['code'])||isset($_GET['state'])){
-    unset($_GET['code']);
-    unset($_GET['state']);
-    $url=$_SERVER['SCRIPT_NAME'];
-    if(count($_GET)){
-      $url .= "?".http_build_query($_GET);
-    }
-    header("Location: ".$url);
-    exit();
-  }
+ 
   header('Access-Control-Allow-Origin: //www.googleapis.com');
   if (!$user->logged && isset($restricted) && $restricted == true) {
     header("location: /");
