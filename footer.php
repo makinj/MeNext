@@ -1,6 +1,7 @@
 <?php
   require_once("includes/constants.php");
   require_once("includes/functions.php");
+  $_GET=sanitize_inputs($_GET);
 ?>
     <script type="text/javascript">
       var YT_API_KEY =
@@ -14,7 +15,7 @@
       var partyId =
       <?php
         if (isset($_GET['partyId'])){
-          echo "'".$_GET['partyId']."'";
+          echo "'".intval($_GET['partyId'])."'";
         }else{
           echo -1;
         }
